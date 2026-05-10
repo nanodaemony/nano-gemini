@@ -1,0 +1,32 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(flutter analyze:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(flutter pub:*)",
+      "WebSearch",
+      "WebFetch(domain:api.github.com)",
+      "Bash(git:*)",
+      "Bash(sudo yum:*)",
+      "Bash(sudo mkdir:*)",
+      "Bash(sudo cp:*)",
+      "Read(//var/www/**)",
+      "Bash(sudo nginx:*)",
+      "Bash(sudo mv:*)",
+      "Bash(sudo rm:*)",
+      "Bash(sudo sed:*)",
+      "Bash(sudo systemctl:*)",
+      "Bash(curl -s http://localhost)",
+      "Bash(curl -s ifconfig.me)",
+      "Bash(curl -s ip.sb)",
+      "Bash(sudo firewall-cmd:*)",
+      "Bash(dart analyze:*)",
+      "Bash(flutter test:*)",
+      "Bash(/usr/local/flutter/bin/flutter analyze:*)",
+      "Bash(/usr/local/flutter/bin/flutter test:*)",
+      "Bash(npm install:*)"
+    ]
+  }
+}

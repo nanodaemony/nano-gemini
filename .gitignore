@@ -1,0 +1,83 @@
+# Worktrees
+.worktrees/
+
+# 环境变量文件（包含敏感信息）
+.env
+*.env.local
+
+# ==================== 通用 ====================
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+ehthumbs.db
+
+# IDE
+.idea/
+*.iml
+.vscode/
+*.swp
+*.swo
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ==================== Backend (Java/Maven) ====================
+# Maven build
+**/target/
+*.class
+*.jar
+*.war
+
+# Maven wrapper
+.mvn/wrapper/maven-wrapper.jar
+
+# ==================== Admin Web (Vue/Node) ====================
+node_modules/
+dist/
+package-lock.json
+yarn.lock
+
+# Coverage
+coverage/
+.nyc_output/
+
+# ==================== App (Flutter) ====================
+# Flutter build
+app/build/
+app/.dart_tool/
+app/.flutter-plugins
+app/.flutter-plugins-dependencies
+app/.pub-cache/
+app/.pub/
+
+# Flutter coverage
+app/coverage/
+
+# iOS/macOS
+app/ios/.symlinks/
+app/ios/Flutter/.last_build_id
+app/macos/.symlinks/
+app/macos/Flutter/.last_build_id
+
+# Android
+app/android/.gradle/
+app/android/build/
+app/android/app/build/
+app/android/local.properties
+app/android/.idea/
+
+# ==================== 其他 ====================
+# Temporary files
+*.tmp
+*.temp
+*.bak
+
+# Compiled docs
+docs/_build/

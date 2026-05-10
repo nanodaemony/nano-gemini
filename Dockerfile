@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1.4
-FROM maven:3.9-eclipse-temurin-17-alpine AS builder
+FROM maven:3.8.6-jdk-8-slim AS builder
 
 WORKDIR /app
 
@@ -32,17 +32,15 @@ RUN --mount=type=cache,target=/root/.m2 \
     mvn clean package -DskipTests
 
 # 运行时镜像
-FROM eclipse-temurin:17-jre-alpine
+FROM openjdk:8-jre-slim
 
 WORKDIR /app
 
 # 安装时区
-RUN apk add --no-cache tzdata && \
-    cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && \
-    echo "Asia/Shanghai" > /etc/timezone && \
-    apk del tzdata
+RUN ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && \
+    echo "Asia/Shanghai" > /etc/timezone
 
-# 复制 JAR 文件 - 使用 grid-system 作为主应用（exec classifier）
+# 复制 JAR 文件
 COPY --from=builder /app/grid-system/target/grid-system-2.7-exec.jar app.jar
 
 # 创建日志目录

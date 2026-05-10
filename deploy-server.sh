@@ -4,9 +4,12 @@
 # Little Grid 服务器部署脚本
 # 使用方式：
 #   1. 本地打包好 jar
-#   2. 传到服务器的项目目录
+#   2. 传到服务器的 /home/nano/ 目录
 #   3. 执行 ./deploy-server.sh
 # ============================================================
+
+# JAR 包所在目录
+JAR_DIR="/home/nano"
 
 set -e
 
@@ -42,11 +45,11 @@ load_env() {
 
 # 找到最新的 jar 包
 find_jar() {
-    JAR_FILE=$(ls -t grid-system/target/grid-system-*.jar 2>/dev/null | head -1)
+    JAR_FILE=$(ls -t "$JAR_DIR"/grid-system-*.jar 2>/dev/null | head -1)
     if [ -z "$JAR_FILE" ]; then
         log_error "未找到 jar 包！"
         log_error "请先在本地执行: mvn clean package -DskipTests"
-        log_error "然后把 jar 传到服务器的 grid-system/target/ 目录下"
+        log_error "然后把 jar 传到服务器的 $JAR_DIR/ 目录下"
         exit 1
     fi
     echo "$JAR_FILE"

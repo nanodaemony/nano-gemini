@@ -71,23 +71,23 @@ grid-system/target/grid-system-2.7.jar
 
 ### 6. 上传 jar 到服务器
 
-把 jar 传到服务器的相同目录下（保持目录结构）：
+把 jar 传到服务器的 `/home/nano/` 目录：
 
 ```
-# 服务器目录结构应该是：
-/path/to/nano-gemini/
+# 服务器目录结构：
+/home/nano/
+└── grid-system-2.7.jar    <-- 上传到这里
+
+/path/to/nano-gemini/      <-- 项目代码目录
 ├── .env
 ├── docker-compose.yml
-├── deploy-server.sh
-└── grid-system/
-    └── target/
-        └── grid-system-2.7.jar    <-- 上传到这里
+└── deploy-server.sh
 ```
 
 用 scp 或其他工具上传：
 ```bash
 # 本地执行
-scp grid-system/target/grid-system-2.7.jar user@your-server:/path/to/nano-gemini/grid-system/target/
+scp grid-system/target/grid-system-2.7.jar user@your-server:/home/nano/
 ```
 
 ### 7. 服务器执行部署脚本

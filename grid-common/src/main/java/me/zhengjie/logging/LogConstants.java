@@ -15,6 +15,8 @@
  */
 package me.zhengjie.logging;
 
+import com.google.common.collect.Sets;
+
 import java.util.Set;
 
 /**
@@ -32,19 +34,19 @@ public final class LogConstants {
     public static final int TRACE_ID_LENGTH = 8;
 
     /** 需要脱敏的字段名 */
-    public static final Set<String> SENSITIVE_FIELDS = Set.of(
+    public static final Set<String> SENSITIVE_FIELDS = Sets.newHashSet(
         "password", "pwd", "token", "accessToken", "refreshToken",
         "secret", "apiKey", "creditCard", "Authorization"
     );
 
     /** 需要打印详细日志的路径前缀 */
-    public static final Set<String> LOG_PATH_PREFIXES = Set.of(
+    public static final Set<String> LOG_PATH_PREFIXES = Sets.newHashSet(
         "/api/app/auth",
         "/api/maint"
     );
 
     /** 需要跳过日志的路径前缀 */
-    public static final Set<String> SKIP_PATH_PREFIXES = Set.of(
+    public static final Set<String> SKIP_PATH_PREFIXES = Sets.newHashSet(
         "/actuator",
         "/static",
         "/favicon.ico",
@@ -52,9 +54,6 @@ public final class LogConstants {
         "/v2/api-docs",
         "/webjars"
     );
-
-    /** 日志保留天数 */
-    public static final int LOG_MAX_HISTORY = 7;
 
     private LogConstants() {}
 }

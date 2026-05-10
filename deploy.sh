@@ -5,7 +5,7 @@ set -e
 cd "$(dirname "$0")"
 
 echo ">>> 拉取最新代码..."
-git pull origin main || git pull origin master
+git pull origin master || git pull origin main
 
 echo ">>> 停止旧容器..."
 docker-compose down

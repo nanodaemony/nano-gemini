@@ -27,10 +27,12 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 
 /**
+ * 下面注释了定时任务 要开启需要取消注释
+ *
  * @author Zheng Jie
  * @date 2019-01-07
  */
-@Component
+// @Component
 @RequiredArgsConstructor
 public class JobRunner implements ApplicationRunner {
     private static final Logger log = LoggerFactory.getLogger(JobRunner.class);

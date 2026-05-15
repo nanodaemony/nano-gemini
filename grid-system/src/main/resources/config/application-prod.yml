@@ -1,5 +1,8 @@
 #配置数据源
 spring:
+  redis:
+    port: 16379
+    password: asdo23420cxzHas23234klSIsdaio234028cxS32
   datasource:
     druid:
       db-type: com.alibaba.druid.pool.DruidDataSource

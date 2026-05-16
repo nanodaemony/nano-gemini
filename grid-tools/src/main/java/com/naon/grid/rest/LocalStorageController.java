@@ -49,21 +49,21 @@ public class LocalStorageController {
 
     @GetMapping
     @ApiOperation("查询文件")
-    @PreAuthorize("@el.check('storage:list')")
+    @PreAuthorize("@el.check('editor')")
     public ResponseEntity<PageResult<LocalStorageDto>> queryFile(LocalStorageQueryCriteria criteria, Pageable pageable){
         return new ResponseEntity<>(localStorageService.queryAll(criteria,pageable),HttpStatus.OK);
     }
 
     @ApiOperation("导出数据")
     @GetMapping(value = "/download")
-    @PreAuthorize("@el.check('storage:list')")
+    @PreAuthorize("@el.check('editor')")
     public void exportFile(HttpServletResponse response, LocalStorageQueryCriteria criteria) throws IOException {
         localStorageService.download(localStorageService.queryAll(criteria), response);
     }
 
     @PostMapping
     @ApiOperation("上传文件")
-    @PreAuthorize("@el.check('storage:add')")
+    @PreAuthorize("@el.check('editor')")
     public ResponseEntity<Object> createFile(@RequestParam String name, @RequestParam("file") MultipartFile file){
         localStorageService.create(name, file);
         return new ResponseEntity<>(HttpStatus.CREATED);
@@ -84,7 +84,7 @@ public class LocalStorageController {
     @PutMapping
     @Log("修改文件")
     @ApiOperation("修改文件")
-    @PreAuthorize("@el.check('storage:edit')")
+    @PreAuthorize("@el.check('editor')")
     public ResponseEntity<Object> updateFile(@Validated @RequestBody LocalStorage resources){
         localStorageService.update(resources);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);

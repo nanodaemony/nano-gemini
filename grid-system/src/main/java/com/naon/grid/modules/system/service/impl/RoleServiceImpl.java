@@ -21,7 +21,6 @@ import lombok.RequiredArgsConstructor;
 import com.naon.grid.exception.BadRequestException;
 import com.naon.grid.modules.security.service.UserCacheManager;
 import com.naon.grid.modules.security.service.dto.AuthorityDto;
-import com.naon.grid.modules.system.domain.Menu;
 import com.naon.grid.modules.system.domain.Role;
 import com.naon.grid.exception.EntityExistException;
 import com.naon.grid.modules.system.domain.User;
@@ -121,23 +120,6 @@ public class RoleServiceImpl implements RoleService {
     }
 
     @Override
-    public void updateMenu(Role resources, RoleDto roleDTO) {
-        Role role = roleMapper.toEntity(roleDTO);
-        List<User> users = userRepository.findByRoleId(role.getId());
-        // 更新菜单
-        role.setMenus(resources.getMenus());
-        delCaches(resources.getId(), users);
-        roleRepository.save(role);
-    }
-
-    @Override
-    @Transactional(rollbackFor = Exception.class)
-    public void untiedMenu(Long menuId) {
-        // 更新菜单
-        roleRepository.untiedMenu(menuId);
-    }
-
-    @Override
     @Transactional(rollbackFor = Exception.class)
     public void delete(Set<Long> ids) {
         for (Long id : ids) {
@@ -183,8 +165,8 @@ public class RoleServiceImpl implements RoleService {
                         .collect(Collectors.toList());
             }
             Set<Role> roles = roleRepository.findByUserId(user.getId());
-            permissions = roles.stream().flatMap(role -> role.getMenus().stream())
-                    .map(Menu::getPermission)
+            permissions = roles.stream()
+                    .map(Role::getName)
                     .filter(StringUtils::isNotBlank).collect(Collectors.toSet());
             authorityDtos = permissions.stream().map(AuthorityDto::new)
                     .collect(Collectors.toList());
@@ -214,11 +196,6 @@ public class RoleServiceImpl implements RoleService {
         }
     }
 
-    @Override
-    public List<Role> findInMenuId(List<Long> menuIds) {
-        return roleRepository.findInMenuId(menuIds);
-    }
-
     /**
      * 清理缓存
      * @param id /
@@ -229,7 +206,6 @@ public class RoleServiceImpl implements RoleService {
             users.forEach(item -> userCacheManager.cleanUserCache(item.getUsername()));
             Set<Long> userIds = users.stream().map(User::getId).collect(Collectors.toSet());
             redisUtils.delByKeys(CacheKey.DATA_USER, userIds);
-            redisUtils.delByKeys(CacheKey.MENU_USER, userIds);
             redisUtils.delByKeys(CacheKey.ROLE_AUTH, userIds);
             redisUtils.delByKeys(CacheKey.ROLE_USER, userIds);
         }

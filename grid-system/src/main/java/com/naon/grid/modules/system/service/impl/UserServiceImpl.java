@@ -117,7 +117,6 @@ public class UserServiceImpl implements UserService {
         // 如果用户的角色改变
         if (!resources.getRoles().equals(user.getRoles())) {
             redisUtils.del(CacheKey.DATA_USER + resources.getId());
-            redisUtils.del(CacheKey.MENU_USER + resources.getId());
             redisUtils.del(CacheKey.ROLE_AUTH + resources.getId());
             redisUtils.del(CacheKey.ROLE_USER + resources.getId());
         }

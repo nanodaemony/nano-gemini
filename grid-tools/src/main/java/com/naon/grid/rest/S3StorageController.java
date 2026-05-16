@@ -54,14 +54,14 @@ public class S3StorageController {
 
     @ApiOperation("导出数据")
     @GetMapping(value = "/download")
-    @PreAuthorize("@el.check('storage:list')")
+    @PreAuthorize("@el.check('editor')")
     public void exportS3Storage(HttpServletResponse response, S3StorageQueryCriteria criteria) throws IOException {
         s3StorageService.download(s3StorageService.queryAll(criteria), response);
     }
 
     @GetMapping
     @ApiOperation("查询文件")
-    @PreAuthorize("@el.check('storage:list')")
+    @PreAuthorize("@el.check('editor')")
     public ResponseEntity<PageResult<S3Storage>> queryS3Storage(S3StorageQueryCriteria criteria, Pageable pageable){
         return new ResponseEntity<>(s3StorageService.queryAll(criteria, pageable),HttpStatus.OK);
     }
@@ -96,7 +96,7 @@ public class S3StorageController {
     @Log("删除多个文件")
     @DeleteMapping
     @ApiOperation("删除多个文件")
-    @PreAuthorize("@el.check('storage:del')")
+    @PreAuthorize("@el.check('editor')")
     public ResponseEntity<Object> deleteAllS3Storage(@RequestBody List<Long> ids) {
         s3StorageService.deleteAll(ids);
         return new ResponseEntity<>(HttpStatus.OK);

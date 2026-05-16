@@ -51,14 +51,14 @@ public class DeptController {
 
     @ApiOperation("导出部门数据")
     @GetMapping(value = "/download")
-    @PreAuthorize("@el.check('dept:list')")
+    @PreAuthorize("@el.check('editor')")
     public void exportDept(HttpServletResponse response, DeptQueryCriteria criteria) throws Exception {
         deptService.download(deptService.queryAll(criteria, false), response);
     }
 
     @ApiOperation("查询部门")
     @GetMapping
-    @PreAuthorize("@el.check('user:list','dept:list')")
+    @PreAuthorize("@el.check('editor')")
     public ResponseEntity<PageResult<DeptDto>> queryDept(DeptQueryCriteria criteria) throws Exception {
         List<DeptDto> depts = deptService.queryAll(criteria, true);
         return new ResponseEntity<>(PageUtil.toPage(depts, depts.size()),HttpStatus.OK);
@@ -66,7 +66,7 @@ public class DeptController {
 
     @ApiOperation("查询部门:根据ID获取同级与上级数据")
     @PostMapping("/superior")
-    @PreAuthorize("@el.check('user:list','dept:list')")
+    @PreAuthorize("@el.check('editor')")
     public ResponseEntity<Object> getDeptSuperior(@RequestBody List<Long> ids,
                                                   @RequestParam(defaultValue = "false") Boolean exclude) {
         Set<DeptDto> deptSet  = new LinkedHashSet<>();
@@ -90,7 +90,7 @@ public class DeptController {
     @Log("新增部门")
     @ApiOperation("新增部门")
     @PostMapping
-    @PreAuthorize("@el.check('dept:add')")
+    @PreAuthorize("@el.check('editor')")
     public ResponseEntity<Object> createDept(@Validated @RequestBody Dept resources){
         if (resources.getId() != null) {
             throw new BadRequestException("A new "+ ENTITY_NAME +" cannot already have an ID");
@@ -102,7 +102,7 @@ public class DeptController {
     @Log("修改部门")
     @ApiOperation("修改部门")
     @PutMapping
-    @PreAuthorize("@el.check('dept:edit')")
+    @PreAuthorize("@el.check('editor')")
     public ResponseEntity<Object> updateDept(@Validated(Dept.Update.class) @RequestBody Dept resources){
         deptService.update(resources);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
@@ -111,7 +111,7 @@ public class DeptController {
     @Log("删除部门")
     @ApiOperation("删除部门")
     @DeleteMapping
-    @PreAuthorize("@el.check('dept:del')")
+    @PreAuthorize("@el.check('editor')")
     public ResponseEntity<Object> deleteDept(@RequestBody Set<Long> ids){
         Set<DeptDto> deptDtos = new HashSet<>();
         for (Long id : ids) {

@@ -47,7 +47,7 @@ public class SysLogController {
     @Log("导出数据")
     @ApiOperation("导出数据")
     @GetMapping(value = "/download")
-    @PreAuthorize("@el.check()")
+    @PreAuthorize("@el.check('editor')")
     public void exportLog(HttpServletResponse response, SysLogQueryCriteria criteria) throws IOException {
         criteria.setLogType("INFO");
         sysLogService.download(sysLogService.queryAll(criteria), response);
@@ -56,14 +56,14 @@ public class SysLogController {
     @Log("导出错误数据")
     @ApiOperation("导出错误数据")
     @GetMapping(value = "/error/download")
-    @PreAuthorize("@el.check()")
+    @PreAuthorize("@el.check('editor')")
     public void exportErrorLog(HttpServletResponse response, SysLogQueryCriteria criteria) throws IOException {
         criteria.setLogType("ERROR");
         sysLogService.download(sysLogService.queryAll(criteria), response);
     }
     @GetMapping
     @ApiOperation("日志查询")
-    @PreAuthorize("@el.check()")
+    @PreAuthorize("@el.check('editor')")
     public ResponseEntity<Object> queryLog(SysLogQueryCriteria criteria, Pageable pageable){
         criteria.setLogType("INFO");
         return new ResponseEntity<>(sysLogService.queryAll(criteria,pageable), HttpStatus.OK);
@@ -79,7 +79,7 @@ public class SysLogController {
 
     @GetMapping(value = "/error")
     @ApiOperation("错误日志查询")
-    @PreAuthorize("@el.check()")
+    @PreAuthorize("@el.check('editor')")
     public ResponseEntity<Object> queryErrorLog(SysLogQueryCriteria criteria, Pageable pageable){
         criteria.setLogType("ERROR");
         return new ResponseEntity<>(sysLogService.queryAll(criteria,pageable), HttpStatus.OK);
@@ -87,14 +87,14 @@ public class SysLogController {
 
     @GetMapping(value = "/error/{id}")
     @ApiOperation("日志异常详情查询")
-    @PreAuthorize("@el.check()")
+    @PreAuthorize("@el.check('editor')")
     public ResponseEntity<Object> queryErrorLogDetail(@PathVariable Long id){
         return new ResponseEntity<>(sysLogService.findByErrDetail(id), HttpStatus.OK);
     }
     @DeleteMapping(value = "/del/error")
     @Log("删除所有ERROR日志")
     @ApiOperation("删除所有ERROR日志")
-    @PreAuthorize("@el.check()")
+    @PreAuthorize("@el.check('editor')")
     public ResponseEntity<Object> delAllErrorLog(){
         sysLogService.delAllByError();
         return new ResponseEntity<>(HttpStatus.OK);
@@ -103,7 +103,7 @@ public class SysLogController {
     @DeleteMapping(value = "/del/info")
     @Log("删除所有INFO日志")
     @ApiOperation("删除所有INFO日志")
-    @PreAuthorize("@el.check()")
+    @PreAuthorize("@el.check('editor')")
     public ResponseEntity<Object> delAllInfoLog(){
         sysLogService.delAllByInfo();
         return new ResponseEntity<>(HttpStatus.OK);

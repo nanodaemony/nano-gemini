@@ -38,7 +38,7 @@ public class MonitorController {
 
     @GetMapping
     @ApiOperation("查询服务监控")
-    @PreAuthorize("@el.check('monitor:list')")
+    @PreAuthorize("@el.check('editor')")
     public ResponseEntity<Object> queryMonitor(){
         return new ResponseEntity<>(serverService.getServers(),HttpStatus.OK);
     }

@@ -12,7 +12,6 @@
         <module>grid-logging</module>
         <module>grid-system</module>
         <module>grid-tools</module>
-        <module>grid-generator</module>
         <module>grid-app</module>
     </modules>
 
@@ -95,7 +94,6 @@
         </dependency>
 
         <!--spring boot 集成redis所需common-pool2-->
-        <!-- https://mvnrepository.com/artifact/org.apache.commons/commons-pool2 -->
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-pool2</artifactId>

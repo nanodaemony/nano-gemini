@@ -20,7 +20,6 @@ import lombok.extern.slf4j.Slf4j;
 import com.naon.grid.exception.BadRequestException;
 import com.naon.grid.modules.security.service.dto.AuthorityDto;
 import com.naon.grid.modules.security.service.dto.JwtUserDto;
-import com.naon.grid.modules.system.service.DataService;
 import com.naon.grid.modules.system.service.RoleService;
 import com.naon.grid.modules.system.service.UserService;
 import com.naon.grid.modules.system.service.dto.UserDto;
@@ -38,7 +37,6 @@ import java.util.List;
 public class UserDetailsServiceImpl implements UserDetailsService {
     private final UserService userService;
     private final RoleService roleService;
-    private final DataService dataService;
     private final UserCacheManager userCacheManager;
 
     @Override
@@ -55,7 +53,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
                 // 获取用户的权限
                 List<AuthorityDto> authorities = roleService.buildPermissions(user);
                 // 初始化JwtUserDto
-                jwtUserDto = new JwtUserDto(user, dataService.getDeptIds(user), authorities);
+                jwtUserDto = new JwtUserDto(user, null, authorities);
                 // 添加缓存数据
                 userCacheManager.addUserCache(username, jwtUserDto);
             }

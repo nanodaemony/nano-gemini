@@ -36,7 +36,6 @@ import com.naon.grid.modules.system.service.mapstruct.RoleSmallMapper;
 import com.naon.grid.utils.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import javax.servlet.http.HttpServletResponse;
@@ -62,8 +61,7 @@ public class RoleServiceImpl implements RoleService {
 
     @Override
     public List<RoleDto> queryAll() {
-        Sort sort = Sort.by(Sort.Direction.ASC, "level");
-        return roleMapper.toDto(roleRepository.findAll(sort));
+        return roleMapper.toDto(roleRepository.findAll());
     }
 
     @Override
@@ -111,9 +109,6 @@ public class RoleServiceImpl implements RoleService {
         }
         role.setName(resources.getName());
         role.setDescription(resources.getDescription());
-        role.setDataScope(resources.getDataScope());
-        role.setDepts(resources.getDepts());
-        role.setLevel(resources.getLevel());
         roleRepository.save(role);
         // 更新相关缓存
         delCaches(role.getId(), null);
@@ -138,18 +133,6 @@ public class RoleServiceImpl implements RoleService {
             redisUtils.set(key, roles, 1, TimeUnit.DAYS);
         }
         return roles;
-    }
-
-    @Override
-    public Integer findByRoles(Set<Role> roles) {
-        if (roles.isEmpty()) {
-            return Integer.MAX_VALUE;
-        }
-        Set<RoleDto> roleDtos = new HashSet<>();
-        for (Role role : roles) {
-            roleDtos.add(findById(role.getId()));
-        }
-        return Collections.min(roleDtos.stream().map(RoleDto::getLevel).collect(Collectors.toList()));
     }
 
     @Override
@@ -181,7 +164,6 @@ public class RoleServiceImpl implements RoleService {
         for (RoleDto role : roles) {
             Map<String, Object> map = new LinkedHashMap<>();
             map.put("角色名称", role.getName());
-            map.put("角色级别", role.getLevel());
             map.put("描述", role.getDescription());
             map.put("创建日期", role.getCreateTime());
             list.add(map);
@@ -205,7 +187,6 @@ public class RoleServiceImpl implements RoleService {
         if (CollectionUtil.isNotEmpty(users)) {
             users.forEach(item -> userCacheManager.cleanUserCache(item.getUsername()));
             Set<Long> userIds = users.stream().map(User::getId).collect(Collectors.toSet());
-            redisUtils.delByKeys(CacheKey.DATA_USER, userIds);
             redisUtils.delByKeys(CacheKey.ROLE_AUTH, userIds);
             redisUtils.delByKeys(CacheKey.ROLE_USER, userIds);
         }

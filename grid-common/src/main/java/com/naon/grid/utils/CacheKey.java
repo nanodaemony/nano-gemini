@@ -28,11 +28,6 @@ public interface CacheKey {
     String USER_ID = "user::id:";
 
     /**
-     * 数据
-     */
-    String DATA_USER = "data::user:";
-
-    /**
      * 角色授权
      */
     String ROLE_AUTH = "role::auth:";
@@ -42,19 +37,4 @@ public interface CacheKey {
      * 角色信息
      */
     String ROLE_ID = "role::id:";
-
-    /**
-     * 部门
-     */
-    String DEPT_ID = "dept::id:";
-
-    /**
-     * 岗位
-     */
-    String JOB_ID = "job::id:";
-
-    /**
-     * 数据字典
-     */
-    String DICT_NAME = "dict::name:";
 }

@@ -15,7 +15,6 @@
  */
 package com.naon.grid.modules.system.rest;
 
-import cn.hutool.core.lang.Dict;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
@@ -25,9 +24,7 @@ import com.naon.grid.exception.BadRequestException;
 import com.naon.grid.modules.system.service.RoleService;
 import com.naon.grid.modules.system.service.dto.RoleDto;
 import com.naon.grid.modules.system.service.dto.RoleQueryCriteria;
-import com.naon.grid.modules.system.service.dto.RoleSmallDto;
 import com.naon.grid.utils.PageResult;
-import com.naon.grid.utils.SecurityUtils;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -36,10 +33,8 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * @author Zheng Jie
@@ -83,12 +78,6 @@ public class RoleController {
         return new ResponseEntity<>(roleService.queryAll(criteria,pageable),HttpStatus.OK);
     }
 
-    @ApiOperation("获取用户级别")
-    @GetMapping(value = "/level")
-    public ResponseEntity<Object> getRoleLevel(){
-        return new ResponseEntity<>(Dict.create().set("level", getLevels(null)),HttpStatus.OK);
-    }
-
     @Log("新增角色")
     @ApiOperation("新增角色")
     @PostMapping
@@ -97,7 +86,6 @@ public class RoleController {
         if (resources.getId() != null) {
             throw new BadRequestException("A new "+ ENTITY_NAME +" cannot already have an ID");
         }
-        getLevels(resources.getLevel());
         roleService.create(resources);
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
@@ -107,7 +95,6 @@ public class RoleController {
     @PutMapping
     @PreAuthorize("@el.check('editor')")
     public ResponseEntity<Object> updateRole(@Validated(Role.Update.class) @RequestBody Role resources){
-        getLevels(resources.getLevel());
         roleService.update(resources);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
@@ -117,28 +104,9 @@ public class RoleController {
     @DeleteMapping
     @PreAuthorize("@el.check('editor')")
     public ResponseEntity<Object> deleteRole(@RequestBody Set<Long> ids){
-        for (Long id : ids) {
-            RoleDto role = roleService.findById(id);
-            getLevels(role.getLevel());
-        }
         // 验证是否被用户关联
         roleService.verification(ids);
         roleService.delete(ids);
         return new ResponseEntity<>(HttpStatus.OK);
-    }
-
-    /**
-     * 获取用户的角色级别
-     * @return /
-     */
-    private int getLevels(Integer level){
-        List<Integer> levels = roleService.findByUsersId(SecurityUtils.getCurrentUserId()).stream().map(RoleSmallDto::getLevel).collect(Collectors.toList());
-        int min = Collections.min(levels);
-        if(level != null){
-            if(level < min){
-                throw new BadRequestException("权限不足，你的角色级别：" + min + "，低于操作的角色级别：" + level);
-            }
-        }
-        return min;
     }
 }

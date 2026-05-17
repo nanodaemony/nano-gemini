@@ -31,10 +31,4 @@ public class RoleSmallDto implements Serializable {
 
     @ApiModelProperty(value = "名称")
     private String name;
-
-    @ApiModelProperty(value = "级别")
-    private Integer level;
-
-    @ApiModelProperty(value = "数据权限")
-    private String dataScope;
 }

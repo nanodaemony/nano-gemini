@@ -73,13 +73,6 @@ public interface RoleService {
     List<RoleSmallDto> findByUsersId(Long userId);
 
     /**
-     * 根据角色查询角色级别
-     * @param roles /
-     * @return /
-     */
-    Integer findByRoles(Set<Role> roles);
-
-    /**
      * 待条件分页查询
      * @param criteria 条件
      * @param pageable 分页参数

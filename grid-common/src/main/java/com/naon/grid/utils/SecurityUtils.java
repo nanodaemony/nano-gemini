@@ -15,14 +15,9 @@
  */
 package com.naon.grid.utils;
 
-import cn.hutool.core.collection.CollUtil;
 import cn.hutool.jwt.JWT;
 import cn.hutool.jwt.JWTUtil;
-import com.alibaba.fastjson2.JSON;
-import com.alibaba.fastjson2.JSONArray;
-import com.alibaba.fastjson2.JSONObject;
 import lombok.extern.slf4j.Slf4j;
-import com.naon.grid.utils.enums.DataScopeEnum;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -31,7 +26,6 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.List;
 import java.util.Objects;
 
 /**
@@ -66,29 +60,6 @@ public class SecurityUtils {
         return userDetailsService.loadUserByUsername(getCurrentUsername());
     }
 
-    /**
-     * 获取当前用户的数据权限
-     * @return /
-     */
-    public static List<Long> getCurrentUserDataScope(){
-        UserDetails userDetails = getCurrentUser();
-        // 将 Java 对象转换为 JSONObject 对象
-        JSONObject jsonObject = (JSONObject) JSON.toJSON(userDetails);
-        JSONArray jsonArray = jsonObject.getJSONArray("dataScopes");
-        return JSON.parseArray(jsonArray.toJSONString(), Long.class);
-    }
-
-    /**
-     * 获取数据权限级别
-     * @return 级别
-     */
-    public static String getDataScopeType() {
-        List<Long> dataScopes = getCurrentUserDataScope();
-        if(CollUtil.isEmpty(dataScopes)){
-            return "";
-        }
-        return DataScopeEnum.ALL.getValue();
-    }
 
     /**
      * 获取用户ID

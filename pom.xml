@@ -191,6 +191,13 @@
             <version>${fastjson2.version}</version>
         </dependency>
 
+        <!-- dotenv-java - .env 文件支持 -->
+        <dependency>
+            <groupId>io.github.cdimascio</groupId>
+            <artifactId>dotenv-java</artifactId>
+            <version>3.0.0</version>
+        </dependency>
+
         <!-- Java图形验证码 -->
         <dependency>
             <groupId>com.github.whvcse</groupId>

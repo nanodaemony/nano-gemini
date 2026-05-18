@@ -15,6 +15,7 @@
  */
 package com.naon.grid;
 
+import io.github.cdimascio.dotenv.Dotenv;
 import io.swagger.annotations.Api;
 import lombok.extern.slf4j.Slf4j;
 import com.naon.grid.annotation.rest.AnonymousGetMapping;
@@ -45,6 +46,43 @@ import org.springframework.web.bind.annotation.RestController;
 public class AppRun {
 
     public static void main(String[] args) {
+        // 获取 active profile，先从系统属性，再从命令行参数，默认 dev
+        String profile = System.getProperty("spring.profiles.active");
+        if (profile == null) {
+            for (String arg : args) {
+                if (arg.startsWith("--spring.profiles.active=")) {
+                    profile = arg.substring("--spring.profiles.active=".length());
+                    break;
+                }
+            }
+        }
+        if (profile == null) {
+            profile = "dev";
+        }
+
+        // 优先加载 .env.{profile}，如果不存在则加载 .env
+        Dotenv dotenv;
+        String envFileName = ".env." + profile;
+        try {
+            dotenv = Dotenv.configure()
+                    .filename(envFileName)
+                    .load();
+            System.out.println("Loaded config from " + envFileName);
+        } catch (Exception e) {
+            // .env.{profile} 不存在，尝试加载 .env
+            dotenv = Dotenv.configure()
+                    .filename(".env")
+                    .ignoreIfMissing()
+                    .load();
+            if (dotenv.entries().iterator().hasNext()) {
+                System.out.println("Loaded config from .env");
+            } else {
+                System.out.println("No .env file found, using default configs");
+            }
+        }
+        // 将 .env 中的配置设置到系统属性
+        dotenv.entries().forEach(entry -> System.setProperty(entry.getKey(), entry.getValue()));
+
         SpringApplication springApplication = new SpringApplication(AppRun.class);
         // 监控应用的PID，启动时可指定PID路径：--spring.pid.file=/home/eladmin/app.pid
         // 或者在 application.yml 添加文件路径，方便 kill，kill `cat /home/eladmin/app.pid`

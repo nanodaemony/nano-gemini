@@ -53,4 +53,10 @@ public class AliOssStorageDto extends BaseDTO implements Serializable {
 
     @ApiModelProperty(value = "存储桶名称")
     private String bucketName;
+
+    @ApiModelProperty(value = "业务类型")
+    private String businessType;
+
+    @ApiModelProperty(value = "自定义路径")
+    private String customPath;
 }

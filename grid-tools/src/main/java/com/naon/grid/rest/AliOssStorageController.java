@@ -17,10 +17,12 @@ package com.naon.grid.rest;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import com.naon.grid.annotation.Log;
 import com.naon.grid.domain.AliOssStorage;
+import com.naon.grid.domain.enums.OssBusinessType;
 import com.naon.grid.exception.BadRequestException;
 import com.naon.grid.service.AliOssStorageService;
 import com.naon.grid.service.dto.AliOssStorageDto;
@@ -70,19 +72,25 @@ public class AliOssStorageController {
     @ApiOperation("上传文件")
     @PostMapping
     @PreAuthorize("@el.check('editor')")
-    public ResponseEntity<AliOssStorage> uploadAliOssStorage(@RequestParam MultipartFile file) {
-        AliOssStorage storage = aliOssStorageService.upload(file);
+    public ResponseEntity<AliOssStorage> uploadAliOssStorage(
+            @RequestParam MultipartFile file,
+            @ApiParam(value = "业务类型", required = false) @RequestParam(required = false) OssBusinessType businessType,
+            @ApiParam(value = "自定义路径", required = false) @RequestParam(required = false) String customPath) {
+        AliOssStorage storage = aliOssStorageService.upload(file, businessType, customPath);
         return new ResponseEntity<>(storage, HttpStatus.OK);
     }
 
     @ApiOperation("上传图片")
     @PostMapping("/pictures")
-    public ResponseEntity<AliOssStorage> uploadPicture(@RequestParam MultipartFile file) {
+    public ResponseEntity<AliOssStorage> uploadPicture(
+            @RequestParam MultipartFile file,
+            @ApiParam(value = "业务类型", required = false) @RequestParam(required = false) OssBusinessType businessType,
+            @ApiParam(value = "自定义路径", required = false) @RequestParam(required = false) String customPath) {
         String suffix = FileUtil.getExtensionName(file.getOriginalFilename());
         if (!FileUtil.IMAGE.equals(FileUtil.getFileType(suffix))) {
             throw new BadRequestException("只能上传图片");
         }
-        AliOssStorage storage = aliOssStorageService.upload(file);
+        AliOssStorage storage = aliOssStorageService.upload(file, businessType, customPath);
         return new ResponseEntity<>(storage, HttpStatus.OK);
     }
 

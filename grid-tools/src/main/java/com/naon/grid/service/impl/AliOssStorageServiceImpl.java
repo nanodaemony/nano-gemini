@@ -22,6 +22,7 @@ import lombok.extern.slf4j.Slf4j;
 import com.aliyun.oss.OSS;
 import com.naon.grid.config.AliOssConfig;
 import com.naon.grid.domain.AliOssStorage;
+import com.naon.grid.domain.enums.OssBusinessType;
 import com.naon.grid.exception.BadRequestException;
 import com.naon.grid.repository.AliOssStorageRepository;
 import com.naon.grid.service.AliOssStorageService;
@@ -76,6 +77,18 @@ public class AliOssStorageServiceImpl implements AliOssStorageService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public AliOssStorage upload(MultipartFile file) {
+        return upload(file, OssBusinessType.DEFAULT, null);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public AliOssStorage upload(MultipartFile file, OssBusinessType businessType) {
+        return upload(file, businessType, null);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public AliOssStorage upload(MultipartFile file, OssBusinessType businessType, String customPath) {
         String bucketName = aliOssConfig.getBucketName();
         // 检查存储桶是否存在，不存在则创建
         if (!bucketExists(bucketName)) {
@@ -89,10 +102,19 @@ public class AliOssStorageServiceImpl implements AliOssStorageService {
             throw new IllegalArgumentException("文件名不能为空");
         }
         // 生成存储路径和文件名（UUID）
-        String folder = DateUtil.format(new Date(), aliOssConfig.getTimeformat());
+        // 路径结构: businessType/customPath/timeformat/uuid.extension
+        StringBuilder pathBuilder = new StringBuilder();
+        pathBuilder.append(businessType != null ? businessType.getValue() : OssBusinessType.DEFAULT.getValue());
+        if (StringUtils.isNotBlank(customPath)) {
+            pathBuilder.append("/").append(customPath);
+        }
+        String timeFolder = DateUtil.format(new Date(), aliOssConfig.getTimeformat());
+        pathBuilder.append("/").append(timeFolder);
+
         String extension = FileUtil.getExtensionName(originalName);
         String fileRealName = IdUtil.simpleUUID() + "." + extension;
-        String filePath = folder + "/" + fileRealName;
+        String filePath = pathBuilder.toString() + "/" + fileRealName;
+
         // 构建访问 URL
         String fileUrl = aliOssConfig.getDomain() + "/" + filePath;
 
@@ -109,6 +131,8 @@ public class AliOssStorageServiceImpl implements AliOssStorageService {
             storage.setFileType(extension);
             storage.setFileUrl(fileUrl);
             storage.setBucketName(bucketName);
+            storage.setBusinessType(businessType != null ? businessType.getValue() : OssBusinessType.DEFAULT.getValue());
+            storage.setCustomPath(customPath);
 
             // 保存到数据库
             aliOssStorageRepository.save(storage);
@@ -168,6 +192,8 @@ public class AliOssStorageServiceImpl implements AliOssStorageService {
             map.put("文件类型", storage.getFileType());
             map.put("访问 URL", storage.getFileUrl());
             map.put("存储桶", storage.getBucketName());
+            map.put("业务类型", storage.getBusinessType());
+            map.put("自定义路径", storage.getCustomPath());
             map.put("创建者", storage.getCreateBy());
             map.put("创建时间", storage.getCreateTime());
             map.put("更新者", storage.getUpdateBy());

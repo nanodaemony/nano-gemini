@@ -62,6 +62,12 @@ public class AliOssStorage extends BaseEntity implements Serializable {
     @ApiModelProperty(value = "存储桶名称")
     private String bucketName;
 
+    @ApiModelProperty(value = "业务类型")
+    private String businessType;
+
+    @ApiModelProperty(value = "自定义路径")
+    private String customPath;
+
     public void copy(AliOssStorage source) {
         BeanUtil.copyProperties(source, this, CopyOptions.create().setIgnoreNullValue(true));
     }

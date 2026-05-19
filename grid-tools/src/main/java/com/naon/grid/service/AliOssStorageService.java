@@ -16,6 +16,7 @@
 package com.naon.grid.service;
 
 import com.naon.grid.domain.AliOssStorage;
+import com.naon.grid.domain.enums.OssBusinessType;
 import com.naon.grid.service.dto.AliOssStorageDto;
 import com.naon.grid.service.dto.AliOssStorageQueryCriteria;
 import com.naon.grid.utils.PageResult;
@@ -60,6 +61,23 @@ public interface AliOssStorageService {
      * @return 保存后的存储对象（包含完整 URL）
      */
     AliOssStorage upload(MultipartFile file);
+
+    /**
+     * 上传文件到 OSS（指定业务类型）
+     * @param file 上传的文件
+     * @param businessType 业务类型
+     * @return 保存后的存储对象（包含完整 URL）
+     */
+    AliOssStorage upload(MultipartFile file, OssBusinessType businessType);
+
+    /**
+     * 上传文件到 OSS（指定业务类型和自定义路径）
+     * @param file 上传的文件
+     * @param businessType 业务类型
+     * @param customPath 自定义路径
+     * @return 保存后的存储对象（包含完整 URL）
+     */
+    AliOssStorage upload(MultipartFile file, OssBusinessType businessType, String customPath);
 
     /**
      * 修改文件信息

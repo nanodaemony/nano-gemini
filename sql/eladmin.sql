@@ -845,4 +845,26 @@ BEGIN;
 INSERT INTO `tool_s3_storage` (`storage_id`, `file_name`, `file_real_name`, `file_size`, `file_mime_type`, `file_type`, `file_path`, `create_by`, `update_by`, `create_time`, `update_time`) VALUES (4, 'tx.jpg', '2ca1de24d8fa422eae4ede30e97c46d8.jpg', '29.67KB', 'image/jpeg', 'jpg', '2025-06/2ca1de24d8fa422eae4ede30e97c46d8.jpg', 'admin', 'admin', '2025-06-25 15:48:22', '2025-06-25 15:48:22');
 COMMIT;
 
+-- ----------------------------
+-- Table structure for oss_resource_meta
+-- ----------------------------
+DROP TABLE IF EXISTS `oss_resource_meta`;
+CREATE TABLE `oss_resource_meta` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '主键',
+  `file_name` varchar(255) NOT NULL COMMENT '文件名称',
+  `file_real_name` varchar(255) NOT NULL COMMENT '真实存储的名称',
+  `file_size` varchar(100) NOT NULL COMMENT '文件大小',
+  `file_mime_type` varchar(50) NOT NULL COMMENT '文件MIME 类型',
+  `file_type` varchar(50) NOT NULL COMMENT '文件类型',
+  `file_url` tinytext NOT NULL COMMENT '文件访问地址',
+  `bucket_name` varchar(255) NOT NULL COMMENT 'Bucket 名称',
+  `business_type` varchar(100) DEFAULT NULL COMMENT '业务类型',
+  `custom_path` varchar(255) DEFAULT NULL COMMENT '自定义路径',
+  `create_by` varchar(255) NOT NULL COMMENT '创建者',
+  `update_by` varchar(255) NOT NULL COMMENT '更新者',
+  `create_time` datetime NOT NULL COMMENT '创建日期',
+  `update_time` datetime NOT NULL COMMENT '更新时间',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='阿里云 OSS 存储资源元数据';
+
 SET FOREIGN_KEY_CHECKS = 1;

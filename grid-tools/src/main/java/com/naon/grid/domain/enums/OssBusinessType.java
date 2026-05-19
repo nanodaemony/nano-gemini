@@ -13,31 +13,40 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package com.naon.grid.service.dto;
-
-import io.swagger.annotations.ApiModelProperty;
-import lombok.Data;
-import com.naon.grid.annotation.Query;
-import java.sql.Timestamp;
-import java.util.List;
+package com.naon.grid.domain.enums;
 
 /**
- * 阿里云 OSS 存储查询条件
+ * OSS 业务类型枚举
  * @author Zheng Jie
  * @date 2025-05-19
  */
-@Data
-public class AliOssStorageQueryCriteria {
+public enum OssBusinessType {
 
-    @Query(type = Query.Type.INNER_LIKE)
-    @ApiModelProperty(value = "文件名称")
-    private String fileName;
+    /** 默认业务 */
+    DEFAULT("default"),
 
-    @Query
-    @ApiModelProperty(value = "业务类型")
-    private String businessType;
+    /** 用户头像 */
+    AVATAR("avatar"),
 
-    @Query(type = Query.Type.BETWEEN)
-    @ApiModelProperty(value = "创建时间")
-    private List<Timestamp> createTime;
+    /** 文章图片 */
+    ARTICLE("article"),
+
+    /** 产品图片 */
+    PRODUCT("product"),
+
+    /** 文档 */
+    DOCUMENT("document"),
+
+    /** 其他 */
+    OTHER("other");
+
+    private final String value;
+
+    OssBusinessType(String value) {
+        this.value = value;
+    }
+
+    public String getValue() {
+        return value;
+    }
 }

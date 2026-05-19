@@ -25,6 +25,9 @@ public enum OssBusinessType {
     /** 默认业务 */
     DEFAULT("default"),
 
+    /** 语音合成 */
+    TTS("tts"),
+
     /** 用户头像 */
     AVATAR("avatar"),
 

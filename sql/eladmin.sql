@@ -865,6 +865,26 @@ CREATE TABLE `oss_resource_meta` (
   `create_time` datetime NOT NULL COMMENT '创建日期',
   `update_time` datetime NOT NULL COMMENT '更新时间',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='阿里云 OSS 存储资源元数据';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='OSS资源元数据';
+
+-- ----------------------------
+-- Table structure for tts_record
+-- ----------------------------
+DROP TABLE IF EXISTS `tts_record`;
+CREATE TABLE `tts_record` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '主键',
+  `voice` varchar(255) NOT NULL COMMENT '音色',
+  `text` text NOT NULL COMMENT '合成文本',
+  `instructions` text DEFAULT NULL COMMENT '指令',
+  `model` varchar(255) NOT NULL COMMENT '模型',
+  `language_type` varchar(255) DEFAULT NULL COMMENT '语言类型',
+  `final_audio_url` varchar(255) NOT NULL COMMENT '最终音频地址',
+  `request_id` varchar(255) NOT NULL COMMENT '阿里云请求ID',
+  `create_by` varchar(255) DEFAULT NULL COMMENT '创建者',
+  `update_by` varchar(255) DEFAULT NULL COMMENT '更新者',
+  `create_time` datetime DEFAULT NULL COMMENT '创建日期',
+  `update_time` datetime DEFAULT NULL COMMENT '更新时间',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='TTS 语音合成记录';
 
 SET FOREIGN_KEY_CHECKS = 1;

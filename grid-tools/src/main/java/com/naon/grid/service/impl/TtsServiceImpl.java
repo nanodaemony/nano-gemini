@@ -16,6 +16,7 @@
 package com.naon.grid.service.impl;
 
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.io.IoUtil;
 import cn.hutool.core.util.IdUtil;
 import com.alibaba.dashscope.aigc.multimodalconversation.AudioParameters;
 import com.alibaba.dashscope.aigc.multimodalconversation.MultiModalConversation;
@@ -110,7 +111,7 @@ public class TtsServiceImpl implements TtsService {
             // 下载音频
             byte[] audioBytes;
             try (InputStream in = new URL(originalAudioUrl).openStream()) {
-                audioBytes = in.readAllBytes();
+                audioBytes = IoUtil.readBytes(in);
             }
 
             // 上传到自己的 OSS

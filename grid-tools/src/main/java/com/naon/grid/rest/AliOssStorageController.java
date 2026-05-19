@@ -21,6 +21,7 @@ import io.swagger.annotations.ApiParam;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import com.naon.grid.annotation.Log;
+import com.naon.grid.annotation.rest.AnonymousPostMapping;
 import com.naon.grid.domain.AliOssStorage;
 import com.naon.grid.domain.enums.OssBusinessType;
 import com.naon.grid.exception.BadRequestException;
@@ -81,7 +82,7 @@ public class AliOssStorageController {
     }
 
     @ApiOperation("上传图片")
-    @PostMapping("/pictures")
+    @AnonymousPostMapping("/pictures")
     public ResponseEntity<AliOssStorage> uploadPicture(
             @RequestParam MultipartFile file,
             @ApiParam(value = "业务类型", required = false) @RequestParam(required = false) OssBusinessType businessType,

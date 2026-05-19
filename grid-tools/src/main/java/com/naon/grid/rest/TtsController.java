@@ -20,6 +20,7 @@ import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import com.naon.grid.annotation.Log;
+import com.naon.grid.annotation.rest.AnonymousPostMapping;
 import com.naon.grid.service.TtsService;
 import com.naon.grid.service.dto.TtsRequest;
 import com.naon.grid.service.dto.TtsResponse;
@@ -44,7 +45,7 @@ public class TtsController {
 
     @Log("语音合成")
     @ApiOperation("语音合成")
-    @PostMapping("/generate")
+    @AnonymousPostMapping("/generate")
     public ResponseEntity<TtsResponse> generate(@Validated @RequestBody TtsRequest request) {
         TtsResponse response = ttsService.generate(request);
         return new ResponseEntity<>(response, HttpStatus.OK);

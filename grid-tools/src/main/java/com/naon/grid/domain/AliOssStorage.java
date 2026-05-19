@@ -18,10 +18,11 @@ package com.naon.grid.domain;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.bean.copier.CopyOptions;
 import io.swagger.annotations.ApiModelProperty;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 import com.naon.grid.base.BaseEntity;
 import javax.persistence.*;
+import javax.validation.constraints.NotBlank;
 import java.io.Serializable;
 
 /**
@@ -29,10 +30,10 @@ import java.io.Serializable;
  * @author Zheng Jie
  * @date 2025-05-19
  */
-@Getter
-@Setter
+@Data
 @Entity
 @Table(name = "oss_resource_meta")
+@EqualsAndHashCode(callSuper = true)
 public class AliOssStorage extends BaseEntity implements Serializable {
 
     @Id
@@ -41,24 +42,31 @@ public class AliOssStorage extends BaseEntity implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotBlank
     @ApiModelProperty(value = "原始文件名")
     private String fileName;
 
+    @NotBlank
     @ApiModelProperty(value = "OSS 上存储的文件名 (UUID)")
     private String fileRealName;
 
+    @NotBlank
     @ApiModelProperty(value = "文件大小")
     private String fileSize;
 
+    @NotBlank
     @ApiModelProperty(value = "文件 MIME 类型")
     private String fileMimeType;
 
+    @NotBlank
     @ApiModelProperty(value = "文件类型")
     private String fileType;
 
+    @NotBlank
     @ApiModelProperty(value = "OSS 完整访问 URL")
     private String fileUrl;
 
+    @NotBlank
     @ApiModelProperty(value = "存储桶名称")
     private String bucketName;
 

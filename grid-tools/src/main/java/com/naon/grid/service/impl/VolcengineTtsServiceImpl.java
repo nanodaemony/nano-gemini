@@ -223,21 +223,7 @@ public class VolcengineTtsServiceImpl implements VolcengineTtsService {
         log.info("响应内容:\n{}", rawResponse);
         log.info("=== 响应内容结束 ===");
 
-        // 尝试解析 JSON
-        JSONObject json = JSON.parseObject(rawResponse);
-        log.info("解析为 JSON 对象成功");
-
-        // 检查是否有错误
-        if (json.containsKey("code")) {
-            int code = json.getIntValue("code");
-            if (code != 0) {
-                String message = json.getString("message");
-                log.error("火山引擎返回错误: code={}, message={}", code, message);
-                throw new BadRequestException("火山引擎 TTS 错误: " + message);
-            }
-        }
-
-        // 尝试流式解析（因为响应可能是多行 JSON）
+        // 按行解析（响应是多行 JSON）
         java.io.ByteArrayOutputStream audioBuffer = new java.io.ByteArrayOutputStream();
         String[] lines = rawResponse.split("\\n");
         for (String line : lines) {
@@ -246,12 +232,26 @@ public class VolcengineTtsServiceImpl implements VolcengineTtsService {
             }
             try {
                 JSONObject chunk = JSON.parseObject(line);
+
+                // 检查是否有错误
+                if (chunk.containsKey("code")) {
+                    int code = chunk.getIntValue("code");
+                    if (code != 0 && code != 20000000) {
+                        String message = chunk.getString("message");
+                        log.error("火山引擎返回错误: code={}, message={}", code, message);
+                        throw new BadRequestException("火山引擎 TTS 错误: " + message);
+                    }
+                }
+
+                // 提取音频数据
                 String data = chunk.getString("data");
                 if (StringUtils.isNotBlank(data)) {
                     byte[] decoded = Base64.getDecoder().decode(data);
                     audioBuffer.write(decoded);
                     log.info("解析到音频块，大小: {} 字节", decoded.length);
                 }
+            } catch (BadRequestException e) {
+                throw e;
             } catch (Exception e) {
                 log.warn("跳过非 JSON 行: {}", line);
             }
@@ -260,13 +260,6 @@ public class VolcengineTtsServiceImpl implements VolcengineTtsService {
         if (audioBuffer.size() > 0) {
             log.info("音频数据总大小: {} 字节", audioBuffer.size());
             return audioBuffer.toByteArray();
-        }
-
-        // 如果流式没找到，尝试直接获取 data 字段
-        String data = json.getString("data");
-        if (StringUtils.isNotBlank(data)) {
-            log.info("找到 base64 音频数据，长度: {}", data.length());
-            return Base64.getDecoder().decode(data);
         }
 
         log.warn("响应中未找到音频数据");

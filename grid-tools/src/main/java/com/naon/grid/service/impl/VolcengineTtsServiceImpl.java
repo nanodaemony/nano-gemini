@@ -80,7 +80,7 @@ public class VolcengineTtsServiceImpl implements VolcengineTtsService {
         String apiRequestId = UUID.randomUUID().toString();
         String apiKey = StringUtils.isNotBlank(volcengineTtsConfig.getApiKey())
                 ? volcengineTtsConfig.getApiKey()
-                : System.getenv("VOLCENGINE_API_KEY");
+                : System.getProperty("VOLCENGINE_API_KEY");
 
         if (StringUtils.isBlank(apiKey)) {
             throw new BadRequestException("VOLCENGINE_API_KEY 未配置");
@@ -124,13 +124,35 @@ public class VolcengineTtsServiceImpl implements VolcengineTtsService {
             conn.setDoOutput(true);
             conn.setDoInput(true);
 
+            log.info("火山引擎请求 URL: {}", url);
+            log.info("火山引擎请求 Body: {}", requestBody);
+            log.info("X-Api-Resource-Id: {}", apiResourceId);
+
             try (OutputStream os = conn.getOutputStream()) {
                 os.write(requestBody.getBytes(StandardCharsets.UTF_8));
                 os.flush();
             }
 
             int responseCode = conn.getResponseCode();
+            log.info("火山引擎响应 Code: {}", responseCode);
+
+            // 打印响应头
+            log.info("=== 火山引擎响应头 ===");
+            conn.getHeaderFields().forEach((key, values) -> {
+                if (key != null) {
+                    log.info("{}: {}", key, String.join(", ", values));
+                }
+            });
+
             if (responseCode != 200) {
+                // 读取并打印错误响应
+                try (java.io.InputStream errorStream = conn.getErrorStream()) {
+                    if (errorStream != null) {
+                        String errorResponse = readAllBytes(errorStream);
+                        log.error("火山引擎错误响应: {}", errorResponse);
+                        throw new BadRequestException("火山引擎 TTS 请求失败: " + responseCode + " - " + errorResponse);
+                    }
+                }
                 throw new BadRequestException("火山引擎 TTS 请求失败: " + responseCode);
             }
 
@@ -138,6 +160,16 @@ public class VolcengineTtsServiceImpl implements VolcengineTtsService {
         } finally {
             conn.disconnect();
         }
+    }
+
+    private String readAllBytes(java.io.InputStream in) throws Exception {
+        java.io.ByteArrayOutputStream os = new java.io.ByteArrayOutputStream();
+        byte[] buffer = new byte[1024];
+        int len;
+        while ((len = in.read(buffer)) != -1) {
+            os.write(buffer, 0, len);
+        }
+        return os.toString(StandardCharsets.UTF_8.name());
     }
 
     private JSONObject buildVolcengineRequest(VolcengineTtsRequest request) {

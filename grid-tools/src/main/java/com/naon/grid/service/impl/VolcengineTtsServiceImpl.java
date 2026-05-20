@@ -38,10 +38,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.ByteArrayInputStream;
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Date;
@@ -62,10 +63,6 @@ public class VolcengineTtsServiceImpl implements VolcengineTtsService {
     private final OSS ossClient;
     private final TtsRecordRepository ttsRecordRepository;
     private final AliOssStorageRepository aliOssStorageRepository;
-
-    private final HttpClient httpClient = HttpClient.newBuilder()
-            .version(HttpClient.Version.HTTP_1_1)
-            .build();
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -94,25 +91,7 @@ public class VolcengineTtsServiceImpl implements VolcengineTtsService {
             String requestBody = volcengineRequest.toJSONString();
             log.debug("Volcengine TTS request: {}", requestBody);
 
-            HttpRequest httpRequest = HttpRequest.newBuilder()
-                    .uri(URI.create(volcengineTtsConfig.getBaseUrl()))
-                    .header("Content-Type", "application/json")
-                    .header("X-Api-Key", apiKey)
-                    .header("X-Api-Resource-Id", request.getApiResourceId())
-                    .header("X-Api-Request-Id", apiRequestId)
-                    .POST(HttpRequest.BodyPublishers.ofString(requestBody, StandardCharsets.UTF_8))
-                    .build();
-
-            HttpResponse<java.io.InputStream> response = httpClient.send(
-                    httpRequest,
-                    HttpResponse.BodyHandlers.ofInputStream()
-            );
-
-            if (response.statusCode() != 200) {
-                throw new BadRequestException("火山引擎 TTS 请求失败: " + response.statusCode());
-            }
-
-            byte[] audioBytes = parseVolcengineResponse(response.body());
+            byte[] audioBytes = sendVolcengineRequest(request.getApiResourceId(), apiKey, apiRequestId, requestBody);
             String finalAudioUrl = uploadToOss(audioBytes, request);
 
             TtsRecord record = new TtsRecord();
@@ -129,6 +108,35 @@ public class VolcengineTtsServiceImpl implements VolcengineTtsService {
         } catch (Exception e) {
             log.error("Volcengine TTS 合成失败: {}", e.getMessage(), e);
             throw new BadRequestException("语音合成失败: " + e.getMessage());
+        }
+    }
+
+    private byte[] sendVolcengineRequest(String apiResourceId, String apiKey, String apiRequestId, String requestBody) throws Exception {
+        URL url = new URL(volcengineTtsConfig.getBaseUrl());
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+
+        try {
+            conn.setRequestMethod("POST");
+            conn.setRequestProperty("Content-Type", "application/json");
+            conn.setRequestProperty("X-Api-Key", apiKey);
+            conn.setRequestProperty("X-Api-Resource-Id", apiResourceId);
+            conn.setRequestProperty("X-Api-Request-Id", apiRequestId);
+            conn.setDoOutput(true);
+            conn.setDoInput(true);
+
+            try (OutputStream os = conn.getOutputStream()) {
+                os.write(requestBody.getBytes(StandardCharsets.UTF_8));
+                os.flush();
+            }
+
+            int responseCode = conn.getResponseCode();
+            if (responseCode != 200) {
+                throw new BadRequestException("火山引擎 TTS 请求失败: " + responseCode);
+            }
+
+            return parseVolcengineResponse(conn.getInputStream());
+        } finally {
+            conn.disconnect();
         }
     }
 
@@ -176,8 +184,8 @@ public class VolcengineTtsServiceImpl implements VolcengineTtsService {
 
     private byte[] parseVolcengineResponse(java.io.InputStream inputStream) throws Exception {
         java.io.ByteArrayOutputStream audioBuffer = new java.io.ByteArrayOutputStream();
-        java.io.InputStreamReader isr = new java.io.InputStreamReader(inputStream, StandardCharsets.UTF_8);
-        java.io.BufferedReader reader = new java.io.BufferedReader(isr);
+        InputStreamReader isr = new InputStreamReader(inputStream, StandardCharsets.UTF_8);
+        BufferedReader reader = new BufferedReader(isr);
 
         StringBuilder jsonBuffer = new StringBuilder();
         int braceCount = 0;

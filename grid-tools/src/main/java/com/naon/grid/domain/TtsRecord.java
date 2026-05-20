@@ -61,8 +61,4 @@ public class TtsRecord extends BaseEntity implements Serializable {
 
     @ApiModelProperty(value = "阿里云请求 ID")
     private String requestId;
-
-    @ApiModelProperty(value = "错误信息")
-    @Column(columnDefinition = "text")
-    private String errorMsg;
 }

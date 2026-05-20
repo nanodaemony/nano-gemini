@@ -82,3 +82,8 @@ ali:
     timeformat: ${ALI_OSS_TIMEFORMAT:yyyy-MM}
   tts:
     api-key: ${DASHSCOPE_API_KEY:}
+volcengine:
+  tts:
+    api-key: ${VOLCENGINE_API_KEY:}
+    api-resource-id: seed-tts-2.0
+    base-url: https://openspeech.bytedance.com/api/v3/tts/unidirectional

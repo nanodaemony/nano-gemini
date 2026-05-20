@@ -61,4 +61,7 @@ public class TtsRecord extends BaseEntity implements Serializable {
 
     @ApiModelProperty(value = "阿里云请求 ID")
     private String requestId;
+
+    @ApiModelProperty(value = "TTS 厂商: aliyun, volcengine")
+    private String vendor = "aliyun";
 }

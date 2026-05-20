@@ -215,42 +215,53 @@ public class VolcengineTtsServiceImpl implements VolcengineTtsService {
     }
 
     private byte[] parseVolcengineResponse(java.io.InputStream inputStream) throws Exception {
-        java.io.ByteArrayOutputStream audioBuffer = new java.io.ByteArrayOutputStream();
-        InputStreamReader isr = new InputStreamReader(inputStream, StandardCharsets.UTF_8);
-        BufferedReader reader = new BufferedReader(isr);
+        // 先读取完整响应并打印
+        byte[] rawBytes = readAllBytesFromStream(inputStream);
+        String rawResponse = new String(rawBytes, StandardCharsets.UTF_8);
+        log.info("=== 火山引擎完整响应内容 ===");
+        log.info("响应长度: {} 字节", rawBytes.length);
+        log.info("响应内容:\n{}", rawResponse);
+        log.info("=== 响应内容结束 ===");
 
-        StringBuilder jsonBuffer = new StringBuilder();
-        int braceCount = 0;
-        boolean inJson = false;
+        // 尝试解析 JSON
+        try {
+            JSONObject json = JSON.parseObject(rawResponse);
+            log.info("解析为 JSON 对象成功");
 
-        int c;
-        while ((c = reader.read()) != -1) {
-            char ch = (char) c;
-
-            if (ch == '{') {
-                braceCount++;
-                inJson = true;
-                jsonBuffer.append(ch);
-            } else if (ch == '}') {
-                braceCount--;
-                jsonBuffer.append(ch);
-
-                if (braceCount == 0 && inJson) {
-                    JSONObject chunk = JSON.parseObject(jsonBuffer.toString());
-                    String data = chunk.getString("data");
-                    if (StringUtils.isNotBlank(data)) {
-                        byte[] decoded = Base64.getDecoder().decode(data);
-                        audioBuffer.write(decoded);
-                    }
-                    jsonBuffer.setLength(0);
-                    inJson = false;
+            // 检查是否有错误
+            if (json.containsKey("code")) {
+                int code = json.getIntValue("code");
+                if (code != 0) {
+                    String message = json.getString("message");
+                    log.error("火山引擎返回错误: code={}, message={}", code, message);
+                    throw new BadRequestException("火山引擎 TTS 错误: " + message);
                 }
-            } else if (inJson) {
-                jsonBuffer.append(ch);
             }
-        }
 
-        return audioBuffer.toByteArray();
+            // 尝试获取 data 字段
+            String data = json.getString("data");
+            if (StringUtils.isNotBlank(data)) {
+                log.info("找到 base64 音频数据，长度: {}", data.length());
+                return Base64.getDecoder().decode(data);
+            }
+
+            log.warn("响应中未找到音频数据");
+            return new byte[0];
+
+        } catch (Exception e) {
+            log.error("解析 JSON 失败: {}", e.getMessage());
+            throw new BadRequestException("无法解析火山引擎响应: " + rawResponse);
+        }
+    }
+
+    private byte[] readAllBytesFromStream(java.io.InputStream in) throws Exception {
+        java.io.ByteArrayOutputStream os = new java.io.ByteArrayOutputStream();
+        byte[] buffer = new byte[8192];
+        int len;
+        while ((len = in.read(buffer)) != -1) {
+            os.write(buffer, 0, len);
+        }
+        return os.toByteArray();
     }
 
     private String uploadToOss(byte[] audioBytes, VolcengineTtsRequest request) {

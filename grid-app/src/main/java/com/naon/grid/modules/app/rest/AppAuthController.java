@@ -31,7 +31,7 @@ import java.util.Map;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/app/auth")
-@Api(tags = "APP：认证接口")
+@Api(tags = "应用：认证接口")
 public class AppAuthController {
 
     private final AppAuthService appAuthService;

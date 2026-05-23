@@ -112,7 +112,7 @@ file:
     avatar: /home/eladmin/avatar/
   windows:
     path: C:\eladmin\file\
-    avatar: C:\eladmin\avatar\
+    avatar: C:\eladmin\avatar/
   # 文件大小 /M
   maxSize: 100
   avatarMaxSize: 5
@@ -134,4 +134,3 @@ amz:
     defaultBucket: 填写你的存储桶名称
     # 文件存储路径
     timeformat: yyyy-MM
-

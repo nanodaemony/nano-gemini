@@ -70,14 +70,6 @@
     <!-- 打包 -->
     <build>
         <plugins>
-            <plugin>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-maven-plugin</artifactId>
-                <configuration>
-                    <!-- 生成普通 jar 作为依赖，可执行 jar 使用 exec classifier -->
-                    <classifier>exec</classifier>
-                </configuration>
-            </plugin>
             <!-- 跳过单元测试 -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

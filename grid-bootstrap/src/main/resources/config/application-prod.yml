@@ -123,7 +123,7 @@ file:
     avatar: /home/eladmin/avatar/
   windows:
     path: C:\eladmin\file\
-    avatar: C:\eladmin\avatar\
+    avatar: C:\eladmin\avatar/
   # 文件大小 /M
   maxSize: 100
   avatarMaxSize: 5

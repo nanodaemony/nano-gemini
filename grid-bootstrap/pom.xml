@@ -7,14 +7,19 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>grid-app</artifactId>
-    <name>应用模块</name>
+    <artifactId>grid-bootstrap</artifactId>
+    <name>启动模块</name>
 
     <dependencies>
-        <!-- 系统模块 -->
+        <!-- 业务模块 -->
         <dependency>
             <groupId>com.naon.grid</groupId>
             <artifactId>grid-system</artifactId>
+            <version>2.7</version>
+        </dependency>
+        <dependency>
+            <groupId>com.naon.grid</groupId>
+            <artifactId>grid-app</artifactId>
             <version>2.7</version>
         </dependency>
     </dependencies>
@@ -22,6 +27,14 @@
     <!-- 打包 -->
     <build>
         <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <!-- 生成普通 jar 作为依赖，可执行 jar 使用 exec classifier -->
+                    <classifier>exec</classifier>
+                </configuration>
+            </plugin>
             <!-- 跳过单元测试 -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

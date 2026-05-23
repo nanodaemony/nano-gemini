@@ -10,9 +10,10 @@
     <modules>
         <module>grid-common</module>
         <module>grid-logging</module>
-        <module>grid-system</module>
         <module>grid-tools</module>
+        <module>grid-system</module>
         <module>grid-app</module>
+        <module>grid-bootstrap</module>
     </modules>
 
     <name>Little Grid</name>

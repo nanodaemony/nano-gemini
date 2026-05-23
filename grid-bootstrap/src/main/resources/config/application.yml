@@ -11,6 +11,9 @@ server:
     # 最小压缩响应大小（字节）
 
 spring:
+  main:
+    # 允许 bean 定义覆盖，解决 grid-system 和 grid-app 安全配置冲突
+    allow-bean-definition-overriding: true
   freemarker:
     check-template-location: false
   profiles:

@@ -1,3 +1,4 @@
+
 package com.naon.grid.modules.app.domain;
 
 import com.naon.grid.base.BaseEntity;
@@ -8,13 +9,9 @@ import javax.persistence.*;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Pattern;
 import java.io.Serializable;
 import java.util.Date;
 
-/**
- * APP用户实体
- */
 @Entity
 @Getter
 @Setter
@@ -28,22 +25,26 @@ public class GridUser extends BaseEntity implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotBlank(message = "用户名不能为空")
-    @Column(name = "username", nullable = false, unique = true, length = 50)
+    @Column(name = "username", unique = true, length = 50)
     private String username;
 
-    @NotBlank(message = "密码不能为空")
-    @Column(name = "password", nullable = false, length = 100)
+    @Column(name = "password", length = 100)
     private String password;
 
-    @NotBlank(message = "手机号不能为空")
-    @Pattern(regexp = "^1[3-9]\\d{9}$", message = "手机号格式不正确")
-    @Column(name = "phone", nullable = false, unique = true, length = 20)
+    @Column(name = "phone", unique = true, length = 20)
     private String phone;
 
-    @Email(message = "邮箱格式不正确")
+    @NotNull
+    @Column(name = "phone_verified", nullable = false)
+    private Integer phoneVerified = 0;
+
+    @Email
     @Column(name = "email", length = 100)
     private String email;
+
+    @NotNull
+    @Column(name = "email_verified", nullable = false)
+    private Integer emailVerified = 0;
 
     @Column(name = "nickname", length = 50)
     private String nickname;
@@ -66,10 +67,4 @@ public class GridUser extends BaseEntity implements Serializable {
 
     @Column(name = "last_login_ip", length = 50)
     private String lastLoginIp;
-
-    @Column(name = "wx_openid", length = 50)
-    private String wxOpenid;
-
-    @Column(name = "wx_unionid", length = 50)
-    private String wxUnionid;
 }

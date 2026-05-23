@@ -1,35 +1,36 @@
 package com.naon.grid.modules.app.security;
 
-import cn.hutool.core.date.DateField;
-import cn.hutool.core.date.DateUtil;
-import cn.hutool.core.util.IdUtil;
-import com.naon.grid.modules.security.config.SecurityProperties;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;
+import com.naon.grid.modules.security.config.SecurityProperties;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.security.Key;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Slf4j
 @Component
 public class AppTokenProvider implements InitializingBean {
 
-    public static final String TOKEN_PREFIX = "Bearer ";
-    public static final String AUTHORITIES_UID_KEY = "uid";
-    public static final String DEVICE_ID_KEY = "did";
+    public static final String AUTHORITIES_UID_KEY = "userId";
+    public static final String DEVICE_ID_KEY = "deviceId";
+    public static final String ROLES_KEY = "roles";
     public static final String TOKEN_TYPE_KEY = "type";
     public static final String TOKEN_TYPE_ACCESS = "access";
-    public static final String TOKEN_TYPE_REFRESH = "refresh";
 
     private Key signingKey;
     private JwtParser jwtParser;
     private final SecurityProperties properties;
+
+    @Value("${app.auth.token-expire-seconds:604800}")
+    private long tokenExpireSeconds;
 
     public AppTokenProvider(SecurityProperties properties) {
         this.properties = properties;
@@ -44,17 +45,21 @@ public class AppTokenProvider implements InitializingBean {
                 .build();
     }
 
-    public String createToken(Long userId, String username, String deviceId) {
+    public String createToken(Long userId, String username, String deviceId, List<String> roles) {
         Map<String, Object> claims = new HashMap<>();
         claims.put(AUTHORITIES_UID_KEY, userId);
         claims.put(DEVICE_ID_KEY, deviceId);
+        claims.put(ROLES_KEY, roles);
         claims.put(TOKEN_TYPE_KEY, TOKEN_TYPE_ACCESS);
-        claims.put("jti", IdUtil.simpleUUID());
+
+        long now = System.currentTimeMillis();
+        Date validity = new Date(now + tokenExpireSeconds * 1000);
 
         return Jwts.builder()
                 .setClaims(claims)
                 .setSubject(username)
-                .setIssuedAt(new Date())
+                .setIssuedAt(new Date(now))
+                .setExpiration(validity)
                 .signWith(signingKey, SignatureAlgorithm.HS512)
                 .compact();
     }
@@ -66,5 +71,26 @@ public class AppTokenProvider implements InitializingBean {
     public Long getUserIdFromToken(String token) {
         Claims claims = getClaims(token);
         return claims.get(AUTHORITIES_UID_KEY, Long.class);
+    }
+
+    @SuppressWarnings("unchecked")
+    public List<String> getRolesFromToken(String token) {
+        Claims claims = getClaims(token);
+        return claims.get(ROLES_KEY, List.class);
+    }
+
+    public String getDeviceIdFromToken(String token) {
+        Claims claims = getClaims(token);
+        return claims.get(DEVICE_ID_KEY, String.class);
+    }
+
+    public boolean validateToken(String token) {
+        try {
+            jwtParser.parseClaimsJws(token);
+            return true;
+        } catch (JwtException | IllegalArgumentException e) {
+            log.trace("Invalid JWT token: {}", e.getMessage());
+        }
+        return false;
     }
 }

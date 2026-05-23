@@ -37,4 +37,9 @@ public interface GridUserRepository extends JpaRepository<GridUser, Long>, JpaSp
      * 根据邮箱查询用户
      */
     Optional<GridUser> findByEmail(String email);
+
+    /**
+     * 根据邮箱判断是否存在
+     */
+    boolean existsByEmail(String email);
 }

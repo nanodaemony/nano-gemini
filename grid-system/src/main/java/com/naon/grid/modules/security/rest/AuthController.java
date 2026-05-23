@@ -50,6 +50,12 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletRequest;
+import java.security.KeyFactory;
+import java.security.PrivateKey;
+import java.security.interfaces.RSAPrivateCrtKey;
+import java.security.spec.PKCS8EncodedKeySpec;
+import java.security.spec.RSAPublicKeySpec;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -148,5 +154,36 @@ public class AuthController {
     public ResponseEntity<Object> logout(HttpServletRequest request) {
         onlineUserService.logout(tokenProvider.getToken(request));
         return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @ApiOperation("获取RSA公钥")
+    @AnonymousGetMapping(value = "/public-key")
+    public ResponseEntity<Map<String, String>> getPublicKey() {
+        Map<String, String> result = new HashMap<>();
+        result.put("publicKey", getPublicKeyFromPrivate(RsaProperties.privateKey));
+        return ResponseEntity.ok(result);
+    }
+
+    private String getPublicKeyFromPrivate(String privateKeyBase64) {
+        try {
+            byte[] privateKeyBytes = Base64.getDecoder().decode(privateKeyBase64);
+            PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(privateKeyBytes);
+            KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+            PrivateKey privateKey = keyFactory.generatePrivate(keySpec);
+
+            if (privateKey instanceof RSAPrivateCrtKey) {
+                RSAPrivateCrtKey rsaPrivateCrtKey = (RSAPrivateCrtKey) privateKey;
+                java.security.spec.RSAPublicKeySpec publicKeySpec =
+                    new java.security.spec.RSAPublicKeySpec(
+                        rsaPrivateCrtKey.getModulus(),
+                        rsaPrivateCrtKey.getPublicExponent()
+                    );
+                java.security.PublicKey publicKey = keyFactory.generatePublic(publicKeySpec);
+                return Base64.getEncoder().encodeToString(publicKey.getEncoded());
+            }
+            return null;
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to derive public key", e);
+        }
     }
 }

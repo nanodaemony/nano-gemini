@@ -1,21 +1,20 @@
 package com.naon.grid.modules.app.service.impl;
 
-import cn.hutool.core.bean.BeanUtil;
-import cn.hutool.core.util.StrUtil;
+import cn.hutool.core.util.IdUtil;
 import com.naon.grid.config.properties.RsaProperties;
 import com.naon.grid.exception.BadRequestException;
 import com.naon.grid.modules.app.domain.GridUser;
-import com.naon.grid.modules.app.enums.AppErrorCode;
-import com.naon.grid.modules.app.enums.AppUserStatus;
-import com.naon.grid.modules.app.enums.Gender;
+import com.naon.grid.modules.app.domain.GridUserRole;
+import com.naon.grid.modules.app.domain.GridUserToken;
 import com.naon.grid.modules.app.repository.GridUserRepository;
+import com.naon.grid.modules.app.repository.GridUserRoleRepository;
+import com.naon.grid.modules.app.repository.GridUserTokenRepository;
+import com.naon.grid.modules.app.security.AppTokenProvider;
 import com.naon.grid.modules.app.security.DeviceManager;
 import com.naon.grid.modules.app.service.AppAuthService;
 import com.naon.grid.modules.app.service.dto.*;
-import com.naon.grid.utils.RedisUtils;
 import com.naon.grid.utils.RsaUtils;
 import com.naon.grid.utils.StringUtils;
-import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -25,7 +24,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Date;
-import java.util.concurrent.TimeUnit;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -33,96 +34,134 @@ import java.util.concurrent.TimeUnit;
 public class AppAuthServiceImpl implements AppAuthService {
 
     private final GridUserRepository userRepository;
+    private final GridUserRoleRepository userRoleRepository;
+    private final GridUserTokenRepository userTokenRepository;
     private final PasswordEncoder passwordEncoder;
+    private final AppTokenProvider appTokenProvider;
     private final DeviceManager deviceManager;
-    private final RedisUtils redisUtils;
 
-    @Value("${app.auth.token-validity-in-seconds:604800}")
-    private long tokenValidityInSeconds;
+    @Value("${app.auth.token-expire-seconds:604800}")
+    private long tokenExpireSeconds;
+
+    @Value("${app.auth.refresh-token-expire-seconds:2592000}")
+    private long refreshTokenExpireSeconds;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public TokenDTO register(RegisterDTO registerDTO, HttpServletRequest request) {
-        // 检查用户名
-        if (userRepository.existsByUsername(registerDTO.getUsername())) {
-            throw new BadRequestException(AppErrorCode.USERNAME_EXISTS.getMessage());
+        if (userRepository.existsByEmail(registerDTO.getEmail())) {
+            throw new BadRequestException("邮箱已被注册");
         }
-        // 检查手机号
-        if (userRepository.existsByPhone(registerDTO.getPhone())) {
-            throw new BadRequestException(AppErrorCode.PHONE_EXISTS.getMessage());
-        }
-        // 解密密码
+
         String decryptedPassword;
         try {
             decryptedPassword = RsaUtils.decryptByPrivateKey(RsaProperties.privateKey, registerDTO.getPassword());
         } catch (Exception e) {
             throw new BadRequestException("密码解密失败");
         }
-        // 创建用户
+
         GridUser user = new GridUser();
-        user.setUsername(registerDTO.getUsername());
-        user.setPassword(passwordEncoder.encode(decryptedPassword));
-        user.setPhone(registerDTO.getPhone());
         user.setEmail(registerDTO.getEmail());
-        user.setNickname(StrUtil.isNotBlank(registerDTO.getNickname()) ? registerDTO.getNickname() : registerDTO.getUsername());
-        user.setGender(Gender.UNKNOWN.getCode());
-        user.setStatus(AppUserStatus.ENABLED.getCode());
+        user.setPassword(passwordEncoder.encode(decryptedPassword));
+        user.setNickname(registerDTO.getNickname() != null ? registerDTO.getNickname() : registerDTO.getEmail().split("@")[0]);
+        user.setGender(0);
+        user.setStatus(1);
         user.setRegisterIp(StringUtils.getIp(request));
-        userRepository.save(user);
-        // 生成Token
-        return generateToken(user, registerDTO.getDeviceId());
+        user = userRepository.save(user);
+
+        GridUserRole normalRole = new GridUserRole();
+        normalRole.setUserId(user.getId());
+        normalRole.setRoleCode("NORMAL");
+        normalRole.setRoleName("普通用户");
+        userRoleRepository.save(normalRole);
+
+        return generateToken(user, registerDTO.getDeviceId(), registerDTO.getDeviceName());
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public TokenDTO login(LoginDTO loginDTO, HttpServletRequest request) {
-        GridUser user = userRepository.findByPhone(loginDTO.getPhone())
-                .orElseThrow(() -> new BadRequestException(AppErrorCode.INVALID_CREDENTIALS.getMessage()));
-        if (AppUserStatus.DISABLED.getCode().equals(user.getStatus())) {
-            throw new BadRequestException(AppErrorCode.USER_DISABLED.getMessage());
+        GridUser user = userRepository.findByEmail(loginDTO.getEmail())
+                .orElseThrow(() -> new BadRequestException("邮箱或密码错误"));
+
+        if (user.getStatus() == 0) {
+            throw new BadRequestException("用户已被禁用");
         }
+
         String decryptedPassword;
         try {
             decryptedPassword = RsaUtils.decryptByPrivateKey(RsaProperties.privateKey, loginDTO.getPassword());
         } catch (Exception e) {
             throw new BadRequestException("密码解密失败");
         }
+
         if (!passwordEncoder.matches(decryptedPassword, user.getPassword())) {
-            throw new BadRequestException(AppErrorCode.INVALID_CREDENTIALS.getMessage());
+            throw new BadRequestException("邮箱或密码错误");
         }
+
         user.setLastLoginTime(new Date());
         user.setLastLoginIp(StringUtils.getIp(request));
         userRepository.save(user);
-        return generateToken(user, loginDTO.getDeviceId());
+
+        return generateToken(user, loginDTO.getDeviceId(), loginDTO.getDeviceName());
     }
 
     @Override
-    public void logout(Long userId, String deviceId) {
-        deviceManager.removeDevice(userId, deviceId);
-    }
-
-    @Override
+    @Transactional(rollbackFor = Exception.class)
     public TokenDTO refreshToken(String refreshToken) {
-        // 简化实现，实际需要解析refresh token
-        return null;
+        Optional<GridUserToken> tokenOpt = userTokenRepository.findByRefreshToken(refreshToken);
+        if (!tokenOpt.isPresent()) {
+            throw new BadRequestException("刷新令牌无效");
+        }
+
+        GridUserToken userToken = tokenOpt.get();
+        if (userToken.getExpireTime().before(new Date())) {
+            userTokenRepository.delete(userToken);
+            throw new BadRequestException("刷新令牌已过期");
+        }
+
+        GridUser user = userRepository.findById(userToken.getUserId())
+                .orElseThrow(() -> new BadRequestException("用户不存在"));
+
+        userTokenRepository.delete(userToken);
+
+        return generateToken(user, userToken.getDeviceId(), userToken.getDeviceName());
     }
 
-    private TokenDTO generateToken(GridUser user, String deviceId) {
-        // 简化实现
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void logout(Long userId, String deviceId) {
+        userTokenRepository.deleteByUserIdAndDeviceId(userId, deviceId);
+    }
+
+    private TokenDTO generateToken(GridUser user, String deviceId, String deviceName) {
+        List<String> roles = userRoleRepository.findByUserId(user.getId()).stream()
+                .map(GridUserRole::getRoleCode)
+                .collect(Collectors.toList());
+
+        String accessToken = appTokenProvider.createToken(user.getId(), user.getEmail(), deviceId, roles);
+        String refreshToken = IdUtil.simpleUUID();
+
+        Date expireTime = new Date(System.currentTimeMillis() + refreshTokenExpireSeconds * 1000);
+        deviceManager.registerDevice(user.getId(), deviceId, deviceName, refreshToken, accessToken, expireTime);
+
         TokenDTO tokenDTO = new TokenDTO();
-        tokenDTO.setToken("mock_token_" + user.getId());
-        tokenDTO.setRefreshToken("mock_refresh_" + user.getId());
-        tokenDTO.setExpiresIn(tokenValidityInSeconds);
-        tokenDTO.setUser(convertToDTO(user));
-        deviceManager.registerDevice(user.getId(), deviceId, tokenDTO.getToken());
+        tokenDTO.setAccessToken(accessToken);
+        tokenDTO.setRefreshToken(refreshToken);
+        tokenDTO.setExpiresIn(tokenExpireSeconds);
+        tokenDTO.setUser(convertToDTO(user, roles));
+
         return tokenDTO;
     }
 
-    private AppUserDTO convertToDTO(GridUser user) {
+    private AppUserDTO convertToDTO(GridUser user, List<String> roles) {
         AppUserDTO dto = new AppUserDTO();
-        BeanUtil.copyProperties(user, dto);
-        if (StrUtil.isNotBlank(user.getPhone())) {
-            dto.setPhone(user.getPhone().replaceAll("(\\d{3})\\d{4}(\\d{4})", "$1****$2"));
-        }
+        dto.setId(user.getId());
+        dto.setEmail(user.getEmail());
+        dto.setNickname(user.getNickname());
+        dto.setAvatar(user.getAvatar());
+        dto.setGender(user.getGender());
+        dto.setRoles(roles);
         return dto;
     }
 }

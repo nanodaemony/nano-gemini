@@ -38,19 +38,19 @@ public class VocabWordController {
 
     private final VocabWordService vocabWordService;
 
+    @Log("查询词汇详情")
+    @ApiOperation("根据ID查询词汇详情")
+    @AnonymousGetMapping("/{id}")
+    public ResponseEntity<VocabWordVO> findById(@PathVariable Integer id) {
+        return new ResponseEntity<>(toVO(vocabWordService.findById(id)), HttpStatus.OK);
+    }
+
     @Log("查询词汇列表")
     @ApiOperation("分页查询词汇列表")
     @AnonymousGetMapping
     public ResponseEntity<PageResult<VocabWordVO>> queryAll(VocabWordQueryRequest request, Pageable pageable) {
         PageResult<VocabWordDto> pageResult = vocabWordService.queryAll(toCriteria(request), pageable);
         return new ResponseEntity<>(new PageResult<>(toVOList(pageResult.getContent()), pageResult.getTotalElements()), HttpStatus.OK);
-    }
-
-    @Log("查询词汇详情")
-    @ApiOperation("根据ID查询词汇详情")
-    @AnonymousGetMapping("/{id}")
-    public ResponseEntity<VocabWordVO> findById(@PathVariable Integer id) {
-        return new ResponseEntity<>(toVO(vocabWordService.findById(id)), HttpStatus.OK);
     }
 
     @Log("新增词汇")
@@ -76,6 +76,7 @@ public class VocabWordController {
         dto.setAudioId(request.getAudioId());
         dto.setHskLevel(request.getHskLevel());
         dto.setSenses(toSenseDtoList(request.getSenses()));
+        dto.setExercises(toExerciseDtoList(request.getExercises()));
         return dto;
     }
 
@@ -98,7 +99,6 @@ public class VocabWordController {
         dto.setRelatedBackward(request.getRelatedBackward());
         dto.setSenseOrder(request.getSenseOrder());
         dto.setStructures(toStructureDtoList(request.getStructures()));
-        dto.setExercises(toExerciseDtoList(request.getExercises()));
         return dto;
     }
 
@@ -164,6 +164,7 @@ public class VocabWordController {
         vo.setAudioId(dto.getAudioId());
         vo.setHskLevel(dto.getHskLevel());
         vo.setSenses(toSenseVOList(dto.getSenses()));
+        vo.setExercises(toExerciseVOList(dto.getExercises()));
         vo.setCreateBy(dto.getCreateBy());
         vo.setUpdateBy(dto.getUpdateBy());
         vo.setCreateTime(dto.getCreateTime());
@@ -192,7 +193,6 @@ public class VocabWordController {
         vo.setRelatedBackward(dto.getRelatedBackward());
         vo.setSenseOrder(dto.getSenseOrder());
         vo.setStructures(toStructureVOList(dto.getStructures()));
-        vo.setExercises(toExerciseVOList(dto.getExercises()));
         vo.setCreateBy(dto.getCreateBy());
         vo.setUpdateBy(dto.getUpdateBy());
         vo.setCreateTime(dto.getCreateTime());

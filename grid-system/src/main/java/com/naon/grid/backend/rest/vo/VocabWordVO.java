@@ -33,6 +33,9 @@ public class VocabWordVO implements Serializable {
     @ApiModelProperty(value = "义项列表")
     private List<VocabSenseVO> senses;
 
+    @ApiModelProperty(value = "练习题列表")
+    private List<VocabExerciseVO> exercises;
+
     @ApiModelProperty(value = "创建人")
     private String createBy;
 
@@ -85,9 +88,6 @@ public class VocabWordVO implements Serializable {
 
         @ApiModelProperty(value = "搭配列表")
         private List<VocabStructureVO> structures;
-
-        @ApiModelProperty(value = "练习题列表")
-        private List<VocabExerciseVO> exercises;
 
         @ApiModelProperty(value = "创建人")
         private String createBy;

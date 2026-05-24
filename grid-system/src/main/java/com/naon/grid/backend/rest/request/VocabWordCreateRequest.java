@@ -28,6 +28,9 @@ public class VocabWordCreateRequest implements Serializable {
     @ApiModelProperty(value = "义项列表")
     private List<VocabSenseRequest> senses;
 
+    @ApiModelProperty(value = "练习题列表")
+    private List<VocabExerciseRequest> exercises;
+
     @Getter
     @Setter
     public static class VocabSenseRequest implements Serializable {
@@ -60,9 +63,6 @@ public class VocabWordCreateRequest implements Serializable {
 
         @ApiModelProperty(value = "搭配列表")
         private List<VocabStructureRequest> structures;
-
-        @ApiModelProperty(value = "练习题列表")
-        private List<VocabExerciseRequest> exercises;
     }
 
     @Getter

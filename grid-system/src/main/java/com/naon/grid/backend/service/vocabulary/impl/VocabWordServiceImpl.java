@@ -51,6 +51,14 @@ public class VocabWordServiceImpl implements VocabWordService {
         }
         vocabWordDto.setSenses(senseDtos);
 
+        List<VocabExerciseDto> exerciseDtos = new ArrayList<>();
+        List<VocabExercise> exercises = vocabExerciseRepository.findByWordId(id);
+        for (VocabExercise exercise : exercises) {
+            VocabExerciseDto exerciseDto = convertToExerciseDto(exercise);
+            exerciseDtos.add(exerciseDto);
+        }
+        vocabWordDto.setExercises(exerciseDtos);
+
         return vocabWordDto;
     }
 
@@ -79,12 +87,13 @@ public class VocabWordServiceImpl implements VocabWordService {
                     }
                 }
 
-                if (senseDto.getExercises() != null) {
-                    for (VocabExerciseDto exerciseDto : senseDto.getExercises()) {
-                        VocabExercise exercise = convertToExerciseEntity(exerciseDto, vocabWord.getId());
-                        vocabExerciseRepository.save(exercise);
-                    }
-                }
+            }
+        }
+
+        if (resources.getExercises() != null) {
+            for (VocabExerciseDto exerciseDto : resources.getExercises()) {
+                VocabExercise exercise = convertToExerciseEntity(exerciseDto, vocabWord.getId());
+                vocabExerciseRepository.save(exercise);
             }
         }
 
@@ -114,14 +123,6 @@ public class VocabWordServiceImpl implements VocabWordService {
             structureDtos.add(structureDto);
         }
         dto.setStructures(structureDtos);
-
-        List<VocabExerciseDto> exerciseDtos = new ArrayList<>();
-        List<VocabExercise> exercises = vocabExerciseRepository.findByWordId(sense.getWordId());
-        for (VocabExercise exercise : exercises) {
-            VocabExerciseDto exerciseDto = convertToExerciseDto(exercise);
-            exerciseDtos.add(exerciseDto);
-        }
-        dto.setExercises(exerciseDtos);
 
         return dto;
     }

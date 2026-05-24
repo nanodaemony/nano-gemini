@@ -46,7 +46,4 @@ public class VocabSenseDto extends BaseDTO implements Serializable {
 
     @ApiModelProperty(value = "搭配列表")
     private List<VocabStructureDto> structures;
-
-    @ApiModelProperty(value = "练习题列表")
-    private List<VocabExerciseDto> exercises;
 }

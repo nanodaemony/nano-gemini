@@ -108,13 +108,19 @@ public class SwaggerConfig {
     private SecurityContext getContextByPath() {
         Set<String> urls = AnonTagUtils.getAllAnonymousUrl(applicationContext);
         urls = urls.stream().filter(url -> !url.equals("/")).collect(Collectors.toSet());
-        String regExp = "^(?!" + apiPath + String.join("|" + apiPath, urls) + ").*$";
+        String regExp = "^(?!" + apiPath + urls.stream()
+                .map(this::escapeRegExp)
+                .collect(Collectors.joining("|" + apiPath)) + ").*$";
         return SecurityContext.builder()
                 .securityReferences(defaultAuth())
                 .operationSelector(o->o.requestMappingPattern()
                         // 排除不需要认证的接口
                         .matches(regExp))
                 .build();
+    }
+
+    private String escapeRegExp(String str) {
+        return str.replaceAll("[{}\\[\\]()\\\\+*?^$|.]", "\\\\$0");
     }
 
     private List<SecurityReference> defaultAuth() {

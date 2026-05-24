@@ -1,10 +1,13 @@
 package com.naon.grid.backend.rest.controller;
 
 import com.naon.grid.annotation.Log;
+import com.naon.grid.annotation.rest.AnonymousDeleteMapping;
 import com.naon.grid.annotation.rest.AnonymousGetMapping;
 import com.naon.grid.annotation.rest.AnonymousPostMapping;
+import com.naon.grid.annotation.rest.AnonymousPutMapping;
 import com.naon.grid.backend.rest.request.VocabWordCreateRequest;
 import com.naon.grid.backend.rest.request.VocabWordQueryRequest;
+import com.naon.grid.backend.rest.vo.VocabWordBaseVO;
 import com.naon.grid.backend.rest.vo.VocabWordCreateVO;
 import com.naon.grid.backend.rest.vo.VocabWordVO;
 import com.naon.grid.backend.service.vocabulary.VocabWordService;
@@ -48,9 +51,9 @@ public class VocabWordController {
     @Log("查询词汇列表")
     @ApiOperation("分页查询词汇列表")
     @AnonymousGetMapping
-    public ResponseEntity<PageResult<VocabWordVO>> queryAll(VocabWordQueryRequest request, Pageable pageable) {
+    public ResponseEntity<PageResult<VocabWordBaseVO>> queryAll(VocabWordQueryRequest request, Pageable pageable) {
         PageResult<VocabWordDto> pageResult = vocabWordService.queryAll(toCriteria(request), pageable);
-        return new ResponseEntity<>(new PageResult<>(toVOList(pageResult.getContent()), pageResult.getTotalElements()), HttpStatus.OK);
+        return new ResponseEntity<>(new PageResult<>(toBaseVOList(pageResult.getContent()), pageResult.getTotalElements()), HttpStatus.OK);
     }
 
     @Log("新增词汇")
@@ -60,6 +63,22 @@ public class VocabWordController {
         VocabWordCreateVO vo = new VocabWordCreateVO();
         vo.setId(vocabWordService.create(toDto(request)));
         return new ResponseEntity<>(vo, HttpStatus.CREATED);
+    }
+
+    @Log("更新词汇")
+    @ApiOperation("更新词汇")
+    @AnonymousPutMapping("/{id}")
+    public ResponseEntity<Object> update(@PathVariable Integer id, @RequestBody VocabWordCreateRequest request) {
+        vocabWordService.update(id, toDto(request));
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    @Log("删除词汇")
+    @ApiOperation("删除词汇")
+    @AnonymousDeleteMapping("/{id}")
+    public ResponseEntity<Object> delete(@PathVariable Integer id) {
+        vocabWordService.delete(id);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     private VocabWordQueryCriteria toCriteria(VocabWordQueryRequest request) {
@@ -151,8 +170,21 @@ public class VocabWordController {
         return dto;
     }
 
-    private List<VocabWordVO> toVOList(List<VocabWordDto> resources) {
-        return resources.stream().map(this::toVO).collect(Collectors.toList());
+    private List<VocabWordBaseVO> toBaseVOList(List<VocabWordDto> resources) {
+        return resources.stream().map(this::toBaseVO).collect(Collectors.toList());
+    }
+
+    private VocabWordBaseVO toBaseVO(VocabWordDto dto) {
+        VocabWordBaseVO vo = new VocabWordBaseVO();
+        vo.setId(dto.getId());
+        vo.setWord(dto.getWord());
+        vo.setWordTraditional(dto.getWordTraditional());
+        vo.setPinyin(dto.getPinyin());
+        vo.setAudioId(dto.getAudioId());
+        vo.setHskLevel(dto.getHskLevel());
+        vo.setCreateTime(dto.getCreateTime());
+        vo.setUpdateTime(dto.getUpdateTime());
+        return vo;
     }
 
     private VocabWordVO toVO(VocabWordDto dto) {

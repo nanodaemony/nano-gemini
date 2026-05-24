@@ -68,19 +68,56 @@ public class VocabWordServiceImpl implements VocabWordService {
         VocabWord vocabWord = vocabWordMapper.toEntity(resources);
         vocabWord = vocabWordRepository.save(vocabWord);
 
+        saveChildren(resources, vocabWord.getId());
+
+        return vocabWord.getId();
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void update(Integer id, VocabWordDto resources) {
+        VocabWord vocabWord = vocabWordRepository.findById(id).orElseGet(VocabWord::new);
+        if (vocabWord.getId() == null) {
+            throw new EntityNotFoundException(VocabWord.class, "id", String.valueOf(id));
+        }
+
+        vocabWord.setWord(resources.getWord());
+        vocabWord.setWordTraditional(resources.getWordTraditional());
+        vocabWord.setPinyin(resources.getPinyin());
+        vocabWord.setAudioId(resources.getAudioId());
+        vocabWord.setHskLevel(resources.getHskLevel());
+        vocabWordRepository.save(vocabWord);
+
+        deleteChildren(id);
+        saveChildren(resources, id);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void delete(Integer id) {
+        VocabWord vocabWord = vocabWordRepository.findById(id).orElseGet(VocabWord::new);
+        if (vocabWord.getId() == null) {
+            throw new EntityNotFoundException(VocabWord.class, "id", String.valueOf(id));
+        }
+
+        deleteChildren(id);
+        vocabWordRepository.delete(vocabWord);
+    }
+
+    private void saveChildren(VocabWordDto resources, Integer wordId) {
         if (resources.getSenses() != null) {
             for (VocabSenseDto senseDto : resources.getSenses()) {
-                VocabSense sense = convertToSenseEntity(senseDto, vocabWord.getId());
+                VocabSense sense = convertToSenseEntity(senseDto, wordId);
                 sense = vocabSenseRepository.save(sense);
 
                 if (senseDto.getStructures() != null) {
                     for (VocabStructureDto structureDto : senseDto.getStructures()) {
-                        VocabStructure structure = convertToStructureEntity(structureDto, vocabWord.getId(), sense.getId());
+                        VocabStructure structure = convertToStructureEntity(structureDto, wordId, sense.getId());
                         structure = vocabStructureRepository.save(structure);
 
                         if (structureDto.getExamples() != null) {
                             for (VocabExampleDto exampleDto : structureDto.getExamples()) {
-                                VocabExample example = convertToExampleEntity(exampleDto, vocabWord.getId(), sense.getId(), structure.getId());
+                                VocabExample example = convertToExampleEntity(exampleDto, wordId, sense.getId(), structure.getId());
                                 vocabExampleRepository.save(example);
                             }
                         }
@@ -92,12 +129,17 @@ public class VocabWordServiceImpl implements VocabWordService {
 
         if (resources.getExercises() != null) {
             for (VocabExerciseDto exerciseDto : resources.getExercises()) {
-                VocabExercise exercise = convertToExerciseEntity(exerciseDto, vocabWord.getId());
+                VocabExercise exercise = convertToExerciseEntity(exerciseDto, wordId);
                 vocabExerciseRepository.save(exercise);
             }
         }
+    }
 
-        return vocabWord.getId();
+    private void deleteChildren(Integer wordId) {
+        vocabExampleRepository.deleteAll(vocabExampleRepository.findByWordId(wordId));
+        vocabStructureRepository.deleteAll(vocabStructureRepository.findByWordId(wordId));
+        vocabSenseRepository.deleteAll(vocabSenseRepository.findByWordId(wordId));
+        vocabExerciseRepository.deleteAll(vocabExerciseRepository.findByWordId(wordId));
     }
 
     private VocabSenseDto convertToSenseDto(VocabSense sense) {

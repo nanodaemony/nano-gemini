@@ -26,7 +26,7 @@ public class CharCharacter implements Serializable {
     private Integer sequenceNo;
 
     @NotBlank
-    @Column(name = "character", nullable = false, length = 10)
+    @Column(name = "`character`", nullable = false, length = 10)
     private String character;
 
     @Column(name = "level", length = 20)
@@ -54,9 +54,9 @@ public class CharCharacter implements Serializable {
     @Column(name = "desc_translations", columnDefinition = "text")
     private String descTranslations;
 
-    @Column(name = "create_time")
+    @Column(name = "create_time", insertable = false, updatable = false)
     private Timestamp createTime;
 
-    @Column(name = "update_time")
+    @Column(name = "update_time", insertable = false, updatable = false)
     private Timestamp updateTime;
 }

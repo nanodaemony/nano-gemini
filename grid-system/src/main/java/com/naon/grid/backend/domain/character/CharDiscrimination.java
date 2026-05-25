@@ -39,9 +39,9 @@ public class CharDiscrimination implements Serializable {
     @Column(name = "comparison_translations", columnDefinition = "text")
     private String comparisonTranslations;
 
-    @Column(name = "create_time")
+    @Column(name = "create_time", insertable = false, updatable = false)
     private Timestamp createTime;
 
-    @Column(name = "update_time")
+    @Column(name = "update_time", insertable = false, updatable = false)
     private Timestamp updateTime;
 }

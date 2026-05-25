@@ -54,9 +54,9 @@ public class CharWord implements Serializable {
     @Column(name = "example_image", length = 255)
     private String exampleImage;
 
-    @Column(name = "create_time")
+    @Column(name = "create_time", insertable = false, updatable = false)
     private Timestamp createTime;
 
-    @Column(name = "update_time")
+    @Column(name = "update_time", insertable = false, updatable = false)
     private Timestamp updateTime;
 }

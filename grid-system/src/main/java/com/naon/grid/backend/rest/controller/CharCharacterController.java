@@ -111,6 +111,7 @@ public class CharCharacterController {
 
     private CharDiscriminationDto toDiscriminationDto(CharCharacterCreateRequest.CharDiscriminationRequest request) {
         CharDiscriminationDto dto = new CharDiscriminationDto();
+        dto.setId(request.getId());
         dto.setDiscrimChar(request.getDiscrimChar());
         dto.setDiscrimPinyin(request.getDiscrimPinyin());
         dto.setDiscrimCharTranslations(request.getDiscrimCharTranslations());
@@ -127,6 +128,7 @@ public class CharCharacterController {
 
     private CharWordDto toWordDto(CharCharacterCreateRequest.CharWordRequest request) {
         CharWordDto dto = new CharWordDto();
+        dto.setId(request.getId());
         dto.setWordItem(request.getWordItem());
         dto.setLevel(request.getLevel());
         dto.setPinyin(request.getPinyin());

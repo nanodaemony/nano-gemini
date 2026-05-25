@@ -12,6 +12,7 @@ import com.naon.grid.backend.service.character.dto.CharCharacterQueryCriteria;
 import com.naon.grid.backend.service.character.dto.CharDiscriminationDto;
 import com.naon.grid.backend.service.character.dto.CharWordDto;
 import com.naon.grid.backend.service.character.mapstruct.CharCharacterMapper;
+import com.naon.grid.exception.BadRequestException;
 import com.naon.grid.exception.EntityNotFoundException;
 import com.naon.grid.utils.PageResult;
 import com.naon.grid.utils.PageUtil;
@@ -23,7 +24,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -83,8 +89,8 @@ public class CharCharacterServiceImpl implements CharCharacterService {
         charCharacter.setCharDesc(resources.getCharDesc());
         charCharacter.setDescTranslations(resources.getDescTranslations());
         charCharacterRepository.save(charCharacter);
-        deleteChildren(id);
-        saveChildren(resources, id);
+        syncDiscriminations(id, resources.getDiscriminations());
+        syncWords(id, resources.getWords());
     }
 
     @Override
@@ -116,6 +122,82 @@ public class CharCharacterServiceImpl implements CharCharacterService {
     private void deleteChildren(Integer charId) {
         charDiscriminationRepository.deleteAll(charDiscriminationRepository.findByCharId(charId));
         charWordRepository.deleteAll(charWordRepository.findByCharId(charId));
+    }
+
+    private void syncDiscriminations(Integer charId, List<CharDiscriminationDto> submittedDtos) {
+        List<CharDiscriminationDto> submitted = submittedDtos == null ? Collections.emptyList() : submittedDtos;
+        List<CharDiscrimination> existing = charDiscriminationRepository.findByCharId(charId);
+        Map<Integer, CharDiscrimination> existingMap = new HashMap<>();
+        for (CharDiscrimination discrimination : existing) {
+            existingMap.put(discrimination.getId(), discrimination);
+        }
+
+        Set<Integer> submittedIds = new HashSet<>();
+        List<CharDiscrimination> toSave = new ArrayList<>();
+
+        for (CharDiscriminationDto dto : submitted) {
+            if (dto.getId() == null) {
+                toSave.add(convertToDiscriminationEntity(dto, charId));
+                continue;
+            }
+            if (!submittedIds.add(dto.getId())) {
+                throw new BadRequestException("辨析ID重复: " + dto.getId());
+            }
+            CharDiscrimination discrimination = existingMap.get(dto.getId());
+            if (discrimination == null) {
+                throw new BadRequestException("辨析ID不属于当前汉字: " + dto.getId());
+            }
+            updateDiscrimination(discrimination, dto);
+            toSave.add(discrimination);
+        }
+
+        List<CharDiscrimination> toDelete = new ArrayList<>();
+        for (CharDiscrimination discrimination : existing) {
+            if (!submittedIds.contains(discrimination.getId())) {
+                toDelete.add(discrimination);
+            }
+        }
+
+        charDiscriminationRepository.deleteAll(toDelete);
+        charDiscriminationRepository.saveAll(toSave);
+    }
+
+    private void syncWords(Integer charId, List<CharWordDto> submittedDtos) {
+        List<CharWordDto> submitted = submittedDtos == null ? Collections.emptyList() : submittedDtos;
+        List<CharWord> existing = charWordRepository.findByCharId(charId);
+        Map<Integer, CharWord> existingMap = new HashMap<>();
+        for (CharWord word : existing) {
+            existingMap.put(word.getId(), word);
+        }
+
+        Set<Integer> submittedIds = new HashSet<>();
+        List<CharWord> toSave = new ArrayList<>();
+
+        for (CharWordDto dto : submitted) {
+            if (dto.getId() == null) {
+                toSave.add(convertToWordEntity(dto, charId));
+                continue;
+            }
+            if (!submittedIds.add(dto.getId())) {
+                throw new BadRequestException("组词ID重复: " + dto.getId());
+            }
+            CharWord word = existingMap.get(dto.getId());
+            if (word == null) {
+                throw new BadRequestException("组词ID不属于当前汉字: " + dto.getId());
+            }
+            updateWord(word, dto);
+            toSave.add(word);
+        }
+
+        List<CharWord> toDelete = new ArrayList<>();
+        for (CharWord word : existing) {
+            if (!submittedIds.contains(word.getId())) {
+                toDelete.add(word);
+            }
+        }
+
+        charWordRepository.deleteAll(toDelete);
+        charWordRepository.saveAll(toSave);
     }
 
     private List<CharDiscriminationDto> convertToDiscriminationDtos(List<CharDiscrimination> discriminations) {
@@ -165,6 +247,25 @@ public class CharCharacterServiceImpl implements CharCharacterService {
         dto.setCreateTime(word.getCreateTime());
         dto.setUpdateTime(word.getUpdateTime());
         return dto;
+    }
+
+    private void updateDiscrimination(CharDiscrimination entity, CharDiscriminationDto dto) {
+        entity.setDiscrimChar(dto.getDiscrimChar());
+        entity.setDiscrimPinyin(dto.getDiscrimPinyin());
+        entity.setDiscrimCharTranslations(dto.getDiscrimCharTranslations());
+        entity.setComparisonTranslations(dto.getComparisonTranslations());
+    }
+
+    private void updateWord(CharWord entity, CharWordDto dto) {
+        entity.setWordItem(dto.getWordItem());
+        entity.setLevel(dto.getLevel());
+        entity.setPinyin(dto.getPinyin());
+        entity.setPartOfSpeech(dto.getPartOfSpeech());
+        entity.setWordItemTranslations(dto.getWordItemTranslations());
+        entity.setExampleSentence(dto.getExampleSentence());
+        entity.setExamplePinyin(dto.getExamplePinyin());
+        entity.setExampleTranslations(dto.getExampleTranslations());
+        entity.setExampleImage(dto.getExampleImage());
     }
 
     private CharDiscrimination convertToDiscriminationEntity(CharDiscriminationDto dto, Integer charId) {

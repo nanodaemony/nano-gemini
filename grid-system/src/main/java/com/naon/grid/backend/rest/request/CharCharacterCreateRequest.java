@@ -50,6 +50,9 @@ public class CharCharacterCreateRequest implements Serializable {
     @Getter
     @Setter
     public static class CharDiscriminationRequest implements Serializable {
+        @ApiModelProperty(value = "辨析唯一ID")
+        private Integer id;
+
         @ApiModelProperty(value = "辨析汉字")
         private String discrimChar;
 
@@ -66,6 +69,9 @@ public class CharCharacterCreateRequest implements Serializable {
     @Getter
     @Setter
     public static class CharWordRequest implements Serializable {
+        @ApiModelProperty(value = "组词唯一ID")
+        private Integer id;
+
         @ApiModelProperty(value = "组词")
         private String wordItem;
 

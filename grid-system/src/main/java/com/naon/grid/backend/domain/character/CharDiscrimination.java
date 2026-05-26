@@ -1,5 +1,6 @@
 package com.naon.grid.backend.domain.character;
 
+import com.naon.grid.enums.StatusEnum;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.Setter;
@@ -44,4 +45,8 @@ public class CharDiscrimination implements Serializable {
 
     @Column(name = "update_time", insertable = false, updatable = false)
     private Timestamp updateTime;
+
+    @Column(name = "status")
+    @ApiModelProperty(value = "状态: 1=可用, 0=不可用")
+    private Integer status = StatusEnum.ENABLED.getCode();
 }

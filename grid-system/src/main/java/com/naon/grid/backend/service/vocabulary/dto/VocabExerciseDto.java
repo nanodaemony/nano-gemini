@@ -30,4 +30,7 @@ public class VocabExerciseDto extends BaseDTO implements Serializable {
 
     @ApiModelProperty(value = "练习题目排序权重")
     private Integer exerciseOrder;
+
+    @ApiModelProperty(value = "状态: 1=可用, 0=不可用")
+    private Integer status;
 }

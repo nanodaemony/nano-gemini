@@ -34,4 +34,7 @@ public class CharDiscriminationDto implements Serializable {
 
     @ApiModelProperty(value = "更新时间")
     private Timestamp updateTime;
+
+    @ApiModelProperty(value = "状态: 1=可用, 0=不可用")
+    private Integer status;
 }

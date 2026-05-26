@@ -9,4 +9,5 @@ import java.util.List;
 @Repository
 public interface CharWordRepository extends JpaRepository<CharWord, Integer> {
     List<CharWord> findByCharId(Integer charId);
+    List<CharWord> findByCharIdAndStatus(Integer charId, Integer status);
 }

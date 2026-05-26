@@ -50,4 +50,7 @@ public class CharCharacterDto extends BaseDTO implements Serializable {
 
     @ApiModelProperty(value = "组词列表")
     private List<CharWordDto> words;
+
+    @ApiModelProperty(value = "状态: 1=可用, 0=不可用")
+    private Integer status;
 }

@@ -12,6 +12,7 @@ import com.naon.grid.backend.service.character.dto.CharCharacterQueryCriteria;
 import com.naon.grid.backend.service.character.dto.CharDiscriminationDto;
 import com.naon.grid.backend.service.character.dto.CharWordDto;
 import com.naon.grid.backend.service.character.mapstruct.CharCharacterMapper;
+import com.naon.grid.enums.StatusEnum;
 import com.naon.grid.exception.BadRequestException;
 import com.naon.grid.exception.EntityNotFoundException;
 import com.naon.grid.utils.PageResult;
@@ -22,6 +23,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import javax.persistence.criteria.Predicate;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -42,7 +45,11 @@ public class CharCharacterServiceImpl implements CharCharacterService {
 
     @Override
     public PageResult<CharCharacterDto> queryAll(CharCharacterQueryCriteria criteria, Pageable pageable) {
-        Page<CharCharacter> page = charCharacterRepository.findAll((root, criteriaQuery, criteriaBuilder) -> QueryHelp.getPredicate(root, criteria, criteriaBuilder), pageable);
+        Page<CharCharacter> page = charCharacterRepository.findAll((root, criteriaQuery, criteriaBuilder) -> {
+            Predicate basePredicate = QueryHelp.getPredicate(root, criteria, criteriaBuilder);
+            Predicate statusPredicate = criteriaBuilder.equal(root.get("status"), StatusEnum.ENABLED.getCode());
+            return criteriaBuilder.and(basePredicate, statusPredicate);
+        }, pageable);
         return PageUtil.toPage(page.map(charCharacterMapper::toDto));
     }
 
@@ -53,12 +60,12 @@ public class CharCharacterServiceImpl implements CharCharacterService {
             throw new EntityNotFoundException(CharCharacter.class, "id", String.valueOf(id));
         }
         CharCharacter charCharacter = charCharacterRepository.findById(id).orElseGet(CharCharacter::new);
-        if (charCharacter.getId() == null) {
+        if (charCharacter.getId() == null || StatusEnum.DISABLED.getCode().equals(charCharacter.getStatus())) {
             throw new EntityNotFoundException(CharCharacter.class, "id", String.valueOf(id));
         }
         CharCharacterDto charCharacterDto = charCharacterMapper.toDto(charCharacter);
-        charCharacterDto.setDiscriminations(convertToDiscriminationDtos(charDiscriminationRepository.findByCharId(id)));
-        charCharacterDto.setWords(convertToWordDtos(charWordRepository.findByCharId(id)));
+        charCharacterDto.setDiscriminations(convertToDiscriminationDtos(charDiscriminationRepository.findByCharIdAndStatus(id, StatusEnum.ENABLED.getCode())));
+        charCharacterDto.setWords(convertToWordDtos(charWordRepository.findByCharIdAndStatus(id, StatusEnum.ENABLED.getCode())));
         return charCharacterDto;
     }
 
@@ -101,7 +108,8 @@ public class CharCharacterServiceImpl implements CharCharacterService {
             throw new EntityNotFoundException(CharCharacter.class, "id", String.valueOf(id));
         }
         deleteChildren(id);
-        charCharacterRepository.delete(charCharacter);
+        charCharacter.setStatus(StatusEnum.DISABLED.getCode());
+        charCharacterRepository.save(charCharacter);
     }
 
     private void saveChildren(CharCharacterDto resources, Integer charId) {
@@ -120,13 +128,21 @@ public class CharCharacterServiceImpl implements CharCharacterService {
     }
 
     private void deleteChildren(Integer charId) {
-        charDiscriminationRepository.deleteAll(charDiscriminationRepository.findByCharId(charId));
-        charWordRepository.deleteAll(charWordRepository.findByCharId(charId));
+        List<CharDiscrimination> discriminations = charDiscriminationRepository.findByCharIdAndStatus(charId, StatusEnum.ENABLED.getCode());
+        for (CharDiscrimination d : discriminations) {
+            d.setStatus(StatusEnum.DISABLED.getCode());
+            charDiscriminationRepository.save(d);
+        }
+        List<CharWord> words = charWordRepository.findByCharIdAndStatus(charId, StatusEnum.ENABLED.getCode());
+        for (CharWord w : words) {
+            w.setStatus(StatusEnum.DISABLED.getCode());
+            charWordRepository.save(w);
+        }
     }
 
     private void syncDiscriminations(Integer charId, List<CharDiscriminationDto> submittedDtos) {
         List<CharDiscriminationDto> submitted = submittedDtos == null ? Collections.emptyList() : submittedDtos;
-        List<CharDiscrimination> existing = charDiscriminationRepository.findByCharId(charId);
+        List<CharDiscrimination> existing = charDiscriminationRepository.findByCharIdAndStatus(charId, StatusEnum.ENABLED.getCode());
         Map<Integer, CharDiscrimination> existingMap = new HashMap<>();
         for (CharDiscrimination discrimination : existing) {
             existingMap.put(discrimination.getId(), discrimination);
@@ -158,13 +174,16 @@ public class CharCharacterServiceImpl implements CharCharacterService {
             }
         }
 
-        charDiscriminationRepository.deleteAll(toDelete);
+        for (CharDiscrimination d : toDelete) {
+            d.setStatus(StatusEnum.DISABLED.getCode());
+            charDiscriminationRepository.save(d);
+        }
         charDiscriminationRepository.saveAll(toSave);
     }
 
     private void syncWords(Integer charId, List<CharWordDto> submittedDtos) {
         List<CharWordDto> submitted = submittedDtos == null ? Collections.emptyList() : submittedDtos;
-        List<CharWord> existing = charWordRepository.findByCharId(charId);
+        List<CharWord> existing = charWordRepository.findByCharIdAndStatus(charId, StatusEnum.ENABLED.getCode());
         Map<Integer, CharWord> existingMap = new HashMap<>();
         for (CharWord word : existing) {
             existingMap.put(word.getId(), word);
@@ -196,7 +215,10 @@ public class CharCharacterServiceImpl implements CharCharacterService {
             }
         }
 
-        charWordRepository.deleteAll(toDelete);
+        for (CharWord w : toDelete) {
+            w.setStatus(StatusEnum.DISABLED.getCode());
+            charWordRepository.save(w);
+        }
         charWordRepository.saveAll(toSave);
     }
 
@@ -219,6 +241,7 @@ public class CharCharacterServiceImpl implements CharCharacterService {
         dto.setComparisonTranslations(discrimination.getComparisonTranslations());
         dto.setCreateTime(discrimination.getCreateTime());
         dto.setUpdateTime(discrimination.getUpdateTime());
+        dto.setStatus(discrimination.getStatus());
         return dto;
     }
 
@@ -246,6 +269,7 @@ public class CharCharacterServiceImpl implements CharCharacterService {
         dto.setExampleImage(word.getExampleImage());
         dto.setCreateTime(word.getCreateTime());
         dto.setUpdateTime(word.getUpdateTime());
+        dto.setStatus(word.getStatus());
         return dto;
     }
 

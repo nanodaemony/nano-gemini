@@ -3,6 +3,7 @@ package com.naon.grid.backend.service.vocabulary.impl;
 import com.naon.grid.backend.domain.vocabulary.*;
 import com.naon.grid.backend.repo.vocabulary.*;
 import com.naon.grid.backend.service.vocabulary.dto.*;
+import com.naon.grid.enums.StatusEnum;
 import lombok.RequiredArgsConstructor;
 import com.naon.grid.utils.PageResult;
 import com.naon.grid.utils.PageUtil;
@@ -15,6 +16,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import javax.persistence.criteria.Predicate;
 
 import java.util.*;
 
@@ -31,7 +34,11 @@ public class VocabWordServiceImpl implements VocabWordService {
 
     @Override
     public PageResult<VocabWordDto> queryAll(VocabWordQueryCriteria criteria, Pageable pageable) {
-        Page<VocabWord> page = vocabWordRepository.findAll((root, criteriaQuery, criteriaBuilder) -> QueryHelp.getPredicate(root, criteria, criteriaBuilder), pageable);
+        Page<VocabWord> page = vocabWordRepository.findAll((root, criteriaQuery, criteriaBuilder) -> {
+            Predicate basePredicate = QueryHelp.getPredicate(root, criteria, criteriaBuilder);
+            Predicate statusPredicate = criteriaBuilder.equal(root.get("status"), StatusEnum.ENABLED.getCode());
+            return criteriaBuilder.and(basePredicate, statusPredicate);
+        }, pageable);
         return PageUtil.toPage(page.map(vocabWordMapper::toDto));
     }
 
@@ -39,13 +46,13 @@ public class VocabWordServiceImpl implements VocabWordService {
     @Transactional(rollbackFor = Exception.class)
     public VocabWordDto findById(Integer id) {
         VocabWord vocabWord = vocabWordRepository.findById(id).orElseGet(VocabWord::new);
-        if (vocabWord.getId() == null) {
+        if (vocabWord.getId() == null || StatusEnum.DISABLED.getCode().equals(vocabWord.getStatus())) {
             throw new EntityNotFoundException(VocabWord.class, "id", String.valueOf(id));
         }
         VocabWordDto vocabWordDto = vocabWordMapper.toDto(vocabWord);
 
         List<VocabSenseDto> senseDtos = new ArrayList<>();
-        List<VocabSense> senses = vocabSenseRepository.findByWordId(id);
+        List<VocabSense> senses = vocabSenseRepository.findByWordIdAndStatus(id, StatusEnum.ENABLED.getCode());
         for (VocabSense sense : senses) {
             VocabSenseDto senseDto = convertToSenseDto(sense);
             senseDtos.add(senseDto);
@@ -53,7 +60,7 @@ public class VocabWordServiceImpl implements VocabWordService {
         vocabWordDto.setSenses(senseDtos);
 
         List<VocabExerciseDto> exerciseDtos = new ArrayList<>();
-        List<VocabExercise> exercises = vocabExerciseRepository.findByWordId(id);
+        List<VocabExercise> exercises = vocabExerciseRepository.findByWordIdAndStatus(id, StatusEnum.ENABLED.getCode());
         for (VocabExercise exercise : exercises) {
             VocabExerciseDto exerciseDto = convertToExerciseDto(exercise);
             exerciseDtos.add(exerciseDto);
@@ -102,7 +109,8 @@ public class VocabWordServiceImpl implements VocabWordService {
         }
 
         deleteChildren(id);
-        vocabWordRepository.delete(vocabWord);
+        vocabWord.setStatus(StatusEnum.DISABLED.getCode());
+        vocabWordRepository.save(vocabWord);
     }
 
     private void saveChildren(VocabWordDto resources, Integer wordId) {
@@ -137,15 +145,31 @@ public class VocabWordServiceImpl implements VocabWordService {
     }
 
     private void deleteChildren(Integer wordId) {
-        vocabExampleRepository.deleteAll(vocabExampleRepository.findByWordId(wordId));
-        vocabStructureRepository.deleteAll(vocabStructureRepository.findByWordId(wordId));
-        vocabSenseRepository.deleteAll(vocabSenseRepository.findByWordId(wordId));
-        vocabExerciseRepository.deleteAll(vocabExerciseRepository.findByWordId(wordId));
+        List<VocabExample> examples = vocabExampleRepository.findByWordId(wordId);
+        for (VocabExample e : examples) {
+            e.setStatus(StatusEnum.DISABLED.getCode());
+            vocabExampleRepository.save(e);
+        }
+        List<VocabStructure> structures = vocabStructureRepository.findByWordId(wordId);
+        for (VocabStructure s : structures) {
+            s.setStatus(StatusEnum.DISABLED.getCode());
+            vocabStructureRepository.save(s);
+        }
+        List<VocabSense> senses = vocabSenseRepository.findByWordId(wordId);
+        for (VocabSense s : senses) {
+            s.setStatus(StatusEnum.DISABLED.getCode());
+            vocabSenseRepository.save(s);
+        }
+        List<VocabExercise> exercises = vocabExerciseRepository.findByWordId(wordId);
+        for (VocabExercise e : exercises) {
+            e.setStatus(StatusEnum.DISABLED.getCode());
+            vocabExerciseRepository.save(e);
+        }
     }
 
     private void syncSenses(Integer wordId, List<VocabSenseDto> submittedDtos) {
         List<VocabSenseDto> submitted = submittedDtos == null ? Collections.emptyList() : submittedDtos;
-        List<VocabSense> existing = vocabSenseRepository.findByWordId(wordId);
+        List<VocabSense> existing = vocabSenseRepository.findByWordIdAndStatus(wordId, StatusEnum.ENABLED.getCode());
         Map<Integer, VocabSense> existingMap = new HashMap<>();
         for (VocabSense sense : existing) {
             existingMap.put(sense.getId(), sense);
@@ -182,17 +206,28 @@ public class VocabWordServiceImpl implements VocabWordService {
         List<VocabSense> toDelete = new ArrayList<>();
         for (VocabSense sense : existing) {
             if (!submittedIds.contains(sense.getId())) {
-                vocabExampleRepository.deleteAll(vocabExampleRepository.findBySenseId(sense.getId()));
-                vocabStructureRepository.deleteAll(vocabStructureRepository.findBySenseId(sense.getId()));
+                List<VocabExample> examples = vocabExampleRepository.findBySenseId(sense.getId());
+                for (VocabExample e : examples) {
+                    e.setStatus(StatusEnum.DISABLED.getCode());
+                    vocabExampleRepository.save(e);
+                }
+                List<VocabStructure> structures = vocabStructureRepository.findBySenseId(sense.getId());
+                for (VocabStructure s : structures) {
+                    s.setStatus(StatusEnum.DISABLED.getCode());
+                    vocabStructureRepository.save(s);
+                }
                 toDelete.add(sense);
             }
         }
-        vocabSenseRepository.deleteAll(toDelete);
+        for (VocabSense s : toDelete) {
+            s.setStatus(StatusEnum.DISABLED.getCode());
+            vocabSenseRepository.save(s);
+        }
     }
 
     private void syncStructures(Integer wordId, Integer senseId, List<VocabStructureDto> submittedDtos) {
         List<VocabStructureDto> submitted = submittedDtos == null ? Collections.emptyList() : submittedDtos;
-        List<VocabStructure> existing = vocabStructureRepository.findBySenseId(senseId);
+        List<VocabStructure> existing = vocabStructureRepository.findBySenseIdAndStatus(senseId, StatusEnum.ENABLED.getCode());
         Map<Integer, VocabStructure> existingMap = new HashMap<>();
         for (VocabStructure structure : existing) {
             existingMap.put(structure.getId(), structure);
@@ -229,16 +264,23 @@ public class VocabWordServiceImpl implements VocabWordService {
         List<VocabStructure> toDelete = new ArrayList<>();
         for (VocabStructure structure : existing) {
             if (!submittedIds.contains(structure.getId())) {
-                vocabExampleRepository.deleteAll(vocabExampleRepository.findByStructureId(structure.getId()));
+                List<VocabExample> examples = vocabExampleRepository.findByStructureId(structure.getId());
+                for (VocabExample e : examples) {
+                    e.setStatus(StatusEnum.DISABLED.getCode());
+                    vocabExampleRepository.save(e);
+                }
                 toDelete.add(structure);
             }
         }
-        vocabStructureRepository.deleteAll(toDelete);
+        for (VocabStructure s : toDelete) {
+            s.setStatus(StatusEnum.DISABLED.getCode());
+            vocabStructureRepository.save(s);
+        }
     }
 
     private void syncExamples(Integer wordId, Integer senseId, Integer structureId, List<VocabExampleDto> submittedDtos) {
         List<VocabExampleDto> submitted = submittedDtos == null ? Collections.emptyList() : submittedDtos;
-        List<VocabExample> existing = vocabExampleRepository.findByStructureId(structureId);
+        List<VocabExample> existing = vocabExampleRepository.findByStructureIdAndStatus(structureId, StatusEnum.ENABLED.getCode());
         Map<Integer, VocabExample> existingMap = new HashMap<>();
         for (VocabExample example : existing) {
             existingMap.put(example.getId(), example);
@@ -276,13 +318,16 @@ public class VocabWordServiceImpl implements VocabWordService {
                 toDelete.add(example);
             }
         }
-        vocabExampleRepository.deleteAll(toDelete);
+        for (VocabExample e : toDelete) {
+            e.setStatus(StatusEnum.DISABLED.getCode());
+            vocabExampleRepository.save(e);
+        }
         vocabExampleRepository.saveAll(toSave);
     }
 
     private void syncExercises(Integer wordId, List<VocabExerciseDto> submittedDtos) {
         List<VocabExerciseDto> submitted = submittedDtos == null ? Collections.emptyList() : submittedDtos;
-        List<VocabExercise> existing = vocabExerciseRepository.findByWordId(wordId);
+        List<VocabExercise> existing = vocabExerciseRepository.findByWordIdAndStatus(wordId, StatusEnum.ENABLED.getCode());
         Map<Integer, VocabExercise> existingMap = new HashMap<>();
         for (VocabExercise exercise : existing) {
             existingMap.put(exercise.getId(), exercise);
@@ -320,7 +365,10 @@ public class VocabWordServiceImpl implements VocabWordService {
                 toDelete.add(exercise);
             }
         }
-        vocabExerciseRepository.deleteAll(toDelete);
+        for (VocabExercise e : toDelete) {
+            e.setStatus(StatusEnum.DISABLED.getCode());
+            vocabExerciseRepository.save(e);
+        }
         vocabExerciseRepository.saveAll(toSave);
     }
 
@@ -339,9 +387,10 @@ public class VocabWordServiceImpl implements VocabWordService {
         dto.setSenseOrder(sense.getSenseOrder());
         dto.setCreateTime(sense.getCreateTime());
         dto.setUpdateTime(sense.getUpdateTime());
+        dto.setStatus(sense.getStatus());
 
         List<VocabStructureDto> structureDtos = new ArrayList<>();
-        List<VocabStructure> structures = vocabStructureRepository.findBySenseId(sense.getId());
+        List<VocabStructure> structures = vocabStructureRepository.findBySenseIdAndStatus(sense.getId(), StatusEnum.ENABLED.getCode());
         for (VocabStructure structure : structures) {
             VocabStructureDto structureDto = convertToStructureDto(structure);
             structureDtos.add(structureDto);
@@ -360,9 +409,10 @@ public class VocabWordServiceImpl implements VocabWordService {
         dto.setStructureOrder(structure.getStructureOrder());
         dto.setCreateTime(structure.getCreateTime());
         dto.setUpdateTime(structure.getUpdateTime());
+        dto.setStatus(structure.getStatus());
 
         List<VocabExampleDto> exampleDtos = new ArrayList<>();
-        List<VocabExample> examples = vocabExampleRepository.findByStructureId(structure.getId());
+        List<VocabExample> examples = vocabExampleRepository.findByStructureIdAndStatus(structure.getId(), StatusEnum.ENABLED.getCode());
         for (VocabExample example : examples) {
             VocabExampleDto exampleDto = convertToExampleDto(example);
             exampleDtos.add(exampleDto);
@@ -385,6 +435,7 @@ public class VocabWordServiceImpl implements VocabWordService {
         dto.setExampleOrder(example.getExampleOrder());
         dto.setCreateTime(example.getCreateTime());
         dto.setUpdateTime(example.getUpdateTime());
+        dto.setStatus(example.getStatus());
         return dto;
     }
 
@@ -399,6 +450,7 @@ public class VocabWordServiceImpl implements VocabWordService {
         dto.setExerciseOrder(exercise.getExerciseOrder());
         dto.setCreateTime(exercise.getCreateTime());
         dto.setUpdateTime(exercise.getUpdateTime());
+        dto.setStatus(exercise.getStatus());
         return dto;
     }
 

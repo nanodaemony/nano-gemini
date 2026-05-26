@@ -9,4 +9,5 @@ import java.util.List;
 @Repository
 public interface VocabSenseRepository extends JpaRepository<VocabSense, Integer>, JpaSpecificationExecutor<VocabSense> {
     List<VocabSense> findByWordId(Integer wordId);
+    List<VocabSense> findByWordIdAndStatus(Integer wordId, Integer status);
 }

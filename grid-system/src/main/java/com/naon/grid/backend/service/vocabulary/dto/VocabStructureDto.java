@@ -28,4 +28,7 @@ public class VocabStructureDto extends BaseDTO implements Serializable {
 
     @ApiModelProperty(value = "例句列表")
     private List<VocabExampleDto> examples;
+
+    @ApiModelProperty(value = "状态: 1=可用, 0=不可用")
+    private Integer status;
 }

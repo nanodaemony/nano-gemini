@@ -9,4 +9,5 @@ import java.util.List;
 @Repository
 public interface CharDiscriminationRepository extends JpaRepository<CharDiscrimination, Integer> {
     List<CharDiscrimination> findByCharId(Integer charId);
+    List<CharDiscrimination> findByCharIdAndStatus(Integer charId, Integer status);
 }

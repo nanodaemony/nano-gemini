@@ -1,5 +1,6 @@
 package com.naon.grid.backend.domain.vocabulary;
 
+import com.naon.grid.enums.StatusEnum;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.Setter;
@@ -68,4 +69,8 @@ public class VocabSense implements Serializable {
 
     @Column(name = "update_time")
     private Timestamp updateTime;
+
+    @Column(name = "status")
+    @ApiModelProperty(value = "状态: 1=可用, 0=不可用")
+    private Integer status = StatusEnum.ENABLED.getCode();
 }

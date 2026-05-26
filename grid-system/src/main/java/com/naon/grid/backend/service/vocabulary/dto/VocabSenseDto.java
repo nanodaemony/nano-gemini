@@ -46,4 +46,7 @@ public class VocabSenseDto extends BaseDTO implements Serializable {
 
     @ApiModelProperty(value = "搭配列表")
     private List<VocabStructureDto> structures;
+
+    @ApiModelProperty(value = "状态: 1=可用, 0=不可用")
+    private Integer status;
 }

@@ -9,4 +9,5 @@ import java.util.List;
 @Repository
 public interface VocabExerciseRepository extends JpaRepository<VocabExercise, Integer>, JpaSpecificationExecutor<VocabExercise> {
     List<VocabExercise> findByWordId(Integer wordId);
+    List<VocabExercise> findByWordIdAndStatus(Integer wordId, Integer status);
 }

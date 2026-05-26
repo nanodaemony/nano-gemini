@@ -36,4 +36,7 @@ public class VocabExampleDto extends BaseDTO implements Serializable {
 
     @ApiModelProperty(value = "例句排序权重")
     private Integer exampleOrder;
+
+    @ApiModelProperty(value = "状态: 1=可用, 0=不可用")
+    private Integer status;
 }

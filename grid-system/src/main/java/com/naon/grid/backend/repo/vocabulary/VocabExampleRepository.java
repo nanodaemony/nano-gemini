@@ -11,4 +11,5 @@ public interface VocabExampleRepository extends JpaRepository<VocabExample, Inte
     List<VocabExample> findByStructureId(Integer structureId);
     List<VocabExample> findBySenseId(Integer senseId);
     List<VocabExample> findByWordId(Integer wordId);
+    List<VocabExample> findByStructureIdAndStatus(Integer structureId, Integer status);
 }

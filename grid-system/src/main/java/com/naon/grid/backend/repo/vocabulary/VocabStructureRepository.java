@@ -10,4 +10,5 @@ import java.util.List;
 public interface VocabStructureRepository extends JpaRepository<VocabStructure, Integer>, JpaSpecificationExecutor<VocabStructure> {
     List<VocabStructure> findBySenseId(Integer senseId);
     List<VocabStructure> findByWordId(Integer wordId);
+    List<VocabStructure> findBySenseIdAndStatus(Integer senseId, Integer status);
 }

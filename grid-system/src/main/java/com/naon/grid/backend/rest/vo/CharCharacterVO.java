@@ -22,7 +22,7 @@ public class CharCharacterVO implements Serializable {
     @ApiModelProperty(value = "汉字")
     private String character;
 
-    @ApiModelProperty(value = "等级")
+    @ApiModelProperty(value = "HSK等级，值为数字字符串\"1\"-\"9\"")
     private String level;
 
     @ApiModelProperty(value = "拼音")
@@ -108,7 +108,7 @@ public class CharCharacterVO implements Serializable {
         @ApiModelProperty(value = "组词")
         private String wordItem;
 
-        @ApiModelProperty(value = "等级")
+        @ApiModelProperty(value = "HSK等级，值为数字字符串\"1\"-\"9\"")
         private String level;
 
         @ApiModelProperty(value = "拼音")

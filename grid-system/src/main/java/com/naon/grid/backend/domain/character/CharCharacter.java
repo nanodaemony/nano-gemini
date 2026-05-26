@@ -34,6 +34,7 @@ public class CharCharacter implements Serializable {
     private String character;
 
     @Column(name = "level", length = 20)
+    @ApiModelProperty(value = "HSK等级，值为数字字符串\"1\"-\"9\"")
     private String level;
 
     @NotBlank

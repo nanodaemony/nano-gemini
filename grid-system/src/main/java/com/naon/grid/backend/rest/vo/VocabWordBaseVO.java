@@ -26,7 +26,7 @@ public class VocabWordBaseVO implements Serializable {
     @ApiModelProperty(value = "词汇读音音频资源ID")
     private Long audioId;
 
-    @ApiModelProperty(value = "HSK等级")
+    @ApiModelProperty(value = "HSK等级，值为数字字符串\"1\"-\"9\"")
     private String hskLevel;
 
     @ApiModelProperty(value = "创建时间: yyyy-MM-dd HH:mm:ss")

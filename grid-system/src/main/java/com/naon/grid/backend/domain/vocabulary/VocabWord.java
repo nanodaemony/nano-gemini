@@ -44,7 +44,7 @@ public class VocabWord implements Serializable {
     private Long audioId;
 
     @Column(name = "hsk_level", length = 20)
-    @ApiModelProperty(value = "HSK等级")
+    @ApiModelProperty(value = "HSK等级，值为数字字符串\"1\"-\"9\"")
     private String hskLevel;
 
     @CreationTimestamp

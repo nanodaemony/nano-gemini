@@ -34,6 +34,9 @@ public class VocabWordCreateRequest implements Serializable {
     @Getter
     @Setter
     public static class VocabSenseRequest implements Serializable {
+        @ApiModelProperty(value = "自增ID, 义项ID")
+        private Integer id;
+
         @ApiModelProperty(value = "词性")
         private String partOfSpeech;
 
@@ -68,6 +71,9 @@ public class VocabWordCreateRequest implements Serializable {
     @Getter
     @Setter
     public static class VocabStructureRequest implements Serializable {
+        @ApiModelProperty(value = "自增ID, 结构搭配ID")
+        private Integer id;
+
         @ApiModelProperty(value = "结构搭配文案")
         private String pattern;
 
@@ -81,6 +87,9 @@ public class VocabWordCreateRequest implements Serializable {
     @Getter
     @Setter
     public static class VocabExerciseRequest implements Serializable {
+        @ApiModelProperty(value = "练习题目唯一ID")
+        private Integer id;
+
         @ApiModelProperty(value = "题目类型")
         private String questionType;
 
@@ -100,6 +109,9 @@ public class VocabWordCreateRequest implements Serializable {
     @Getter
     @Setter
     public static class VocabExampleRequest implements Serializable {
+        @ApiModelProperty(value = "例句唯一ID")
+        private Integer id;
+
         @ApiModelProperty(value = "例句中文文案")
         private String sentence;
 

@@ -108,6 +108,7 @@ public class VocabWordController {
 
     private VocabSenseDto toSenseDto(VocabWordCreateRequest.VocabSenseRequest request) {
         VocabSenseDto dto = new VocabSenseDto();
+        dto.setId(request.getId());
         dto.setPartOfSpeech(request.getPartOfSpeech());
         dto.setChineseDef(request.getChineseDef());
         dto.setDefAudioId(request.getDefAudioId());
@@ -130,6 +131,7 @@ public class VocabWordController {
 
     private VocabStructureDto toStructureDto(VocabWordCreateRequest.VocabStructureRequest request) {
         VocabStructureDto dto = new VocabStructureDto();
+        dto.setId(request.getId());
         dto.setPattern(request.getPattern());
         dto.setStructureOrder(request.getStructureOrder());
         dto.setExamples(toExampleDtoList(request.getExamples()));
@@ -145,6 +147,7 @@ public class VocabWordController {
 
     private VocabExerciseDto toExerciseDto(VocabWordCreateRequest.VocabExerciseRequest request) {
         VocabExerciseDto dto = new VocabExerciseDto();
+        dto.setId(request.getId());
         dto.setQuestionType(request.getQuestionType());
         dto.setQuestionText(request.getQuestionText());
         dto.setOptions(request.getOptions());
@@ -162,6 +165,7 @@ public class VocabWordController {
 
     private VocabExampleDto toExampleDto(VocabWordCreateRequest.VocabExampleRequest request) {
         VocabExampleDto dto = new VocabExampleDto();
+        dto.setId(request.getId());
         dto.setSentence(request.getSentence());
         dto.setAudioId(request.getAudioId());
         dto.setPinyin(request.getPinyin());

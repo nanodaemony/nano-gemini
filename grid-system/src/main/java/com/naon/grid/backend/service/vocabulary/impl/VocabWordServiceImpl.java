@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import com.naon.grid.utils.PageResult;
 import com.naon.grid.utils.PageUtil;
 import com.naon.grid.utils.QueryHelp;
+import com.naon.grid.exception.BadRequestException;
 import com.naon.grid.exception.EntityNotFoundException;
 import com.naon.grid.backend.service.vocabulary.VocabWordService;
 import com.naon.grid.backend.service.vocabulary.mapstruct.VocabWordMapper;
@@ -88,8 +89,8 @@ public class VocabWordServiceImpl implements VocabWordService {
         vocabWord.setHskLevel(resources.getHskLevel());
         vocabWordRepository.save(vocabWord);
 
-        deleteChildren(id);
-        saveChildren(resources, id);
+        syncSenses(id, resources.getSenses());
+        syncExercises(id, resources.getExercises());
     }
 
     @Override
@@ -140,6 +141,187 @@ public class VocabWordServiceImpl implements VocabWordService {
         vocabStructureRepository.deleteAll(vocabStructureRepository.findByWordId(wordId));
         vocabSenseRepository.deleteAll(vocabSenseRepository.findByWordId(wordId));
         vocabExerciseRepository.deleteAll(vocabExerciseRepository.findByWordId(wordId));
+    }
+
+    private void syncSenses(Integer wordId, List<VocabSenseDto> submittedDtos) {
+        List<VocabSenseDto> submitted = submittedDtos == null ? Collections.emptyList() : submittedDtos;
+        List<VocabSense> existing = vocabSenseRepository.findByWordId(wordId);
+        Map<Integer, VocabSense> existingMap = new HashMap<>();
+        for (VocabSense sense : existing) {
+            existingMap.put(sense.getId(), sense);
+        }
+
+        Set<Integer> submittedIds = new HashSet<>();
+
+        // First, check all IDs for duplicates
+        for (VocabSenseDto dto : submitted) {
+            if (dto.getId() != null) {
+                if (!submittedIds.add(dto.getId())) {
+                    throw new BadRequestException("义项ID重复: " + dto.getId());
+                }
+            }
+        }
+
+        // Now process each DTO in order
+        for (VocabSenseDto dto : submitted) {
+            if (dto.getId() == null) {
+                VocabSense sense = convertToSenseEntity(dto, wordId);
+                sense = vocabSenseRepository.save(sense);
+                syncStructures(wordId, sense.getId(), dto.getStructures());
+            } else {
+                VocabSense sense = existingMap.get(dto.getId());
+                if (sense == null) {
+                    throw new BadRequestException("义项ID不属于当前词汇: " + dto.getId());
+                }
+                updateSense(sense, dto);
+                vocabSenseRepository.save(sense);
+                syncStructures(wordId, sense.getId(), dto.getStructures());
+            }
+        }
+
+        List<VocabSense> toDelete = new ArrayList<>();
+        for (VocabSense sense : existing) {
+            if (!submittedIds.contains(sense.getId())) {
+                vocabExampleRepository.deleteAll(vocabExampleRepository.findBySenseId(sense.getId()));
+                vocabStructureRepository.deleteAll(vocabStructureRepository.findBySenseId(sense.getId()));
+                toDelete.add(sense);
+            }
+        }
+        vocabSenseRepository.deleteAll(toDelete);
+    }
+
+    private void syncStructures(Integer wordId, Integer senseId, List<VocabStructureDto> submittedDtos) {
+        List<VocabStructureDto> submitted = submittedDtos == null ? Collections.emptyList() : submittedDtos;
+        List<VocabStructure> existing = vocabStructureRepository.findBySenseId(senseId);
+        Map<Integer, VocabStructure> existingMap = new HashMap<>();
+        for (VocabStructure structure : existing) {
+            existingMap.put(structure.getId(), structure);
+        }
+
+        Set<Integer> submittedIds = new HashSet<>();
+
+        // First, check all IDs for duplicates
+        for (VocabStructureDto dto : submitted) {
+            if (dto.getId() != null) {
+                if (!submittedIds.add(dto.getId())) {
+                    throw new BadRequestException("搭配ID重复: " + dto.getId());
+                }
+            }
+        }
+
+        // Now process each DTO in order
+        for (VocabStructureDto dto : submitted) {
+            if (dto.getId() == null) {
+                VocabStructure structure = convertToStructureEntity(dto, wordId, senseId);
+                structure = vocabStructureRepository.save(structure);
+                syncExamples(wordId, senseId, structure.getId(), dto.getExamples());
+            } else {
+                VocabStructure structure = existingMap.get(dto.getId());
+                if (structure == null) {
+                    throw new BadRequestException("搭配ID不属于当前义项: " + dto.getId());
+                }
+                updateStructure(structure, dto);
+                vocabStructureRepository.save(structure);
+                syncExamples(wordId, senseId, structure.getId(), dto.getExamples());
+            }
+        }
+
+        List<VocabStructure> toDelete = new ArrayList<>();
+        for (VocabStructure structure : existing) {
+            if (!submittedIds.contains(structure.getId())) {
+                vocabExampleRepository.deleteAll(vocabExampleRepository.findByStructureId(structure.getId()));
+                toDelete.add(structure);
+            }
+        }
+        vocabStructureRepository.deleteAll(toDelete);
+    }
+
+    private void syncExamples(Integer wordId, Integer senseId, Integer structureId, List<VocabExampleDto> submittedDtos) {
+        List<VocabExampleDto> submitted = submittedDtos == null ? Collections.emptyList() : submittedDtos;
+        List<VocabExample> existing = vocabExampleRepository.findByStructureId(structureId);
+        Map<Integer, VocabExample> existingMap = new HashMap<>();
+        for (VocabExample example : existing) {
+            existingMap.put(example.getId(), example);
+        }
+
+        Set<Integer> submittedIds = new HashSet<>();
+        List<VocabExample> toSave = new ArrayList<>();
+
+        // First, check all IDs for duplicates
+        for (VocabExampleDto dto : submitted) {
+            if (dto.getId() != null) {
+                if (!submittedIds.add(dto.getId())) {
+                    throw new BadRequestException("例句ID重复: " + dto.getId());
+                }
+            }
+        }
+
+        // Now process each DTO in order
+        for (VocabExampleDto dto : submitted) {
+            if (dto.getId() == null) {
+                toSave.add(convertToExampleEntity(dto, wordId, senseId, structureId));
+            } else {
+                VocabExample example = existingMap.get(dto.getId());
+                if (example == null) {
+                    throw new BadRequestException("例句ID不属于当前搭配: " + dto.getId());
+                }
+                updateExample(example, dto);
+                toSave.add(example);
+            }
+        }
+
+        List<VocabExample> toDelete = new ArrayList<>();
+        for (VocabExample example : existing) {
+            if (!submittedIds.contains(example.getId())) {
+                toDelete.add(example);
+            }
+        }
+        vocabExampleRepository.deleteAll(toDelete);
+        vocabExampleRepository.saveAll(toSave);
+    }
+
+    private void syncExercises(Integer wordId, List<VocabExerciseDto> submittedDtos) {
+        List<VocabExerciseDto> submitted = submittedDtos == null ? Collections.emptyList() : submittedDtos;
+        List<VocabExercise> existing = vocabExerciseRepository.findByWordId(wordId);
+        Map<Integer, VocabExercise> existingMap = new HashMap<>();
+        for (VocabExercise exercise : existing) {
+            existingMap.put(exercise.getId(), exercise);
+        }
+
+        Set<Integer> submittedIds = new HashSet<>();
+        List<VocabExercise> toSave = new ArrayList<>();
+
+        // First, check all IDs for duplicates
+        for (VocabExerciseDto dto : submitted) {
+            if (dto.getId() != null) {
+                if (!submittedIds.add(dto.getId())) {
+                    throw new BadRequestException("练习题ID重复: " + dto.getId());
+                }
+            }
+        }
+
+        // Now process each DTO in order
+        for (VocabExerciseDto dto : submitted) {
+            if (dto.getId() == null) {
+                toSave.add(convertToExerciseEntity(dto, wordId));
+            } else {
+                VocabExercise exercise = existingMap.get(dto.getId());
+                if (exercise == null) {
+                    throw new BadRequestException("练习题ID不属于当前词汇: " + dto.getId());
+                }
+                updateExercise(exercise, dto);
+                toSave.add(exercise);
+            }
+        }
+
+        List<VocabExercise> toDelete = new ArrayList<>();
+        for (VocabExercise exercise : existing) {
+            if (!submittedIds.contains(exercise.getId())) {
+                toDelete.add(exercise);
+            }
+        }
+        vocabExerciseRepository.deleteAll(toDelete);
+        vocabExerciseRepository.saveAll(toSave);
     }
 
     private VocabSenseDto convertToSenseDto(VocabSense sense) {
@@ -218,6 +400,39 @@ public class VocabWordServiceImpl implements VocabWordService {
         dto.setCreateTime(exercise.getCreateTime());
         dto.setUpdateTime(exercise.getUpdateTime());
         return dto;
+    }
+
+    private void updateSense(VocabSense entity, VocabSenseDto dto) {
+        entity.setPartOfSpeech(dto.getPartOfSpeech());
+        entity.setChineseDef(dto.getChineseDef());
+        entity.setDefAudioId(dto.getDefAudioId());
+        entity.setTranslations(dto.getTranslations());
+        entity.setSynonyms(dto.getSynonyms());
+        entity.setAntonyms(dto.getAntonyms());
+        entity.setRelatedForward(dto.getRelatedForward());
+        entity.setRelatedBackward(dto.getRelatedBackward());
+        entity.setSenseOrder(dto.getSenseOrder() != null ? dto.getSenseOrder() : 0);
+    }
+
+    private void updateStructure(VocabStructure entity, VocabStructureDto dto) {
+        entity.setPattern(dto.getPattern());
+        entity.setStructureOrder(dto.getStructureOrder() != null ? dto.getStructureOrder() : 0);
+    }
+
+    private void updateExample(VocabExample entity, VocabExampleDto dto) {
+        entity.setSentence(dto.getSentence());
+        entity.setAudioId(dto.getAudioId());
+        entity.setPinyin(dto.getPinyin());
+        entity.setTranslations(dto.getTranslations());
+        entity.setExampleOrder(dto.getExampleOrder() != null ? dto.getExampleOrder() : 0);
+    }
+
+    private void updateExercise(VocabExercise entity, VocabExerciseDto dto) {
+        entity.setQuestionType(dto.getQuestionType());
+        entity.setQuestionText(dto.getQuestionText());
+        entity.setOptions(dto.getOptions());
+        entity.setAnswers(dto.getAnswers());
+        entity.setExerciseOrder(dto.getExerciseOrder() != null ? dto.getExerciseOrder() : 0);
     }
 
     private VocabSense convertToSenseEntity(VocabSenseDto dto, Integer wordId) {

@@ -73,6 +73,7 @@ public class CharCharacterServiceImpl implements CharCharacterService {
     @Transactional(rollbackFor = Exception.class)
     public Integer create(CharCharacterDto resources) {
         CharCharacter charCharacter = charCharacterMapper.toEntity(resources);
+        charCharacter.setStatus(StatusEnum.ENABLED.getCode());
         charCharacter = charCharacterRepository.save(charCharacter);
         saveChildren(resources, charCharacter.getId());
         return charCharacter.getId();
@@ -299,6 +300,7 @@ public class CharCharacterServiceImpl implements CharCharacterService {
         entity.setDiscrimPinyin(dto.getDiscrimPinyin());
         entity.setDiscrimCharTranslations(dto.getDiscrimCharTranslations());
         entity.setComparisonTranslations(dto.getComparisonTranslations());
+        entity.setStatus(StatusEnum.ENABLED.getCode());
         return entity;
     }
 
@@ -314,6 +316,7 @@ public class CharCharacterServiceImpl implements CharCharacterService {
         entity.setExamplePinyin(dto.getExamplePinyin());
         entity.setExampleTranslations(dto.getExampleTranslations());
         entity.setExampleImage(dto.getExampleImage());
+        entity.setStatus(StatusEnum.ENABLED.getCode());
         return entity;
     }
 }

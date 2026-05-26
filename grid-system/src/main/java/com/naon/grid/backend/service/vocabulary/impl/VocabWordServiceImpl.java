@@ -74,6 +74,7 @@ public class VocabWordServiceImpl implements VocabWordService {
     @Transactional(rollbackFor = Exception.class)
     public Integer create(VocabWordDto resources) {
         VocabWord vocabWord = vocabWordMapper.toEntity(resources);
+        vocabWord.setStatus(StatusEnum.ENABLED.getCode());
         vocabWord = vocabWordRepository.save(vocabWord);
 
         saveChildren(resources, vocabWord.getId());
@@ -499,6 +500,7 @@ public class VocabWordServiceImpl implements VocabWordService {
         entity.setRelatedForward(dto.getRelatedForward());
         entity.setRelatedBackward(dto.getRelatedBackward());
         entity.setSenseOrder(dto.getSenseOrder() != null ? dto.getSenseOrder() : 0);
+        entity.setStatus(StatusEnum.ENABLED.getCode());
         return entity;
     }
 
@@ -508,6 +510,7 @@ public class VocabWordServiceImpl implements VocabWordService {
         entity.setSenseId(senseId);
         entity.setPattern(dto.getPattern());
         entity.setStructureOrder(dto.getStructureOrder() != null ? dto.getStructureOrder() : 0);
+        entity.setStatus(StatusEnum.ENABLED.getCode());
         return entity;
     }
 
@@ -521,6 +524,7 @@ public class VocabWordServiceImpl implements VocabWordService {
         entity.setPinyin(dto.getPinyin());
         entity.setTranslations(dto.getTranslations());
         entity.setExampleOrder(dto.getExampleOrder() != null ? dto.getExampleOrder() : 0);
+        entity.setStatus(StatusEnum.ENABLED.getCode());
         return entity;
     }
 
@@ -532,6 +536,7 @@ public class VocabWordServiceImpl implements VocabWordService {
         entity.setOptions(dto.getOptions());
         entity.setAnswers(dto.getAnswers());
         entity.setExerciseOrder(dto.getExerciseOrder() != null ? dto.getExerciseOrder() : 0);
+        entity.setStatus(StatusEnum.ENABLED.getCode());
         return entity;
     }
 }

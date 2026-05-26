@@ -1,10 +1,13 @@
 package com.naon.grid.backend.domain.vocabulary;
 
 import com.naon.grid.enums.StatusEnum;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.Setter;
-import com.naon.grid.base.BaseEntity;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
@@ -43,10 +46,14 @@ public class VocabStructure implements Serializable {
     @ApiModelProperty(value = "搭配排序权重")
     private Integer structureOrder = 0;
 
-    @Column(name = "create_time")
+    @CreationTimestamp
+    @Column(name = "create_time", updatable = false)
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     private Timestamp createTime;
 
+    @UpdateTimestamp
     @Column(name = "update_time")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     private Timestamp updateTime;
 
     @Column(name = "status")

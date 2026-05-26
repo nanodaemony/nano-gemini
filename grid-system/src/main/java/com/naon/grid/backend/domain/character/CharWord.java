@@ -1,9 +1,12 @@
 package com.naon.grid.backend.domain.character;
 
 import com.naon.grid.enums.StatusEnum;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
@@ -55,10 +58,14 @@ public class CharWord implements Serializable {
     @Column(name = "example_image", length = 255)
     private String exampleImage;
 
-    @Column(name = "create_time", insertable = false, updatable = false)
+    @CreationTimestamp
+    @Column(name = "create_time", updatable = false)
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     private Timestamp createTime;
 
-    @Column(name = "update_time", insertable = false, updatable = false)
+    @UpdateTimestamp
+    @Column(name = "update_time")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     private Timestamp updateTime;
 
     @Column(name = "status")

@@ -71,20 +71,17 @@ CREATE TABLE `sys_log` (
 -- 音频资源表
 -- 存储音频相关的资源。
 -- ----------------------------
+DROP TABLE IF EXISTS `audio_resource`;
 CREATE TABLE `audio_resource` (
     `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'ID',
-    `biz_type` varchar(50) NOT NULL COMMENT '业务类型: VOCAB_WORD/VOCAB_SENSE/VOCAB_EXAMPLE/CHARACTER/DIALOGUE/ARTICLE',
     `text_content` varchar(4096) NOT NULL COMMENT '音频对应的文字内容',
-    `source_type` varchar(50) NOT NULL COMMENT '来源类型: TTS/UPLOADED',
+    `source_type` varchar(50) NOT NULL COMMENT '来源类型: tts/upload',
     `file_url` varchar(500) NOT NULL COMMENT '音频文件地址',
     `file_format` varchar(20) DEFAULT 'mp3' COMMENT '文件格式: mp3/wav/m4a',
     `file_size` bigint(20) DEFAULT NULL COMMENT '文件大小(字节)',
-    `tts_record_id` bigint(20) DEFAULT NULL COMMENT '关联的TTS记录ID',
     `create_time` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     `status` TINYINT(4) NOT NULL DEFAULT '1' COMMENT '有效状态, 1:有效 0:无效',
-    PRIMARY KEY (`id`),
-    KEY `idx_biz_type` (`biz_type`),
-    KEY `idx_tts_record` (`tts_record_id`)
+    PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='音频资源表';
 

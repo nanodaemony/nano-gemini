@@ -1,11 +1,13 @@
 package com.naon.grid.backend.service.character.dto;
 
+import com.naon.grid.domain.common.TextTranslation;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.io.Serializable;
 import java.sql.Timestamp;
+import java.util.List;
 
 @Getter
 @Setter
@@ -24,10 +26,10 @@ public class CharDiscriminationDto implements Serializable {
     private String discrimPinyin;
 
     @ApiModelProperty(value = "辨析汉字翻译")
-    private String discrimCharTranslations;
+    private List<TextTranslation> discrimCharTranslations;
 
     @ApiModelProperty(value = "对比翻译")
-    private String comparisonTranslations;
+    private List<TextTranslation> comparisonTranslations;
 
     @ApiModelProperty(value = "创建时间")
     private Timestamp createTime;

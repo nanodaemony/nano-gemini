@@ -4,6 +4,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.Setter;
 import com.naon.grid.base.BaseDTO;
+import com.naon.grid.domain.common.TextTranslation;
 import java.io.Serializable;
 import java.util.List;
 
@@ -27,7 +28,7 @@ public class VocabSenseDto extends BaseDTO implements Serializable {
     private Long defAudioId;
 
     @ApiModelProperty(value = "外文翻译列表")
-    private String translations;
+    private List<TextTranslation> translations;
 
     @ApiModelProperty(value = "近义词列表")
     private String synonyms;

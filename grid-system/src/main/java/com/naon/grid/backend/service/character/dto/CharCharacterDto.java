@@ -1,6 +1,7 @@
 package com.naon.grid.backend.service.character.dto;
 
 import com.naon.grid.base.BaseDTO;
+import com.naon.grid.domain.common.TextTranslation;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.Setter;
@@ -43,7 +44,7 @@ public class CharCharacterDto extends BaseDTO implements Serializable {
     private String charDesc;
 
     @ApiModelProperty(value = "说明翻译")
-    private String descTranslations;
+    private List<TextTranslation> descTranslations;
 
     @ApiModelProperty(value = "辨析列表")
     private List<CharDiscriminationDto> discriminations;

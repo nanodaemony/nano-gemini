@@ -1,11 +1,13 @@
 package com.naon.grid.backend.service.character.dto;
 
+import com.naon.grid.domain.common.TextTranslation;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.io.Serializable;
 import java.sql.Timestamp;
+import java.util.List;
 
 @Getter
 @Setter
@@ -30,7 +32,7 @@ public class CharWordDto implements Serializable {
     private String partOfSpeech;
 
     @ApiModelProperty(value = "组词翻译")
-    private String wordItemTranslations;
+    private List<TextTranslation> wordItemTranslations;
 
     @ApiModelProperty(value = "例句")
     private String exampleSentence;
@@ -39,7 +41,7 @@ public class CharWordDto implements Serializable {
     private String examplePinyin;
 
     @ApiModelProperty(value = "例句翻译")
-    private String exampleTranslations;
+    private List<TextTranslation> exampleTranslations;
 
     @ApiModelProperty(value = "例句图片")
     private String exampleImage;

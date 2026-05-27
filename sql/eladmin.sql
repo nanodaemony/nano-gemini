@@ -1,18 +1,4 @@
-/*
- Navicat Premium Dump SQL
 
- Source Server         : localhost
- Source Server Type    : MariaDB
- Source Server Version : 110206 (11.2.6-MariaDB)
- Source Host           : localhost:3306
- Source Schema         : eladmin
-
- Target Server Type    : MariaDB
- Target Server Version : 110206 (11.2.6-MariaDB)
- File Encoding         : 65001
-
- Date: 25/06/2025 15:56:51
-*/
 
 SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 0;

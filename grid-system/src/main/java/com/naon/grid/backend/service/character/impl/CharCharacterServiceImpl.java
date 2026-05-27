@@ -12,9 +12,11 @@ import com.naon.grid.backend.service.character.dto.CharCharacterQueryCriteria;
 import com.naon.grid.backend.service.character.dto.CharDiscriminationDto;
 import com.naon.grid.backend.service.character.dto.CharWordDto;
 import com.naon.grid.backend.service.character.mapstruct.CharCharacterMapper;
+import com.naon.grid.domain.common.TextTranslation;
 import com.naon.grid.enums.StatusEnum;
 import com.naon.grid.exception.BadRequestException;
 import com.naon.grid.exception.EntityNotFoundException;
+import com.naon.grid.utils.JsonUtils;
 import com.naon.grid.utils.PageResult;
 import com.naon.grid.utils.PageUtil;
 import com.naon.grid.utils.QueryHelp;
@@ -95,7 +97,7 @@ public class CharCharacterServiceImpl implements CharCharacterService {
         charCharacter.setRadical(resources.getRadical());
         charCharacter.setStroke(resources.getStroke());
         charCharacter.setCharDesc(resources.getCharDesc());
-        charCharacter.setDescTranslations(resources.getDescTranslations());
+        charCharacter.setDescTranslations(JsonUtils.toTranslationJson(resources.getDescTranslations()));
         charCharacterRepository.save(charCharacter);
         syncDiscriminations(id, resources.getDiscriminations());
         syncWords(id, resources.getWords());
@@ -238,8 +240,8 @@ public class CharCharacterServiceImpl implements CharCharacterService {
         dto.setCharId(discrimination.getCharId());
         dto.setDiscrimChar(discrimination.getDiscrimChar());
         dto.setDiscrimPinyin(discrimination.getDiscrimPinyin());
-        dto.setDiscrimCharTranslations(discrimination.getDiscrimCharTranslations());
-        dto.setComparisonTranslations(discrimination.getComparisonTranslations());
+        dto.setDiscrimCharTranslations(JsonUtils.parseTranslationList(discrimination.getDiscrimCharTranslations()));
+        dto.setComparisonTranslations(JsonUtils.parseTranslationList(discrimination.getComparisonTranslations()));
         dto.setCreateTime(discrimination.getCreateTime());
         dto.setUpdateTime(discrimination.getUpdateTime());
         dto.setStatus(discrimination.getStatus());
@@ -263,10 +265,10 @@ public class CharCharacterServiceImpl implements CharCharacterService {
         dto.setLevel(word.getLevel());
         dto.setPinyin(word.getPinyin());
         dto.setPartOfSpeech(word.getPartOfSpeech());
-        dto.setWordItemTranslations(word.getWordItemTranslations());
+        dto.setWordItemTranslations(JsonUtils.parseTranslationList(word.getWordItemTranslations()));
         dto.setExampleSentence(word.getExampleSentence());
         dto.setExamplePinyin(word.getExamplePinyin());
-        dto.setExampleTranslations(word.getExampleTranslations());
+        dto.setExampleTranslations(JsonUtils.parseTranslationList(word.getExampleTranslations()));
         dto.setExampleImage(word.getExampleImage());
         dto.setCreateTime(word.getCreateTime());
         dto.setUpdateTime(word.getUpdateTime());
@@ -277,8 +279,8 @@ public class CharCharacterServiceImpl implements CharCharacterService {
     private void updateDiscrimination(CharDiscrimination entity, CharDiscriminationDto dto) {
         entity.setDiscrimChar(dto.getDiscrimChar());
         entity.setDiscrimPinyin(dto.getDiscrimPinyin());
-        entity.setDiscrimCharTranslations(dto.getDiscrimCharTranslations());
-        entity.setComparisonTranslations(dto.getComparisonTranslations());
+        entity.setDiscrimCharTranslations(JsonUtils.toTranslationJson(dto.getDiscrimCharTranslations()));
+        entity.setComparisonTranslations(JsonUtils.toTranslationJson(dto.getComparisonTranslations()));
     }
 
     private void updateWord(CharWord entity, CharWordDto dto) {
@@ -286,10 +288,10 @@ public class CharCharacterServiceImpl implements CharCharacterService {
         entity.setLevel(dto.getLevel());
         entity.setPinyin(dto.getPinyin());
         entity.setPartOfSpeech(dto.getPartOfSpeech());
-        entity.setWordItemTranslations(dto.getWordItemTranslations());
+        entity.setWordItemTranslations(JsonUtils.toTranslationJson(dto.getWordItemTranslations()));
         entity.setExampleSentence(dto.getExampleSentence());
         entity.setExamplePinyin(dto.getExamplePinyin());
-        entity.setExampleTranslations(dto.getExampleTranslations());
+        entity.setExampleTranslations(JsonUtils.toTranslationJson(dto.getExampleTranslations()));
         entity.setExampleImage(dto.getExampleImage());
     }
 
@@ -298,8 +300,8 @@ public class CharCharacterServiceImpl implements CharCharacterService {
         entity.setCharId(charId);
         entity.setDiscrimChar(dto.getDiscrimChar());
         entity.setDiscrimPinyin(dto.getDiscrimPinyin());
-        entity.setDiscrimCharTranslations(dto.getDiscrimCharTranslations());
-        entity.setComparisonTranslations(dto.getComparisonTranslations());
+        entity.setDiscrimCharTranslations(JsonUtils.toTranslationJson(dto.getDiscrimCharTranslations()));
+        entity.setComparisonTranslations(JsonUtils.toTranslationJson(dto.getComparisonTranslations()));
         entity.setStatus(StatusEnum.ENABLED.getCode());
         return entity;
     }
@@ -311,10 +313,10 @@ public class CharCharacterServiceImpl implements CharCharacterService {
         entity.setLevel(dto.getLevel());
         entity.setPinyin(dto.getPinyin());
         entity.setPartOfSpeech(dto.getPartOfSpeech());
-        entity.setWordItemTranslations(dto.getWordItemTranslations());
+        entity.setWordItemTranslations(JsonUtils.toTranslationJson(dto.getWordItemTranslations()));
         entity.setExampleSentence(dto.getExampleSentence());
         entity.setExamplePinyin(dto.getExamplePinyin());
-        entity.setExampleTranslations(dto.getExampleTranslations());
+        entity.setExampleTranslations(JsonUtils.toTranslationJson(dto.getExampleTranslations()));
         entity.setExampleImage(dto.getExampleImage());
         entity.setStatus(StatusEnum.ENABLED.getCode());
         return entity;

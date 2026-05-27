@@ -43,7 +43,7 @@ public class CharCharacterCreateRequest implements Serializable {
     private String charDesc;
 
     @ApiModelProperty(value = "说明翻译")
-    private String descTranslations;
+    private List<TextTranslationRequest> descTranslations;
 
     @Valid
     @ApiModelProperty(value = "辨析列表")
@@ -67,10 +67,10 @@ public class CharCharacterCreateRequest implements Serializable {
         private String discrimPinyin;
 
         @ApiModelProperty(value = "辨析汉字翻译")
-        private String discrimCharTranslations;
+        private List<TextTranslationRequest> discrimCharTranslations;
 
         @ApiModelProperty(value = "对比翻译")
-        private String comparisonTranslations;
+        private List<TextTranslationRequest> comparisonTranslations;
     }
 
     @Getter
@@ -93,7 +93,7 @@ public class CharCharacterCreateRequest implements Serializable {
         private String partOfSpeech;
 
         @ApiModelProperty(value = "组词翻译")
-        private String wordItemTranslations;
+        private List<TextTranslationRequest> wordItemTranslations;
 
         @ApiModelProperty(value = "例句")
         private String exampleSentence;
@@ -102,7 +102,7 @@ public class CharCharacterCreateRequest implements Serializable {
         private String examplePinyin;
 
         @ApiModelProperty(value = "例句翻译")
-        private String exampleTranslations;
+        private List<TextTranslationRequest> exampleTranslations;
 
         @ApiModelProperty(value = "例句图片")
         private String exampleImage;

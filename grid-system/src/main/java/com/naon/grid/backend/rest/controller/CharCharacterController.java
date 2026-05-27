@@ -7,14 +7,17 @@ import com.naon.grid.annotation.rest.AnonymousPostMapping;
 import com.naon.grid.annotation.rest.AnonymousPutMapping;
 import com.naon.grid.backend.rest.request.CharCharacterCreateRequest;
 import com.naon.grid.backend.rest.request.CharCharacterQueryRequest;
+import com.naon.grid.backend.rest.request.TextTranslationRequest;
 import com.naon.grid.backend.rest.vo.CharCharacterBaseVO;
 import com.naon.grid.backend.rest.vo.CharCharacterCreateVO;
 import com.naon.grid.backend.rest.vo.CharCharacterVO;
+import com.naon.grid.backend.rest.vo.TextTranslationVO;
 import com.naon.grid.backend.service.character.CharCharacterService;
 import com.naon.grid.backend.service.character.dto.CharCharacterDto;
 import com.naon.grid.backend.service.character.dto.CharCharacterQueryCriteria;
 import com.naon.grid.backend.service.character.dto.CharDiscriminationDto;
 import com.naon.grid.backend.service.character.dto.CharWordDto;
+import com.naon.grid.domain.common.TextTranslation;
 import com.naon.grid.utils.PageResult;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -98,7 +101,7 @@ public class CharCharacterController {
         dto.setRadical(request.getRadical());
         dto.setStroke(request.getStroke());
         dto.setCharDesc(request.getCharDesc());
-        dto.setDescTranslations(request.getDescTranslations());
+        dto.setDescTranslations(toTextTranslationList(request.getDescTranslations()));
         dto.setDiscriminations(toDiscriminationDtoList(request.getDiscriminations()));
         dto.setWords(toWordDtoList(request.getWords()));
         return dto;
@@ -116,8 +119,8 @@ public class CharCharacterController {
         dto.setId(request.getId());
         dto.setDiscrimChar(request.getDiscrimChar());
         dto.setDiscrimPinyin(request.getDiscrimPinyin());
-        dto.setDiscrimCharTranslations(request.getDiscrimCharTranslations());
-        dto.setComparisonTranslations(request.getComparisonTranslations());
+        dto.setDiscrimCharTranslations(toTextTranslationList(request.getDiscrimCharTranslations()));
+        dto.setComparisonTranslations(toTextTranslationList(request.getComparisonTranslations()));
         return dto;
     }
 
@@ -135,10 +138,10 @@ public class CharCharacterController {
         dto.setLevel(request.getLevel());
         dto.setPinyin(request.getPinyin());
         dto.setPartOfSpeech(request.getPartOfSpeech());
-        dto.setWordItemTranslations(request.getWordItemTranslations());
+        dto.setWordItemTranslations(toTextTranslationList(request.getWordItemTranslations()));
         dto.setExampleSentence(request.getExampleSentence());
         dto.setExamplePinyin(request.getExamplePinyin());
-        dto.setExampleTranslations(request.getExampleTranslations());
+        dto.setExampleTranslations(toTextTranslationList(request.getExampleTranslations()));
         dto.setExampleImage(request.getExampleImage());
         return dto;
     }
@@ -159,7 +162,7 @@ public class CharCharacterController {
         vo.setRadical(dto.getRadical());
         vo.setStroke(dto.getStroke());
         vo.setCharDesc(dto.getCharDesc());
-        vo.setDescTranslations(dto.getDescTranslations());
+        vo.setDescTranslations(toTextTranslationVOList(dto.getDescTranslations()));
         vo.setCreateTime(dto.getCreateTime());
         vo.setUpdateTime(dto.getUpdateTime());
         return vo;
@@ -177,7 +180,7 @@ public class CharCharacterController {
         vo.setRadical(dto.getRadical());
         vo.setStroke(dto.getStroke());
         vo.setCharDesc(dto.getCharDesc());
-        vo.setDescTranslations(dto.getDescTranslations());
+        vo.setDescTranslations(toTextTranslationVOList(dto.getDescTranslations()));
         vo.setDiscriminations(toDiscriminationVOList(dto.getDiscriminations()));
         vo.setWords(toWordVOList(dto.getWords()));
         vo.setCreateBy(dto.getCreateBy());
@@ -200,8 +203,8 @@ public class CharCharacterController {
         vo.setCharId(dto.getCharId());
         vo.setDiscrimChar(dto.getDiscrimChar());
         vo.setDiscrimPinyin(dto.getDiscrimPinyin());
-        vo.setDiscrimCharTranslations(dto.getDiscrimCharTranslations());
-        vo.setComparisonTranslations(dto.getComparisonTranslations());
+        vo.setDiscrimCharTranslations(toTextTranslationVOList(dto.getDiscrimCharTranslations()));
+        vo.setComparisonTranslations(toTextTranslationVOList(dto.getComparisonTranslations()));
         vo.setCreateTime(dto.getCreateTime());
         vo.setUpdateTime(dto.getUpdateTime());
         return vo;
@@ -222,13 +225,47 @@ public class CharCharacterController {
         vo.setLevel(dto.getLevel());
         vo.setPinyin(dto.getPinyin());
         vo.setPartOfSpeech(dto.getPartOfSpeech());
-        vo.setWordItemTranslations(dto.getWordItemTranslations());
+        vo.setWordItemTranslations(toTextTranslationVOList(dto.getWordItemTranslations()));
         vo.setExampleSentence(dto.getExampleSentence());
         vo.setExamplePinyin(dto.getExamplePinyin());
-        vo.setExampleTranslations(dto.getExampleTranslations());
+        vo.setExampleTranslations(toTextTranslationVOList(dto.getExampleTranslations()));
         vo.setExampleImage(dto.getExampleImage());
         vo.setCreateTime(dto.getCreateTime());
         vo.setUpdateTime(dto.getUpdateTime());
+        return vo;
+    }
+
+    private List<TextTranslation> toTextTranslationList(List<TextTranslationRequest> requests) {
+        if (requests == null) {
+            return Collections.emptyList();
+        }
+        return requests.stream().map(this::toTextTranslation).collect(Collectors.toList());
+    }
+
+    private TextTranslation toTextTranslation(TextTranslationRequest request) {
+        if (request == null) {
+            return null;
+        }
+        TextTranslation translation = new TextTranslation();
+        translation.setLanguage(request.getLanguage());
+        translation.setTranslation(request.getTranslation());
+        return translation;
+    }
+
+    private List<TextTranslationVO> toTextTranslationVOList(List<TextTranslation> translations) {
+        if (translations == null) {
+            return Collections.emptyList();
+        }
+        return translations.stream().map(this::toTextTranslationVO).collect(Collectors.toList());
+    }
+
+    private TextTranslationVO toTextTranslationVO(TextTranslation translation) {
+        if (translation == null) {
+            return null;
+        }
+        TextTranslationVO vo = new TextTranslationVO();
+        vo.setLanguage(translation.getLanguage());
+        vo.setTranslation(translation.getTranslation());
         return vo;
     }
 }

@@ -44,7 +44,7 @@ public class CharCharacterVO implements Serializable {
     private String charDesc;
 
     @ApiModelProperty(value = "说明翻译")
-    private String descTranslations;
+    private List<TextTranslationVO> descTranslations;
 
     @ApiModelProperty(value = "辨析列表")
     private List<CharDiscriminationVO> discriminations;
@@ -82,10 +82,10 @@ public class CharCharacterVO implements Serializable {
         private String discrimPinyin;
 
         @ApiModelProperty(value = "辨析汉字翻译")
-        private String discrimCharTranslations;
+        private List<TextTranslationVO> discrimCharTranslations;
 
         @ApiModelProperty(value = "对比翻译")
-        private String comparisonTranslations;
+        private List<TextTranslationVO> comparisonTranslations;
 
         @ApiModelProperty(value = "创建时间: yyyy-MM-dd HH:mm:ss", required = true)
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
@@ -118,7 +118,7 @@ public class CharCharacterVO implements Serializable {
         private String partOfSpeech;
 
         @ApiModelProperty(value = "组词翻译")
-        private String wordItemTranslations;
+        private List<TextTranslationVO> wordItemTranslations;
 
         @ApiModelProperty(value = "例句")
         private String exampleSentence;
@@ -127,7 +127,7 @@ public class CharCharacterVO implements Serializable {
         private String examplePinyin;
 
         @ApiModelProperty(value = "例句翻译")
-        private String exampleTranslations;
+        private List<TextTranslationVO> exampleTranslations;
 
         @ApiModelProperty(value = "例句图片")
         private String exampleImage;

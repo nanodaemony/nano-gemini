@@ -54,7 +54,7 @@ public class VocabWordCreateRequest implements Serializable {
         private Long defAudioId;
 
         @ApiModelProperty(value = "外文翻译列表")
-        private String translations;
+        private List<TextTranslationRequest> translations;
 
         @ApiModelProperty(value = "近义词列表")
         private String synonyms;
@@ -135,7 +135,7 @@ public class VocabWordCreateRequest implements Serializable {
         private String pinyin;
 
         @ApiModelProperty(value = "例句外文翻译列表")
-        private String translations;
+        private List<TextTranslationRequest> translations;
 
         @ApiModelProperty(value = "例句排序权重，值大的排前面", required = true)
         private Integer exampleOrder;

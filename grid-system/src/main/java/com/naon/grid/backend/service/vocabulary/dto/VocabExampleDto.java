@@ -4,7 +4,9 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.Setter;
 import com.naon.grid.base.BaseDTO;
+import com.naon.grid.domain.common.TextTranslation;
 import java.io.Serializable;
+import java.util.List;
 
 @Getter
 @Setter
@@ -32,7 +34,7 @@ public class VocabExampleDto extends BaseDTO implements Serializable {
     private String pinyin;
 
     @ApiModelProperty(value = "例句外文翻译列表")
-    private String translations;
+    private List<TextTranslation> translations;
 
     @ApiModelProperty(value = "例句排序权重")
     private Integer exampleOrder;

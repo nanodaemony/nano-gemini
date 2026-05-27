@@ -5,8 +5,10 @@ import com.naon.grid.annotation.rest.AnonymousDeleteMapping;
 import com.naon.grid.annotation.rest.AnonymousGetMapping;
 import com.naon.grid.annotation.rest.AnonymousPostMapping;
 import com.naon.grid.annotation.rest.AnonymousPutMapping;
+import com.naon.grid.backend.rest.request.TextTranslationRequest;
 import com.naon.grid.backend.rest.request.VocabWordCreateRequest;
 import com.naon.grid.backend.rest.request.VocabWordQueryRequest;
+import com.naon.grid.backend.rest.vo.TextTranslationVO;
 import com.naon.grid.backend.rest.vo.VocabWordBaseVO;
 import com.naon.grid.backend.rest.vo.VocabWordCreateVO;
 import com.naon.grid.backend.rest.vo.VocabWordVO;
@@ -17,6 +19,7 @@ import com.naon.grid.backend.service.vocabulary.dto.VocabSenseDto;
 import com.naon.grid.backend.service.vocabulary.dto.VocabStructureDto;
 import com.naon.grid.backend.service.vocabulary.dto.VocabWordDto;
 import com.naon.grid.backend.service.vocabulary.dto.VocabWordQueryCriteria;
+import com.naon.grid.domain.common.TextTranslation;
 import com.naon.grid.utils.PageResult;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -114,7 +117,7 @@ public class VocabWordController {
         dto.setPartOfSpeech(request.getPartOfSpeech());
         dto.setChineseDef(request.getChineseDef());
         dto.setDefAudioId(request.getDefAudioId());
-        dto.setTranslations(request.getTranslations());
+        dto.setTranslations(toTextTranslationList(request.getTranslations()));
         dto.setSynonyms(request.getSynonyms());
         dto.setAntonyms(request.getAntonyms());
         dto.setRelatedForward(request.getRelatedForward());
@@ -171,7 +174,7 @@ public class VocabWordController {
         dto.setSentence(request.getSentence());
         dto.setAudioId(request.getAudioId());
         dto.setPinyin(request.getPinyin());
-        dto.setTranslations(request.getTranslations());
+        dto.setTranslations(toTextTranslationList(request.getTranslations()));
         dto.setExampleOrder(request.getExampleOrder() != null ? request.getExampleOrder() : 0);
         return dto;
     }
@@ -224,7 +227,7 @@ public class VocabWordController {
         vo.setPartOfSpeech(dto.getPartOfSpeech());
         vo.setChineseDef(dto.getChineseDef());
         vo.setDefAudioId(dto.getDefAudioId());
-        vo.setTranslations(dto.getTranslations());
+        vo.setTranslations(toTextTranslationVOList(dto.getTranslations()));
         vo.setSynonyms(dto.getSynonyms());
         vo.setAntonyms(dto.getAntonyms());
         vo.setRelatedForward(dto.getRelatedForward());
@@ -299,12 +302,46 @@ public class VocabWordController {
         vo.setSentence(dto.getSentence());
         vo.setAudioId(dto.getAudioId());
         vo.setPinyin(dto.getPinyin());
-        vo.setTranslations(dto.getTranslations());
+        vo.setTranslations(toTextTranslationVOList(dto.getTranslations()));
         vo.setExampleOrder(dto.getExampleOrder());
         vo.setCreateBy(dto.getCreateBy());
         vo.setUpdateBy(dto.getUpdateBy());
         vo.setCreateTime(dto.getCreateTime());
         vo.setUpdateTime(dto.getUpdateTime());
+        return vo;
+    }
+
+    private List<TextTranslation> toTextTranslationList(List<TextTranslationRequest> requests) {
+        if (requests == null) {
+            return Collections.emptyList();
+        }
+        return requests.stream().map(this::toTextTranslation).collect(Collectors.toList());
+    }
+
+    private TextTranslation toTextTranslation(TextTranslationRequest request) {
+        if (request == null) {
+            return null;
+        }
+        TextTranslation translation = new TextTranslation();
+        translation.setLanguage(request.getLanguage());
+        translation.setTranslation(request.getTranslation());
+        return translation;
+    }
+
+    private List<TextTranslationVO> toTextTranslationVOList(List<TextTranslation> translations) {
+        if (translations == null) {
+            return Collections.emptyList();
+        }
+        return translations.stream().map(this::toTextTranslationVO).collect(Collectors.toList());
+    }
+
+    private TextTranslationVO toTextTranslationVO(TextTranslation translation) {
+        if (translation == null) {
+            return null;
+        }
+        TextTranslationVO vo = new TextTranslationVO();
+        vo.setLanguage(translation.getLanguage());
+        vo.setTranslation(translation.getTranslation());
         return vo;
     }
 }

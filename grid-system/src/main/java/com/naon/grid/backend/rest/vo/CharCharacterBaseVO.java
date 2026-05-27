@@ -7,6 +7,7 @@ import lombok.Setter;
 
 import java.io.Serializable;
 import java.sql.Timestamp;
+import java.util.List;
 
 @Getter
 @Setter
@@ -43,7 +44,7 @@ public class CharCharacterBaseVO implements Serializable {
     private String charDesc;
 
     @ApiModelProperty(value = "汉字说明的多语种翻译")
-    private String descTranslations;
+    private List<TextTranslationVO> descTranslations;
 
     @ApiModelProperty(value = "创建时间: yyyy-MM-dd HH:mm:ss", required = true)
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")

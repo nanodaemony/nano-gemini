@@ -5,6 +5,7 @@ import com.naon.grid.backend.repo.vocabulary.*;
 import com.naon.grid.backend.service.vocabulary.dto.*;
 import com.naon.grid.enums.StatusEnum;
 import lombok.RequiredArgsConstructor;
+import com.naon.grid.utils.JsonUtils;
 import com.naon.grid.utils.PageResult;
 import com.naon.grid.utils.PageUtil;
 import com.naon.grid.utils.QueryHelp;
@@ -380,7 +381,7 @@ public class VocabWordServiceImpl implements VocabWordService {
         dto.setPartOfSpeech(sense.getPartOfSpeech());
         dto.setChineseDef(sense.getChineseDef());
         dto.setDefAudioId(sense.getDefAudioId());
-        dto.setTranslations(sense.getTranslations());
+        dto.setTranslations(JsonUtils.parseTranslationList(sense.getTranslations()));
         dto.setSynonyms(sense.getSynonyms());
         dto.setAntonyms(sense.getAntonyms());
         dto.setRelatedForward(sense.getRelatedForward());
@@ -432,7 +433,7 @@ public class VocabWordServiceImpl implements VocabWordService {
         dto.setSentence(example.getSentence());
         dto.setAudioId(example.getAudioId());
         dto.setPinyin(example.getPinyin());
-        dto.setTranslations(example.getTranslations());
+        dto.setTranslations(JsonUtils.parseTranslationList(example.getTranslations()));
         dto.setExampleOrder(example.getExampleOrder());
         dto.setCreateTime(example.getCreateTime());
         dto.setUpdateTime(example.getUpdateTime());
@@ -459,7 +460,7 @@ public class VocabWordServiceImpl implements VocabWordService {
         entity.setPartOfSpeech(dto.getPartOfSpeech());
         entity.setChineseDef(dto.getChineseDef());
         entity.setDefAudioId(dto.getDefAudioId());
-        entity.setTranslations(dto.getTranslations());
+        entity.setTranslations(JsonUtils.toTranslationJson(dto.getTranslations()));
         entity.setSynonyms(dto.getSynonyms());
         entity.setAntonyms(dto.getAntonyms());
         entity.setRelatedForward(dto.getRelatedForward());
@@ -476,7 +477,7 @@ public class VocabWordServiceImpl implements VocabWordService {
         entity.setSentence(dto.getSentence());
         entity.setAudioId(dto.getAudioId());
         entity.setPinyin(dto.getPinyin());
-        entity.setTranslations(dto.getTranslations());
+        entity.setTranslations(JsonUtils.toTranslationJson(dto.getTranslations()));
         entity.setExampleOrder(dto.getExampleOrder() != null ? dto.getExampleOrder() : 0);
     }
 
@@ -494,7 +495,7 @@ public class VocabWordServiceImpl implements VocabWordService {
         entity.setPartOfSpeech(dto.getPartOfSpeech());
         entity.setChineseDef(dto.getChineseDef());
         entity.setDefAudioId(dto.getDefAudioId());
-        entity.setTranslations(dto.getTranslations());
+        entity.setTranslations(JsonUtils.toTranslationJson(dto.getTranslations()));
         entity.setSynonyms(dto.getSynonyms());
         entity.setAntonyms(dto.getAntonyms());
         entity.setRelatedForward(dto.getRelatedForward());
@@ -522,7 +523,7 @@ public class VocabWordServiceImpl implements VocabWordService {
         entity.setSentence(dto.getSentence());
         entity.setAudioId(dto.getAudioId());
         entity.setPinyin(dto.getPinyin());
-        entity.setTranslations(dto.getTranslations());
+        entity.setTranslations(JsonUtils.toTranslationJson(dto.getTranslations()));
         entity.setExampleOrder(dto.getExampleOrder() != null ? dto.getExampleOrder() : 0);
         entity.setStatus(StatusEnum.ENABLED.getCode());
         return entity;

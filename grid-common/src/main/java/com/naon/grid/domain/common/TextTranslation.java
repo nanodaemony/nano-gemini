@@ -1,4 +1,4 @@
-package com.naon.grid.backend.domain.common;
+package com.naon.grid.domain.common;
 
 import lombok.Data;
 

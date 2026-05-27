@@ -8,7 +8,7 @@ import java.io.Serializable;
 @Data
 public class AudioResourceQueryCriteria implements Serializable {
 
-    @ApiModelProperty(value = "业务类型")
+    @ApiModelProperty(value = "来源类型: tts/upload")
     @Query
-    private String bizType;
+    private String sourceType;
 }

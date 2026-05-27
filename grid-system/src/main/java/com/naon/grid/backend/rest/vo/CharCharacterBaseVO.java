@@ -18,13 +18,13 @@ public class CharCharacterBaseVO implements Serializable {
     @ApiModelProperty(value = "Excel中的序号")
     private Integer sequenceNo;
 
-    @ApiModelProperty(value = "汉字")
+    @ApiModelProperty(value = "汉字", required = true)
     private String character;
 
     @ApiModelProperty(value = "HSK等级，值为数字字符串\"1\"-\"9\"")
     private String level;
 
-    @ApiModelProperty(value = "拼音")
+    @ApiModelProperty(value = "拼音", required = true)
     private String pinyin;
 
     @ApiModelProperty(value = "读音音频资源ID")
@@ -45,11 +45,11 @@ public class CharCharacterBaseVO implements Serializable {
     @ApiModelProperty(value = "汉字说明的多语种翻译")
     private String descTranslations;
 
-    @ApiModelProperty(value = "创建时间: yyyy-MM-dd HH:mm:ss")
+    @ApiModelProperty(value = "创建时间: yyyy-MM-dd HH:mm:ss", required = true)
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     private Timestamp createTime;
 
-    @ApiModelProperty(value = "更新时间: yyyy-MM-dd HH:mm:ss")
+    @ApiModelProperty(value = "更新时间: yyyy-MM-dd HH:mm:ss", required = true)
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     private Timestamp updateTime;
 }

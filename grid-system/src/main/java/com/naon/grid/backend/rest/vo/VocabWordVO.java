@@ -15,13 +15,13 @@ public class VocabWordVO implements Serializable {
     @ApiModelProperty(value = "词汇唯一ID")
     private Integer id;
 
-    @ApiModelProperty(value = "词汇")
+    @ApiModelProperty(value = "词汇", required = true)
     private String word;
 
     @ApiModelProperty(value = "繁体词汇")
     private String wordTraditional;
 
-    @ApiModelProperty(value = "标准拼音（含声调）")
+    @ApiModelProperty(value = "标准拼音（含声调）", required = true)
     private String pinyin;
 
     @ApiModelProperty(value = "词汇读音音频资源ID")
@@ -42,11 +42,11 @@ public class VocabWordVO implements Serializable {
     @ApiModelProperty(value = "修改人")
     private String updateBy;
 
-    @ApiModelProperty(value = "创建时间: yyyy-MM-dd HH:mm:ss")
+    @ApiModelProperty(value = "创建时间: yyyy-MM-dd HH:mm:ss", required = true)
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     private Timestamp createTime;
 
-    @ApiModelProperty(value = "更新时间: yyyy-MM-dd HH:mm:ss")
+    @ApiModelProperty(value = "更新时间: yyyy-MM-dd HH:mm:ss", required = true)
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     private Timestamp updateTime;
 
@@ -56,7 +56,7 @@ public class VocabWordVO implements Serializable {
         @ApiModelProperty(value = "自增ID, 义项ID")
         private Integer id;
 
-        @ApiModelProperty(value = "所属词汇ID")
+        @ApiModelProperty(value = "所属词汇ID", required = true)
         private Integer wordId;
 
         @ApiModelProperty(value = "词性")
@@ -83,7 +83,7 @@ public class VocabWordVO implements Serializable {
         @ApiModelProperty(value = "逆序关联词汇")
         private String relatedBackward;
 
-        @ApiModelProperty(value = "义项排序权重")
+        @ApiModelProperty(value = "义项排序权重，值大的排前面", required = true)
         private Integer senseOrder;
 
         @ApiModelProperty(value = "搭配列表")
@@ -95,11 +95,11 @@ public class VocabWordVO implements Serializable {
         @ApiModelProperty(value = "修改人")
         private String updateBy;
 
-        @ApiModelProperty(value = "创建时间: yyyy-MM-dd HH:mm:ss")
+        @ApiModelProperty(value = "创建时间: yyyy-MM-dd HH:mm:ss", required = true)
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
         private Timestamp createTime;
 
-        @ApiModelProperty(value = "更新时间: yyyy-MM-dd HH:mm:ss")
+        @ApiModelProperty(value = "更新时间: yyyy-MM-dd HH:mm:ss", required = true)
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
         private Timestamp updateTime;
     }
@@ -110,16 +110,16 @@ public class VocabWordVO implements Serializable {
         @ApiModelProperty(value = "自增ID, 结构搭配ID")
         private Integer id;
 
-        @ApiModelProperty(value = "所属词汇ID")
+        @ApiModelProperty(value = "所属词汇ID", required = true)
         private Integer wordId;
 
-        @ApiModelProperty(value = "所属义项ID")
+        @ApiModelProperty(value = "所属义项ID", required = true)
         private Integer senseId;
 
-        @ApiModelProperty(value = "结构搭配文案")
+        @ApiModelProperty(value = "结构搭配文案", required = true)
         private String pattern;
 
-        @ApiModelProperty(value = "搭配排序权重")
+        @ApiModelProperty(value = "搭配排序权重，值大的排前面", required = true)
         private Integer structureOrder;
 
         @ApiModelProperty(value = "例句列表")
@@ -131,11 +131,11 @@ public class VocabWordVO implements Serializable {
         @ApiModelProperty(value = "修改人")
         private String updateBy;
 
-        @ApiModelProperty(value = "创建时间: yyyy-MM-dd HH:mm:ss")
+        @ApiModelProperty(value = "创建时间: yyyy-MM-dd HH:mm:ss", required = true)
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
         private Timestamp createTime;
 
-        @ApiModelProperty(value = "更新时间: yyyy-MM-dd HH:mm:ss")
+        @ApiModelProperty(value = "更新时间: yyyy-MM-dd HH:mm:ss", required = true)
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
         private Timestamp updateTime;
     }
@@ -146,13 +146,13 @@ public class VocabWordVO implements Serializable {
         @ApiModelProperty(value = "练习题目唯一ID")
         private Integer id;
 
-        @ApiModelProperty(value = "所属词汇ID")
+        @ApiModelProperty(value = "所属词汇ID", required = true)
         private Integer wordId;
 
-        @ApiModelProperty(value = "题目类型")
+        @ApiModelProperty(value = "题目类型", required = true)
         private String questionType;
 
-        @ApiModelProperty(value = "练习题干描述")
+        @ApiModelProperty(value = "练习题干描述", required = true)
         private String questionText;
 
         @ApiModelProperty(value = "选项列表")
@@ -161,7 +161,7 @@ public class VocabWordVO implements Serializable {
         @ApiModelProperty(value = "答案列表")
         private String answers;
 
-        @ApiModelProperty(value = "练习题目排序权重")
+        @ApiModelProperty(value = "练习题目排序权重，值大的排前面", required = true)
         private Integer exerciseOrder;
 
         @ApiModelProperty(value = "创建人")
@@ -170,11 +170,11 @@ public class VocabWordVO implements Serializable {
         @ApiModelProperty(value = "修改人")
         private String updateBy;
 
-        @ApiModelProperty(value = "创建时间: yyyy-MM-dd HH:mm:ss")
+        @ApiModelProperty(value = "创建时间: yyyy-MM-dd HH:mm:ss", required = true)
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
         private Timestamp createTime;
 
-        @ApiModelProperty(value = "更新时间: yyyy-MM-dd HH:mm:ss")
+        @ApiModelProperty(value = "更新时间: yyyy-MM-dd HH:mm:ss", required = true)
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
         private Timestamp updateTime;
     }
@@ -185,16 +185,16 @@ public class VocabWordVO implements Serializable {
         @ApiModelProperty(value = "例句唯一ID")
         private Integer id;
 
-        @ApiModelProperty(value = "所属词汇ID")
+        @ApiModelProperty(value = "所属词汇ID", required = true)
         private Integer wordId;
 
-        @ApiModelProperty(value = "所属义项ID")
+        @ApiModelProperty(value = "所属义项ID", required = true)
         private Integer senseId;
 
-        @ApiModelProperty(value = "所属结构搭配ID")
+        @ApiModelProperty(value = "所属结构搭配ID", required = true)
         private Integer structureId;
 
-        @ApiModelProperty(value = "例句中文文案")
+        @ApiModelProperty(value = "例句中文文案", required = true)
         private String sentence;
 
         @ApiModelProperty(value = "例句音频资源ID")
@@ -206,7 +206,7 @@ public class VocabWordVO implements Serializable {
         @ApiModelProperty(value = "例句外文翻译列表")
         private String translations;
 
-        @ApiModelProperty(value = "例句排序权重")
+        @ApiModelProperty(value = "例句排序权重，值大的排前面", required = true)
         private Integer exampleOrder;
 
         @ApiModelProperty(value = "创建人")
@@ -215,11 +215,11 @@ public class VocabWordVO implements Serializable {
         @ApiModelProperty(value = "修改人")
         private String updateBy;
 
-        @ApiModelProperty(value = "创建时间: yyyy-MM-dd HH:mm:ss")
+        @ApiModelProperty(value = "创建时间: yyyy-MM-dd HH:mm:ss", required = true)
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
         private Timestamp createTime;
 
-        @ApiModelProperty(value = "更新时间: yyyy-MM-dd HH:mm:ss")
+        @ApiModelProperty(value = "更新时间: yyyy-MM-dd HH:mm:ss", required = true)
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
         private Timestamp updateTime;
     }

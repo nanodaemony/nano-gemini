@@ -3,6 +3,9 @@ package com.naon.grid.backend.rest.request;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.Setter;
+
+import javax.validation.Valid;
+import javax.validation.constraints.NotBlank;
 import java.io.Serializable;
 import java.util.List;
 
@@ -10,13 +13,15 @@ import java.util.List;
 @Setter
 public class VocabWordCreateRequest implements Serializable {
 
-    @ApiModelProperty(value = "词汇")
+    @NotBlank
+    @ApiModelProperty(value = "词汇", required = true)
     private String word;
 
     @ApiModelProperty(value = "繁体词汇")
     private String wordTraditional;
 
-    @ApiModelProperty(value = "标准拼音（含声调）")
+    @NotBlank
+    @ApiModelProperty(value = "标准拼音（含声调）", required = true)
     private String pinyin;
 
     @ApiModelProperty(value = "词汇读音音频资源ID")
@@ -25,16 +30,18 @@ public class VocabWordCreateRequest implements Serializable {
     @ApiModelProperty(value = "HSK等级，值为数字字符串\"1\"-\"9\"")
     private String hskLevel;
 
+    @Valid
     @ApiModelProperty(value = "义项列表")
     private List<VocabSenseRequest> senses;
 
+    @Valid
     @ApiModelProperty(value = "练习题列表")
     private List<VocabExerciseRequest> exercises;
 
     @Getter
     @Setter
     public static class VocabSenseRequest implements Serializable {
-        @ApiModelProperty(value = "自增ID, 义项ID")
+        @ApiModelProperty(value = "义项ID（新增时不传，更新时传）")
         private Integer id;
 
         @ApiModelProperty(value = "词性")
@@ -61,9 +68,10 @@ public class VocabWordCreateRequest implements Serializable {
         @ApiModelProperty(value = "逆序关联词汇")
         private String relatedBackward;
 
-        @ApiModelProperty(value = "义项排序权重")
+        @ApiModelProperty(value = "义项排序权重，值大的排前面", required = true)
         private Integer senseOrder;
 
+        @Valid
         @ApiModelProperty(value = "搭配列表")
         private List<VocabStructureRequest> structures;
     }
@@ -71,15 +79,17 @@ public class VocabWordCreateRequest implements Serializable {
     @Getter
     @Setter
     public static class VocabStructureRequest implements Serializable {
-        @ApiModelProperty(value = "自增ID, 结构搭配ID")
+        @ApiModelProperty(value = "结构搭配ID（新增时不传，更新时传）")
         private Integer id;
 
-        @ApiModelProperty(value = "结构搭配文案")
+        @NotBlank
+        @ApiModelProperty(value = "结构搭配文案", required = true)
         private String pattern;
 
-        @ApiModelProperty(value = "搭配排序权重")
+        @ApiModelProperty(value = "搭配排序权重，值大的排前面", required = true)
         private Integer structureOrder;
 
+        @Valid
         @ApiModelProperty(value = "例句列表")
         private List<VocabExampleRequest> examples;
     }
@@ -87,13 +97,15 @@ public class VocabWordCreateRequest implements Serializable {
     @Getter
     @Setter
     public static class VocabExerciseRequest implements Serializable {
-        @ApiModelProperty(value = "练习题目唯一ID")
+        @ApiModelProperty(value = "练习题目ID（新增时不传，更新时传）")
         private Integer id;
 
-        @ApiModelProperty(value = "题目类型")
+        @NotBlank
+        @ApiModelProperty(value = "题目类型", required = true)
         private String questionType;
 
-        @ApiModelProperty(value = "练习题干描述")
+        @NotBlank
+        @ApiModelProperty(value = "练习题干描述", required = true)
         private String questionText;
 
         @ApiModelProperty(value = "选项列表")
@@ -102,17 +114,18 @@ public class VocabWordCreateRequest implements Serializable {
         @ApiModelProperty(value = "答案列表")
         private String answers;
 
-        @ApiModelProperty(value = "练习题目排序权重")
+        @ApiModelProperty(value = "练习题目排序权重，值大的排前面", required = true)
         private Integer exerciseOrder;
     }
 
     @Getter
     @Setter
     public static class VocabExampleRequest implements Serializable {
-        @ApiModelProperty(value = "例句唯一ID")
+        @ApiModelProperty(value = "例句ID（新增时不传，更新时传）")
         private Integer id;
 
-        @ApiModelProperty(value = "例句中文文案")
+        @NotBlank
+        @ApiModelProperty(value = "例句中文文案", required = true)
         private String sentence;
 
         @ApiModelProperty(value = "例句音频资源ID")
@@ -124,7 +137,7 @@ public class VocabWordCreateRequest implements Serializable {
         @ApiModelProperty(value = "例句外文翻译列表")
         private String translations;
 
-        @ApiModelProperty(value = "例句排序权重")
+        @ApiModelProperty(value = "例句排序权重，值大的排前面", required = true)
         private Integer exampleOrder;
     }
 }

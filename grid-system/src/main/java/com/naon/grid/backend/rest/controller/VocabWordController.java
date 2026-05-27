@@ -29,6 +29,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.validation.Valid;
+
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -59,7 +61,7 @@ public class VocabWordController {
     @Log("新增词汇")
     @ApiOperation("新增词汇")
     @AnonymousPostMapping
-    public ResponseEntity<VocabWordCreateVO> create(@RequestBody VocabWordCreateRequest request) {
+    public ResponseEntity<VocabWordCreateVO> create(@Valid @RequestBody VocabWordCreateRequest request) {
         VocabWordCreateVO vo = new VocabWordCreateVO();
         vo.setId(vocabWordService.create(toDto(request)));
         return new ResponseEntity<>(vo, HttpStatus.CREATED);
@@ -68,7 +70,7 @@ public class VocabWordController {
     @Log("更新词汇")
     @ApiOperation("更新词汇")
     @AnonymousPutMapping("/{id}")
-    public ResponseEntity<Object> update(@PathVariable Integer id, @RequestBody VocabWordCreateRequest request) {
+    public ResponseEntity<Object> update(@PathVariable Integer id, @Valid @RequestBody VocabWordCreateRequest request) {
         vocabWordService.update(id, toDto(request));
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
@@ -117,7 +119,7 @@ public class VocabWordController {
         dto.setAntonyms(request.getAntonyms());
         dto.setRelatedForward(request.getRelatedForward());
         dto.setRelatedBackward(request.getRelatedBackward());
-        dto.setSenseOrder(request.getSenseOrder());
+        dto.setSenseOrder(request.getSenseOrder() != null ? request.getSenseOrder() : 0);
         dto.setStructures(toStructureDtoList(request.getStructures()));
         return dto;
     }
@@ -133,7 +135,7 @@ public class VocabWordController {
         VocabStructureDto dto = new VocabStructureDto();
         dto.setId(request.getId());
         dto.setPattern(request.getPattern());
-        dto.setStructureOrder(request.getStructureOrder());
+        dto.setStructureOrder(request.getStructureOrder() != null ? request.getStructureOrder() : 0);
         dto.setExamples(toExampleDtoList(request.getExamples()));
         return dto;
     }
@@ -152,7 +154,7 @@ public class VocabWordController {
         dto.setQuestionText(request.getQuestionText());
         dto.setOptions(request.getOptions());
         dto.setAnswers(request.getAnswers());
-        dto.setExerciseOrder(request.getExerciseOrder());
+        dto.setExerciseOrder(request.getExerciseOrder() != null ? request.getExerciseOrder() : 0);
         return dto;
     }
 
@@ -170,7 +172,7 @@ public class VocabWordController {
         dto.setAudioId(request.getAudioId());
         dto.setPinyin(request.getPinyin());
         dto.setTranslations(request.getTranslations());
-        dto.setExampleOrder(request.getExampleOrder());
+        dto.setExampleOrder(request.getExampleOrder() != null ? request.getExampleOrder() : 0);
         return dto;
     }
 

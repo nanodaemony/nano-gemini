@@ -19,13 +19,13 @@ public class CharCharacterVO implements Serializable {
     @ApiModelProperty(value = "Excel中的序号")
     private Integer sequenceNo;
 
-    @ApiModelProperty(value = "汉字")
+    @ApiModelProperty(value = "汉字", required = true)
     private String character;
 
     @ApiModelProperty(value = "HSK等级，值为数字字符串\"1\"-\"9\"")
     private String level;
 
-    @ApiModelProperty(value = "拼音")
+    @ApiModelProperty(value = "拼音", required = true)
     private String pinyin;
 
     @ApiModelProperty(value = "读音音频资源ID")
@@ -58,11 +58,11 @@ public class CharCharacterVO implements Serializable {
     @ApiModelProperty(value = "修改人")
     private String updateBy;
 
-    @ApiModelProperty(value = "创建时间: yyyy-MM-dd HH:mm:ss")
+    @ApiModelProperty(value = "创建时间: yyyy-MM-dd HH:mm:ss", required = true)
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     private Timestamp createTime;
 
-    @ApiModelProperty(value = "更新时间: yyyy-MM-dd HH:mm:ss")
+    @ApiModelProperty(value = "更新时间: yyyy-MM-dd HH:mm:ss", required = true)
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     private Timestamp updateTime;
 
@@ -72,10 +72,10 @@ public class CharCharacterVO implements Serializable {
         @ApiModelProperty(value = "辨析唯一ID")
         private Integer id;
 
-        @ApiModelProperty(value = "汉字ID")
+        @ApiModelProperty(value = "汉字ID", required = true)
         private Integer charId;
 
-        @ApiModelProperty(value = "辨析汉字")
+        @ApiModelProperty(value = "辨析汉字", required = true)
         private String discrimChar;
 
         @ApiModelProperty(value = "辨析拼音")
@@ -87,11 +87,11 @@ public class CharCharacterVO implements Serializable {
         @ApiModelProperty(value = "对比翻译")
         private String comparisonTranslations;
 
-        @ApiModelProperty(value = "创建时间: yyyy-MM-dd HH:mm:ss")
+        @ApiModelProperty(value = "创建时间: yyyy-MM-dd HH:mm:ss", required = true)
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
         private Timestamp createTime;
 
-        @ApiModelProperty(value = "更新时间: yyyy-MM-dd HH:mm:ss")
+        @ApiModelProperty(value = "更新时间: yyyy-MM-dd HH:mm:ss", required = true)
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
         private Timestamp updateTime;
     }
@@ -102,10 +102,10 @@ public class CharCharacterVO implements Serializable {
         @ApiModelProperty(value = "组词唯一ID")
         private Integer id;
 
-        @ApiModelProperty(value = "汉字ID")
+        @ApiModelProperty(value = "汉字ID", required = true)
         private Integer charId;
 
-        @ApiModelProperty(value = "组词")
+        @ApiModelProperty(value = "组词", required = true)
         private String wordItem;
 
         @ApiModelProperty(value = "HSK等级，值为数字字符串\"1\"-\"9\"")
@@ -132,11 +132,11 @@ public class CharCharacterVO implements Serializable {
         @ApiModelProperty(value = "例句图片")
         private String exampleImage;
 
-        @ApiModelProperty(value = "创建时间: yyyy-MM-dd HH:mm:ss")
+        @ApiModelProperty(value = "创建时间: yyyy-MM-dd HH:mm:ss", required = true)
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
         private Timestamp createTime;
 
-        @ApiModelProperty(value = "更新时间: yyyy-MM-dd HH:mm:ss")
+        @ApiModelProperty(value = "更新时间: yyyy-MM-dd HH:mm:ss", required = true)
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
         private Timestamp updateTime;
     }

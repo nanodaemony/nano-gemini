@@ -27,6 +27,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.validation.Valid;
+
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -57,7 +59,7 @@ public class CharCharacterController {
     @Log("新增汉字")
     @ApiOperation("新增汉字")
     @AnonymousPostMapping
-    public ResponseEntity<CharCharacterCreateVO> create(@RequestBody CharCharacterCreateRequest request) {
+    public ResponseEntity<CharCharacterCreateVO> create(@Valid @RequestBody CharCharacterCreateRequest request) {
         CharCharacterCreateVO vo = new CharCharacterCreateVO();
         vo.setId(charCharacterService.create(toDto(request)));
         return new ResponseEntity<>(vo, HttpStatus.CREATED);
@@ -66,7 +68,7 @@ public class CharCharacterController {
     @Log("修改汉字")
     @ApiOperation("修改汉字")
     @AnonymousPutMapping("/{id}")
-    public ResponseEntity<Object> update(@PathVariable Integer id, @RequestBody CharCharacterCreateRequest request) {
+    public ResponseEntity<Object> update(@PathVariable Integer id, @Valid @RequestBody CharCharacterCreateRequest request) {
         charCharacterService.update(id, toDto(request));
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }

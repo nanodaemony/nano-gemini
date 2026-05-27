@@ -7,7 +7,11 @@ import org.springframework.data.domain.Pageable;
 
 public interface AudioResourceService {
 
-    PageResult<AudioResourceDto> queryAll(AudioResourceQueryCriteria criteria, Pageable pageable);
+    Long create(AudioResourceDto resources);
 
     AudioResourceDto findById(Long id);
+
+    PageResult<AudioResourceDto> queryAll(AudioResourceQueryCriteria criteria, Pageable pageable);
+
+    void delete(Long id);
 }

@@ -1,0 +1,44 @@
+/*
+ *  Copyright 2019-2025 Zheng Jie
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
+package com.naon.grid.service.dto;
+
+import io.swagger.annotations.ApiModelProperty;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+/**
+ * 翻译响应 DTO
+ * @author nano
+ * @date 2026-05-28
+ */
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class TranslateResponse {
+
+    @ApiModelProperty(value = "记录 ID")
+    private Long recordId;
+
+    @ApiModelProperty(value = "源文本")
+    private String sourceText;
+
+    @ApiModelProperty(value = "译文")
+    private String targetText;
+
+    @ApiModelProperty(value = "目标语言")
+    private String targetLanguage;
+}

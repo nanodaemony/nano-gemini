@@ -85,6 +85,8 @@ ali:
     timeformat: ${ALI_OSS_TIMEFORMAT:yyyy-MM}
   tts:
     api-key: ${DASHSCOPE_API_KEY:}
+  translate:
+    api-key: ${DASHSCOPE_API_KEY:}
 volcengine:
   tts:
     api-key: ${VOLCENGINE_API_KEY:}

@@ -78,7 +78,7 @@ public class AudioResourceController {
 
     private AudioResourceQueryCriteria toCriteria(AudioResourceQueryRequest request) {
         AudioResourceQueryCriteria criteria = new AudioResourceQueryCriteria();
-        criteria.setSourceType(request.getSourceType());
+        criteria.setSourceType(request.getSourceType() != null ? request.getSourceType().getCode() : null);
         return criteria;
     }
 

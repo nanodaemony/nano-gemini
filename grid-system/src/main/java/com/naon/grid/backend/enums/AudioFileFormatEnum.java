@@ -3,11 +3,13 @@ package com.naon.grid.backend.enums;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
-public enum AudioSourceTypeEnum {
+public enum AudioFileFormatEnum {
 
-    TTS(1, "tts", "TTS"),
+    MP3(1, "mp3", "MP3"),
 
-    UPLOAD(2, "upload", "自己上传");
+    WAV(2, "wav", "WAV"),
+
+    M4A(3, "m4a", "M4A");
 
     private final Integer id;
 
@@ -15,20 +17,20 @@ public enum AudioSourceTypeEnum {
 
     private final String description;
 
-    AudioSourceTypeEnum(Integer id, String code, String description) {
+    AudioFileFormatEnum(Integer id, String code, String description) {
         this.id = id;
         this.code = code;
         this.description = description;
     }
 
     @JsonCreator
-    public static AudioSourceTypeEnum fromCode(String code) {
-        for (AudioSourceTypeEnum type : values()) {
-            if (type.code.equalsIgnoreCase(code)) {
-                return type;
+    public static AudioFileFormatEnum fromCode(String code) {
+        for (AudioFileFormatEnum format : values()) {
+            if (format.code.equalsIgnoreCase(code)) {
+                return format;
             }
         }
-        throw new IllegalArgumentException("Unknown audio source type: " + code);
+        throw new IllegalArgumentException("Unknown audio file format: " + code);
     }
 
     @JsonValue

@@ -1,5 +1,7 @@
 package com.naon.grid.backend.service.resource.dto;
 
+import com.naon.grid.backend.enums.AudioFileFormatEnum;
+import com.naon.grid.backend.enums.AudioSourceTypeEnum;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.Setter;
@@ -17,13 +19,13 @@ public class AudioResourceDto implements Serializable {
     private String textContent;
 
     @ApiModelProperty(value = "来源类型: tts/upload")
-    private String sourceType;
+    private AudioSourceTypeEnum sourceType;
 
     @ApiModelProperty(value = "音频文件地址")
     private String fileUrl;
 
     @ApiModelProperty(value = "文件格式: mp3/wav/m4a")
-    private String fileFormat;
+    private AudioFileFormatEnum fileFormat;
 
     @ApiModelProperty(value = "文件大小(字节)")
     private Long fileSize;

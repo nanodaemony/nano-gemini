@@ -1,18 +1,22 @@
 package com.naon.grid.backend.domain.resource;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.Setter;
-import com.naon.grid.base.BaseEntity;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
 import java.io.Serializable;
+import java.sql.Timestamp;
 
 @Entity
 @Getter
 @Setter
 @Table(name = "audio_resource")
-public class AudioResource extends BaseEntity implements Serializable {
+public class AudioResource implements Serializable {
 
     @Id
     @Column(name = "id")
@@ -46,4 +50,16 @@ public class AudioResource extends BaseEntity implements Serializable {
     @Column(name = "status")
     @ApiModelProperty(value = "有效状态, 1:有效 0:无效")
     private Integer status = 1;
+
+    @CreationTimestamp
+    @Column(name = "create_time", updatable = false)
+    @ApiModelProperty(value = "创建时间: yyyy-MM-dd HH:mm:ss", hidden = true)
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
+    private Timestamp createTime;
+
+    @UpdateTimestamp
+    @Column(name = "update_time")
+    @ApiModelProperty(value = "更新时间: yyyy-MM-dd HH:mm:ss", hidden = true)
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
+    private Timestamp updateTime;
 }

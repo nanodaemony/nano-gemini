@@ -25,6 +25,12 @@ public enum OssBusinessType {
     /** 默认业务 */
     DEFAULT("default"),
 
+    /** 词汇 */
+    VOCABULARY("vocabulary"),
+
+    /** 汉字 */
+    CHARACTER("character"),
+
     /** 语音合成 */
     TTS("tts"),
 

@@ -72,16 +72,16 @@ public class VocabWordVO implements Serializable {
         private List<TextTranslationVO> translations;
 
         @ApiModelProperty(value = "近义词列表")
-        private String synonyms;
+        private List<String> synonyms;
 
         @ApiModelProperty(value = "反义词列表")
-        private String antonyms;
+        private List<String> antonyms;
 
         @ApiModelProperty(value = "正序关联词汇")
-        private String relatedForward;
+        private List<String> relatedForward;
 
         @ApiModelProperty(value = "逆序关联词汇")
-        private String relatedBackward;
+        private List<String> relatedBackward;
 
         @ApiModelProperty(value = "义项排序权重，值大的排前面", required = true)
         private Integer senseOrder;
@@ -149,17 +149,17 @@ public class VocabWordVO implements Serializable {
         @ApiModelProperty(value = "所属词汇ID", required = true)
         private Integer wordId;
 
-        @ApiModelProperty(value = "题目类型", required = true)
+        @ApiModelProperty(value = "题目类型: ", required = true)
         private String questionType;
 
         @ApiModelProperty(value = "练习题干描述", required = true)
         private String questionText;
 
         @ApiModelProperty(value = "选项列表")
-        private String options;
+        private List<ExerciseOptionVO> options;
 
         @ApiModelProperty(value = "答案列表")
-        private String answers;
+        private List<String> answers;
 
         @ApiModelProperty(value = "练习题目排序权重，值大的排前面", required = true)
         private Integer exerciseOrder;

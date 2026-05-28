@@ -5,13 +5,16 @@ import com.naon.grid.annotation.rest.AnonymousDeleteMapping;
 import com.naon.grid.annotation.rest.AnonymousGetMapping;
 import com.naon.grid.annotation.rest.AnonymousPostMapping;
 import com.naon.grid.annotation.rest.AnonymousPutMapping;
+import com.naon.grid.backend.rest.request.ExerciseOptionRequest;
 import com.naon.grid.backend.rest.request.TextTranslationRequest;
 import com.naon.grid.backend.rest.request.VocabWordCreateRequest;
 import com.naon.grid.backend.rest.request.VocabWordQueryRequest;
+import com.naon.grid.backend.rest.vo.ExerciseOptionVO;
 import com.naon.grid.backend.rest.vo.TextTranslationVO;
 import com.naon.grid.backend.rest.vo.VocabWordBaseVO;
 import com.naon.grid.backend.rest.vo.VocabWordCreateVO;
 import com.naon.grid.backend.rest.vo.VocabWordVO;
+import com.naon.grid.domain.common.ExerciseOption;
 import com.naon.grid.backend.service.vocabulary.VocabWordService;
 import com.naon.grid.backend.service.vocabulary.dto.VocabExampleDto;
 import com.naon.grid.backend.service.vocabulary.dto.VocabExerciseDto;
@@ -155,10 +158,27 @@ public class VocabWordController {
         dto.setId(request.getId());
         dto.setQuestionType(request.getQuestionType());
         dto.setQuestionText(request.getQuestionText());
-        dto.setOptions(request.getOptions());
+        dto.setOptions(toExerciseOptionList(request.getOptions()));
         dto.setAnswers(request.getAnswers());
         dto.setExerciseOrder(request.getExerciseOrder() != null ? request.getExerciseOrder() : 0);
         return dto;
+    }
+
+    private List<ExerciseOption> toExerciseOptionList(List<ExerciseOptionRequest> requests) {
+        if (requests == null) {
+            return Collections.emptyList();
+        }
+        return requests.stream().map(this::toExerciseOption).collect(Collectors.toList());
+    }
+
+    private ExerciseOption toExerciseOption(ExerciseOptionRequest request) {
+        if (request == null) {
+            return null;
+        }
+        ExerciseOption option = new ExerciseOption();
+        option.setOption(request.getOption());
+        option.setText(request.getText());
+        return option;
     }
 
     private List<VocabExampleDto> toExampleDtoList(List<VocabWordCreateRequest.VocabExampleRequest> requests) {
@@ -276,13 +296,30 @@ public class VocabWordController {
         vo.setWordId(dto.getWordId());
         vo.setQuestionType(dto.getQuestionType());
         vo.setQuestionText(dto.getQuestionText());
-        vo.setOptions(dto.getOptions());
+        vo.setOptions(toExerciseOptionVOList(dto.getOptions()));
         vo.setAnswers(dto.getAnswers());
         vo.setExerciseOrder(dto.getExerciseOrder());
         vo.setCreateBy(dto.getCreateBy());
         vo.setUpdateBy(dto.getUpdateBy());
         vo.setCreateTime(dto.getCreateTime());
         vo.setUpdateTime(dto.getUpdateTime());
+        return vo;
+    }
+
+    private List<ExerciseOptionVO> toExerciseOptionVOList(List<ExerciseOption> options) {
+        if (options == null) {
+            return Collections.emptyList();
+        }
+        return options.stream().map(this::toExerciseOptionVO).collect(Collectors.toList());
+    }
+
+    private ExerciseOptionVO toExerciseOptionVO(ExerciseOption option) {
+        if (option == null) {
+            return null;
+        }
+        ExerciseOptionVO vo = new ExerciseOptionVO();
+        vo.setOption(option.getOption());
+        vo.setText(option.getText());
         return vo;
     }
 

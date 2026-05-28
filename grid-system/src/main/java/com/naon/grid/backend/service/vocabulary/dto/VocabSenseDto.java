@@ -31,16 +31,16 @@ public class VocabSenseDto extends BaseDTO implements Serializable {
     private List<TextTranslation> translations;
 
     @ApiModelProperty(value = "近义词列表")
-    private String synonyms;
+    private List<String> synonyms;
 
     @ApiModelProperty(value = "反义词列表")
-    private String antonyms;
+    private List<String> antonyms;
 
     @ApiModelProperty(value = "正序关联词汇")
-    private String relatedForward;
+    private List<String> relatedForward;
 
     @ApiModelProperty(value = "逆序关联词汇")
-    private String relatedBackward;
+    private List<String> relatedBackward;
 
     @ApiModelProperty(value = "义项排序权重")
     private Integer senseOrder;

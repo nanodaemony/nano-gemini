@@ -1,10 +1,12 @@
 package com.naon.grid.backend.service.vocabulary.dto;
 
+import com.naon.grid.domain.common.ExerciseOption;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.Setter;
 import com.naon.grid.base.BaseDTO;
 import java.io.Serializable;
+import java.util.List;
 
 @Getter
 @Setter
@@ -23,10 +25,10 @@ public class VocabExerciseDto extends BaseDTO implements Serializable {
     private String questionText;
 
     @ApiModelProperty(value = "选项列表")
-    private String options;
+    private List<ExerciseOption> options;
 
     @ApiModelProperty(value = "答案列表")
-    private String answers;
+    private List<String> answers;
 
     @ApiModelProperty(value = "练习题目排序权重")
     private Integer exerciseOrder;

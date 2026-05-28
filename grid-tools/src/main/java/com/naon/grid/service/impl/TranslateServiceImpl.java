@@ -15,6 +15,7 @@
  */
 package com.naon.grid.service.impl;
 
+import cn.hutool.json.JSONUtil;
 import com.alibaba.dashscope.aigc.generation.Generation;
 import com.alibaba.dashscope.aigc.generation.GenerationParam;
 import com.alibaba.dashscope.aigc.generation.GenerationResult;
@@ -23,6 +24,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import com.naon.grid.config.AliTranslateConfig;
 import com.naon.grid.domain.TranslateRecord;
+import com.naon.grid.enums.LanguageCodeEnum;
 import com.naon.grid.exception.BadRequestException;
 import com.naon.grid.repository.TranslateRecordRepository;
 import com.naon.grid.service.TranslateService;
@@ -31,8 +33,6 @@ import com.naon.grid.service.dto.TranslateResponse;
 import com.naon.grid.utils.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.Arrays;
 
 /**
  * 翻译服务实现
@@ -63,6 +63,12 @@ public class TranslateServiceImpl implements TranslateService {
             throw new BadRequestException("源文本长度不能超过500字");
         }
 
+        // 根据 code 查询语言枚举
+        LanguageCodeEnum languageEnum = LanguageCodeEnum.fromCode(request.getTargetLanguage());
+        if (languageEnum == null) {
+            throw new BadRequestException("不支持的目标语言代码: " + request.getTargetLanguage());
+        }
+
         // 设置 DashScope 配置
         Constants.baseHttpApiUrl = "https://dashscope.aliyuncs.com/api/v1";
 
@@ -70,8 +76,8 @@ public class TranslateServiceImpl implements TranslateService {
         String requestId = null;
 
         try {
-            // 构建翻译提示词
-            String prompt = buildTranslatePrompt(request.getSourceText(), request.getTargetLanguage());
+            // 构建翻译提示词 - 使用英文名称 codeName
+            String prompt = buildTranslatePrompt(request.getSourceText(), languageEnum.getCodeName());
 
             // 构建请求参数
             Generation gen = new Generation();
@@ -83,9 +89,14 @@ public class TranslateServiceImpl implements TranslateService {
 
             // 调用 API
             GenerationResult result = gen.call(param);
+            log.info("翻译结果，result: {}", JSONUtil.toJsonStr(result));
 
-            // 获取翻译结果
-            targetText = result.getOutput().getText();
+            // GenerationResult(requestId=9645a4db-40d2-9e0c-8110-119a4a191946, usage=GenerationUsage(inputTokens=32, outputTokens=6, totalTokens=38, outputTokensDetails=null, promptTokensDetails=null), output=GenerationOutput(text=null, finishReason=stop, choices=[GenerationOutput.Choice(finishReason=stop, index=null, message=Message(role=assistant, content=My hair is real hair., toolCalls=null, toolCallId=null, name=null, contents=null, reasoningContent=null, partial=null), logprobs=null)], searchInfo=null, modelName=qwen-mt-flash), statusCode=200, code=, message=)
+
+            // 获取翻译结果 - 从 choices[0].message.content 中获取
+            if (result.getOutput() != null && result.getOutput().getChoices() != null && !result.getOutput().getChoices().isEmpty()) {
+                targetText = result.getOutput().getChoices().get(0).getMessage().getContent();
+            }
             requestId = result.getRequestId();
 
             log.info("翻译成功，sourceText: {}, targetLanguage: {}, requestId: {}",
@@ -110,26 +121,10 @@ public class TranslateServiceImpl implements TranslateService {
 
     /**
      * 构建翻译提示词
+     * @param text 源文本
+     * @param targetLanguageName 目标语言英文名称（如 "English", "Japanese"）
      */
-    private String buildTranslatePrompt(String text, String targetLanguage) {
-        // 常用语言映射到完整名称
-        String languageName = getLanguageFullName(targetLanguage);
-        return String.format("请将以下中文文本翻译成%s，只返回译文，不要添加任何解释：\n\n%s", languageName, text);
-    }
-
-    /**
-     * 获取语言完整名称
-     */
-    private String getLanguageFullName(String languageCode) {
-        switch (languageCode.toLowerCase()) {
-            case "en": return "英语";
-            case "ja": return "日语";
-            case "ko": return "韩语";
-            case "fr": return "法语";
-            case "de": return "德语";
-            case "es": return "西班牙语";
-            case "ru": return "俄语";
-            default: return languageCode;
-        }
+    private String buildTranslatePrompt(String text, String targetLanguageName) {
+        return String.format("请将以下中文文本翻译成%s，只返回译文，不要添加任何解释：\n\n%s", targetLanguageName, text);
     }
 }

@@ -15,6 +15,8 @@
  */
 package com.naon.grid.rest;
 
+import com.naon.grid.annotation.rest.AnonymousGetMapping;
+import com.naon.grid.annotation.rest.AnonymousPostMapping;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
@@ -29,6 +31,8 @@ import org.springframework.web.bind.annotation.*;
 
 /**
  * 翻译控制器
+ * <p>
+ * 阿里云大模型语言参考：<a href="https://help.aliyun.com/zh/model-studio/machine-translation#038d2865bbydc">...</a>
  * @author nano
  * @date 2026-05-28
  */
@@ -42,7 +46,7 @@ public class TranslateController {
 
     @Log("执行翻译")
     @ApiOperation("执行翻译")
-    @PostMapping
+    @AnonymousPostMapping
     public ResponseEntity<TranslateResponse> translate(@Validated @RequestBody TranslateRequest request) {
         return new ResponseEntity<>(translateService.translate(request), HttpStatus.OK);
     }

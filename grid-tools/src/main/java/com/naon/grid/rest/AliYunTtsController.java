@@ -22,6 +22,7 @@ import lombok.extern.slf4j.Slf4j;
 import com.naon.grid.annotation.Log;
 import com.naon.grid.annotation.rest.AnonymousPostMapping;
 import com.naon.grid.service.TtsService;
+import com.naon.grid.service.dto.CosyVoiceTtsRequest;
 import com.naon.grid.service.dto.TtsRequest;
 import com.naon.grid.service.dto.TtsResponse;
 import org.springframework.http.HttpStatus;
@@ -39,15 +40,23 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 @RequestMapping("/api/tts")
 @Api(tags = "工具：阿里云 TTS 语音合成")
-public class TtsController {
+public class AliYunTtsController {
 
     private final TtsService ttsService;
 
     @Log("语音合成")
-    @ApiOperation("语音合成")
+    @ApiOperation("语音合成（百炼 TTS）")
     @AnonymousPostMapping("/generate")
     public ResponseEntity<TtsResponse> generate(@Validated @RequestBody TtsRequest request) {
         TtsResponse response = ttsService.generate(request);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @Log("CosyVoice 语音合成")
+    @ApiOperation("CosyVoice 语音合成")
+    @AnonymousPostMapping("/cosyvoice")
+    public ResponseEntity<TtsResponse> cosyVoiceGenerate(@Validated @RequestBody CosyVoiceTtsRequest request) {
+        TtsResponse response = ttsService.cosyVoiceGenerate(request);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 }

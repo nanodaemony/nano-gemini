@@ -15,6 +15,7 @@
  */
 package com.naon.grid.service;
 
+import com.naon.grid.service.dto.CosyVoiceTtsRequest;
 import com.naon.grid.service.dto.TtsRequest;
 import com.naon.grid.service.dto.TtsResponse;
 
@@ -26,9 +27,16 @@ import com.naon.grid.service.dto.TtsResponse;
 public interface TtsService {
 
     /**
-     * 语音合成
+     * 语音合成（百炼 TTS）
      * @param request 请求参数
      * @return 响应参数（包含最终 OSS 音频 URL）
      */
     TtsResponse generate(TtsRequest request);
+
+    /**
+     * CosyVoice 语音合成
+     * @param request 请求参数
+     * @return 响应参数（包含最终 OSS 音频 URL）
+     */
+    TtsResponse cosyVoiceGenerate(CosyVoiceTtsRequest request);
 }

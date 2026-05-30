@@ -56,7 +56,7 @@ public class SecurityUtils {
      * @return UserDetails
      */
     public static UserDetails getCurrentUser() {
-        UserDetailsService userDetailsService = SpringBeanHolder.getBean(UserDetailsService.class);
+        UserDetailsService userDetailsService = SpringBeanHolder.getBean("userDetailsService");
         return userDetailsService.loadUserByUsername(getCurrentUsername());
     }
 

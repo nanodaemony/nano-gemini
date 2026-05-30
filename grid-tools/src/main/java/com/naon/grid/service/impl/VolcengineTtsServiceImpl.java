@@ -97,7 +97,7 @@ public class VolcengineTtsServiceImpl implements VolcengineTtsService {
             TtsRecord record = new TtsRecord();
             record.setVoice(request.getSpeaker());
             record.setText(request.getText());
-            record.setModel(request.getModel());
+            record.setModel("seed-tts-2.0-standard");
             record.setVendor("volcengine");
             record.setFinalAudioUrl(finalAudioUrl);
             record.setRequestId(apiRequestId);
@@ -175,38 +175,37 @@ public class VolcengineTtsServiceImpl implements VolcengineTtsService {
     private JSONObject buildVolcengineRequest(VolcengineTtsRequest request) {
         JSONObject result = new JSONObject();
 
+        // user 信息
         JSONObject user = new JSONObject();
         user.put("uid", "tts-batch");
         result.put("user", user);
 
+        // req_params 主体
         JSONObject reqParams = new JSONObject();
         reqParams.put("text", request.getText());
         reqParams.put("speaker", request.getSpeaker());
 
-        if (StringUtils.isNotBlank(request.getModel())) {
-            reqParams.put("model", request.getModel());
-        }
-
+        // 音频参数（固定为 MP3 + 24kHz，教学场景足够）
         JSONObject audioParams = new JSONObject();
-        if (request.getAudioParams() != null) {
-            VolcengineTtsRequest.AudioParams params = request.getAudioParams();
-            audioParams.put("format", StringUtils.isNotBlank(params.getFormat()) ? params.getFormat() : "mp3");
-            audioParams.put("sample_rate", params.getSampleRate() != null ? params.getSampleRate() : 24000);
-            if (params.getSpeechRate() != null) {
-                audioParams.put("speech_rate", params.getSpeechRate());
-            }
-            if (params.getLoudnessRate() != null) {
-                audioParams.put("loudness_rate", params.getLoudnessRate());
-            }
-        } else {
-            audioParams.put("format", "mp3");
-            audioParams.put("sample_rate", 24000);
+        audioParams.put("format", "mp3");
+        audioParams.put("sample_rate", 24000);
+        if (request.getSpeechRate() != null) {
+            audioParams.put("speech_rate", request.getSpeechRate());
         }
         reqParams.put("audio_params", audioParams);
 
+        // 自定义扩展参数 additions（JSON 字符串）
+        JSONObject additions = new JSONObject();
+        if (StringUtils.isNotBlank(request.getExplicitLanguage())) {
+            additions.put("explicit_language", request.getExplicitLanguage());
+        }
         if (request.getContextTexts() != null && !request.getContextTexts().isEmpty()) {
-            JSONObject additions = new JSONObject();
             additions.put("context_texts", request.getContextTexts());
+        }
+        if (request.getSilenceDuration() != null) {
+            additions.put("silence_duration", request.getSilenceDuration());
+        }
+        if (!additions.isEmpty()) {
             reqParams.put("additions", additions.toJSONString());
         }
 
@@ -278,9 +277,7 @@ public class VolcengineTtsServiceImpl implements VolcengineTtsService {
 
     private String uploadToOss(byte[] audioBytes, VolcengineTtsRequest request) {
         String bucketName = aliOssConfig.getBucketName();
-        String format = (request.getAudioParams() != null && StringUtils.isNotBlank(request.getAudioParams().getFormat()))
-                ? request.getAudioParams().getFormat()
-                : "mp3";
+        String format = "mp3";
         String fileRealName = IdUtil.simpleUUID() + "." + format;
         String originalFilename = "tts-volcengine-" + System.currentTimeMillis() + "." + format;
 

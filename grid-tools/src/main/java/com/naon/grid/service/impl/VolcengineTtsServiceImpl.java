@@ -207,7 +207,7 @@ public class VolcengineTtsServiceImpl implements VolcengineTtsService {
         if (request.getContextTexts() != null && !request.getContextTexts().isEmpty()) {
             JSONObject additions = new JSONObject();
             additions.put("context_texts", request.getContextTexts());
-            reqParams.put("additions", additions);
+            reqParams.put("additions", additions.toJSONString());
         }
 
         result.put("req_params", reqParams);

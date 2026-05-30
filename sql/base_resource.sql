@@ -46,6 +46,29 @@ CREATE TABLE `tts_record` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='TTS语音合成记录';
 
 -- ----------------------------
+-- 文生图生成记录表（千问 Qwen-Image）
+-- ----------------------------
+DROP TABLE IF EXISTS `image_record`;
+CREATE TABLE `image_record` (
+    `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '主键',
+    `prompt` text NOT NULL COMMENT '正向提示词',
+    `negative_prompt` text DEFAULT NULL COMMENT '反向提示词',
+    `model` varchar(255) NOT NULL COMMENT '模型名称',
+    `size` varchar(50) DEFAULT NULL COMMENT '分辨率',
+    `image_count` int(11) DEFAULT 1 COMMENT '生成图像数量',
+    `prompt_extend` bit(1) DEFAULT b'1' COMMENT '是否开启 Prompt 智能改写',
+    `watermark` bit(1) DEFAULT b'0' COMMENT '是否添加水印',
+    `seed` bigint(20) DEFAULT NULL COMMENT '随机数种子',
+    `final_image_url` varchar(500) NOT NULL COMMENT '最终图片地址',
+    `request_id` varchar(255) NOT NULL COMMENT '请求ID',
+    `create_by` varchar(255) DEFAULT NULL COMMENT '创建者',
+    `update_by` varchar(255) DEFAULT NULL COMMENT '更新者',
+    `create_time` datetime DEFAULT NULL COMMENT '创建日期',
+    `update_time` datetime DEFAULT NULL COMMENT '更新时间',
+    PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='文生图生成记录';
+
+-- ----------------------------
 -- 系统日志表
 -- ----------------------------
 CREATE TABLE `sys_log` (

@@ -44,6 +44,16 @@ public class TranslateController {
 
     private final TranslateService translateService;
 
+    /**
+     * 进行翻译
+     * @param request 请求
+     * {
+     *   "model": "qwen-mt-flash",
+     *   "sourceText": "我喜欢吃苹果，你喜欢吗",
+     *   "targetLanguage": "th"
+     * }
+     * @return 翻译结果
+     */
     @Log("执行翻译")
     @ApiOperation("执行翻译")
     @AnonymousPostMapping

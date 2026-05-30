@@ -87,6 +87,9 @@ ali:
     api-key: ${DASHSCOPE_API_KEY:}
   translate:
     api-key: ${DASHSCOPE_API_KEY:}
+  image:
+    api-key: ${DASHSCOPE_API_KEY:}
+    base-url: ${ALI_IMAGE_BASE_URL:https://dashscope.aliyuncs.com/api/v1}
 volcengine:
   tts:
     api-key: ${VOLCENGINE_API_KEY:}

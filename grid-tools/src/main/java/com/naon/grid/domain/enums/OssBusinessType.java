@@ -34,6 +34,9 @@ public enum OssBusinessType {
     /** 语音合成 */
     TTS("tts"),
 
+    /** 图片生成 */
+    IMAGE("image"),
+
     /** 用户头像 */
     AVATAR("avatar"),
 

@@ -30,8 +30,8 @@ public class AppCharCharacterDetailVO implements Serializable {
     @ApiModelProperty(value = "拼音")
     private String pinyin;
 
-    @ApiModelProperty(value = "读音音频资源ID")
-    private Long audioId;
+    @ApiModelProperty(value = "读音音频资源")
+    private AudioVO audio;
 
     @ApiModelProperty(value = "繁体字")
     private String traditional;
@@ -61,9 +61,6 @@ public class AppCharCharacterDetailVO implements Serializable {
         @ApiModelProperty(value = "辨析唯一ID")
         private Integer id;
 
-        @ApiModelProperty(value = "汉字ID")
-        private Integer charId;
-
         @ApiModelProperty(value = "辨析汉字")
         private String discrimChar;
 
@@ -79,13 +76,23 @@ public class AppCharCharacterDetailVO implements Serializable {
 
     @Getter
     @Setter
+    public static class AudioVO implements Serializable {
+
+        @ApiModelProperty(value = "音频文件地址")
+        private String audioUrl;
+    }
+
+    @Getter
+    @Setter
+    public static class ImageVO implements Serializable {
+
+        @ApiModelProperty(value = "图片文件地址")
+        private String imageUrl;
+    }
+
+    @Getter
+    @Setter
     public static class CharWordVO implements Serializable {
-
-        @ApiModelProperty(value = "组词唯一ID")
-        private Integer id;
-
-        @ApiModelProperty(value = "汉字ID")
-        private Integer charId;
 
         @ApiModelProperty(value = "组词")
         private String wordItem;
@@ -112,6 +119,6 @@ public class AppCharCharacterDetailVO implements Serializable {
         private List<TextTranslationVO> exampleTranslations;
 
         @ApiModelProperty(value = "例句图片")
-        private String exampleImage;
+        private ImageVO exampleImage;
     }
 }

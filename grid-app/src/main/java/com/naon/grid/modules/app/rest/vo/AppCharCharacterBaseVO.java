@@ -30,7 +30,4 @@ public class AppCharCharacterBaseVO implements Serializable {
     @ApiModelProperty(value = "拼音")
     private String pinyin;
 
-    @ApiModelProperty(value = "读音音频资源ID")
-    private Long audioId;
-
 }

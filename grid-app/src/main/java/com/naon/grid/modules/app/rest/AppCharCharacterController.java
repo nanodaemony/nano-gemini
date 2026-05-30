@@ -6,9 +6,13 @@ import com.naon.grid.backend.service.character.CharCharacterService;
 import com.naon.grid.backend.service.character.dto.CharCharacterDto;
 import com.naon.grid.backend.service.character.dto.CharDiscriminationDto;
 import com.naon.grid.backend.service.character.dto.CharWordDto;
+import com.naon.grid.backend.service.resource.AudioResourceService;
+import com.naon.grid.backend.service.resource.dto.AudioResourceDto;
 import com.naon.grid.modules.app.rest.request.AppCharCharacterSearchRequest;
 import com.naon.grid.modules.app.rest.vo.AppCharCharacterBaseVO;
 import com.naon.grid.modules.app.rest.vo.AppCharCharacterDetailVO;
+import com.naon.grid.service.AliOssStorageService;
+import com.naon.grid.service.dto.AliOssStorageDto;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
@@ -30,6 +34,8 @@ import java.util.stream.Collectors;
 public class AppCharCharacterController {
 
     private final CharCharacterService charCharacterService;
+    private final AudioResourceService audioResourceService;
+    private final AliOssStorageService aliOssStorageService;
 
     @ApiOperation("搜索汉字（仅匹配汉字字段）")
     @AnonymousGetMapping("/search")
@@ -61,7 +67,6 @@ public class AppCharCharacterController {
         vo.setCharacter(dto.getCharacter());
         vo.setLevel(dto.getLevel());
         vo.setPinyin(dto.getPinyin());
-        vo.setAudioId(dto.getAudioId());
         return vo;
     }
 
@@ -72,7 +77,14 @@ public class AppCharCharacterController {
         vo.setCharacter(dto.getCharacter());
         vo.setLevel(dto.getLevel());
         vo.setPinyin(dto.getPinyin());
-        vo.setAudioId(dto.getAudioId());
+        if (dto.getAudioId() != null) {
+            AudioResourceDto audioDto = audioResourceService.findById(dto.getAudioId());
+            if (audioDto != null) {
+                AppCharCharacterDetailVO.AudioVO audioVO = new AppCharCharacterDetailVO.AudioVO();
+                audioVO.setAudioUrl(audioDto.getFileUrl());
+                vo.setAudio(audioVO);
+            }
+        }
         vo.setTraditional(dto.getTraditional());
         vo.setRadical(dto.getRadical());
         vo.setStroke(dto.getStroke());
@@ -93,7 +105,6 @@ public class AppCharCharacterController {
     private AppCharCharacterDetailVO.CharDiscriminationVO toDiscriminationVO(CharDiscriminationDto dto) {
         AppCharCharacterDetailVO.CharDiscriminationVO vo = new AppCharCharacterDetailVO.CharDiscriminationVO();
         vo.setId(dto.getId());
-        vo.setCharId(dto.getCharId());
         vo.setDiscrimChar(dto.getDiscrimChar());
         vo.setDiscrimPinyin(dto.getDiscrimPinyin());
         vo.setDiscrimCharTranslations(toTextTranslationVOList(dto.getDiscrimCharTranslations()));
@@ -110,8 +121,6 @@ public class AppCharCharacterController {
 
     private AppCharCharacterDetailVO.CharWordVO toWordVO(CharWordDto dto) {
         AppCharCharacterDetailVO.CharWordVO vo = new AppCharCharacterDetailVO.CharWordVO();
-        vo.setId(dto.getId());
-        vo.setCharId(dto.getCharId());
         vo.setWordItem(dto.getWordItem());
         vo.setLevel(dto.getLevel());
         vo.setPinyin(dto.getPinyin());
@@ -120,7 +129,19 @@ public class AppCharCharacterController {
         vo.setExampleSentence(dto.getExampleSentence());
         vo.setExamplePinyin(dto.getExamplePinyin());
         vo.setExampleTranslations(toTextTranslationVOList(dto.getExampleTranslations()));
-        vo.setExampleImage(dto.getExampleImage());
+        if (dto.getExampleImage() != null) {
+            try {
+                Long imageId = Long.parseLong(dto.getExampleImage());
+                AliOssStorageDto ossDto = aliOssStorageService.findById(imageId);
+                if (ossDto != null) {
+                    AppCharCharacterDetailVO.ImageVO imageVO = new AppCharCharacterDetailVO.ImageVO();
+                    imageVO.setImageUrl(ossDto.getFileUrl());
+                    vo.setExampleImage(imageVO);
+                }
+            } catch (NumberFormatException e) {
+                // 不是有效的ID，忽略
+            }
+        }
         return vo;
     }
 

@@ -43,7 +43,7 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequiredArgsConstructor
-@Api(tags = "词汇：词汇管理")
+@Api(tags = "后台：词汇-词汇管理")
 @RequestMapping("/api/vocabulary")
 public class VocabWordController {
 

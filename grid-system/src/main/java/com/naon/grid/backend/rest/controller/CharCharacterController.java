@@ -38,7 +38,7 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequiredArgsConstructor
-@Api(tags = "汉字：汉字管理")
+@Api(tags = "后台：汉字-汉字管理")
 @RequestMapping("/api/character")
 public class CharCharacterController {
 

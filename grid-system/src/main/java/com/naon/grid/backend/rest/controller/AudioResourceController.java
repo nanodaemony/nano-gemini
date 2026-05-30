@@ -28,7 +28,7 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequiredArgsConstructor
-@Api(tags = "音频：音频资源管理")
+@Api(tags = "后台：音频-音频资源管理")
 @RequestMapping("/api/audio-resource")
 public class AudioResourceController {
 

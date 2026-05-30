@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/app/character")
-@Api(tags = "应用：汉字接口")
+@Api(tags = "用户：汉字接口")
 public class AppCharCharacterController {
 
     private final CharCharacterService charCharacterService;

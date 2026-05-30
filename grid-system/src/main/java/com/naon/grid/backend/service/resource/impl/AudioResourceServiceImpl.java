@@ -16,6 +16,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Service
 @RequiredArgsConstructor
 public class AudioResourceServiceImpl implements AudioResourceService {
@@ -49,6 +53,17 @@ public class AudioResourceServiceImpl implements AudioResourceService {
             throw new EntityNotFoundException(AudioResource.class, "id", String.valueOf(id));
         }
         return audioResourceMapper.toDto(audioResource);
+    }
+
+    @Override
+    public List<AudioResourceDto> findByIds(List<Long> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return Collections.emptyList();
+        }
+        List<AudioResource> entities = audioResourceRepository.findByIdInAndStatus(ids, 1);
+        return entities.stream()
+                .map(audioResourceMapper::toDto)
+                .collect(Collectors.toList());
     }
 
     @Override

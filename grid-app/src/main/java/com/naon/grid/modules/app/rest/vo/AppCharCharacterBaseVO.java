@@ -33,18 +33,4 @@ public class AppCharCharacterBaseVO implements Serializable {
     @ApiModelProperty(value = "读音音频资源ID")
     private Long audioId;
 
-    @ApiModelProperty(value = "繁体字")
-    private String traditional;
-
-    @ApiModelProperty(value = "部首")
-    private String radical;
-
-    @ApiModelProperty(value = "笔顺")
-    private String stroke;
-
-    @ApiModelProperty(value = "汉字说明")
-    private String charDesc;
-
-    @ApiModelProperty(value = "汉字说明的多语种翻译")
-    private List<TextTranslationVO> descTranslations;
 }

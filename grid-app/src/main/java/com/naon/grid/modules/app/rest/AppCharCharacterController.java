@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/app/character")
-@Api(tags = "应用：汉字查询接口")
+@Api(tags = "应用：汉字接口")
 public class AppCharCharacterController {
 
     private final CharCharacterService charCharacterService;
@@ -62,11 +62,6 @@ public class AppCharCharacterController {
         vo.setLevel(dto.getLevel());
         vo.setPinyin(dto.getPinyin());
         vo.setAudioId(dto.getAudioId());
-        vo.setTraditional(dto.getTraditional());
-        vo.setRadical(dto.getRadical());
-        vo.setStroke(dto.getStroke());
-        vo.setCharDesc(dto.getCharDesc());
-        vo.setDescTranslations(toTextTranslationVOList(dto.getDescTranslations()));
         return vo;
     }
 

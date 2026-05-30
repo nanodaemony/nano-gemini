@@ -36,6 +36,7 @@ import com.naon.grid.exception.BadRequestException;
 import com.naon.grid.repository.AliOssStorageRepository;
 import com.naon.grid.repository.ImageRecordRepository;
 import com.naon.grid.service.ImageService;
+import com.naon.grid.service.dto.OssImageResult;
 import com.naon.grid.service.dto.QwenImageBatchRequest;
 import com.naon.grid.service.dto.QwenImageBatchResponse;
 import com.naon.grid.service.dto.QwenImageRequest;
@@ -104,14 +105,14 @@ public class ImageServiceImpl implements ImageService {
                     StringUtils.truncate(request.getPrompt(), 50), request.getModel(), requestId, imageUrl);
 
             // 下载并上传到 OSS
-            String finalUrl = downloadAndUploadToOss(imageUrl);
+            OssImageResult ossResult = downloadAndUploadToOss(imageUrl);
 
             // 保存记录
             saveImageRecord(request.getPrompt(), request.getNegativePrompt(), request.getModel(),
                     request.getSize(), 1, request.getPromptExtend(), request.getWatermark(),
-                    request.getSeed(), finalUrl, requestId);
+                    request.getSeed(), ossResult.getImageUrl(), requestId);
 
-            return new QwenImageResponse(finalUrl);
+            return new QwenImageResponse(ossResult);
 
         } catch (BadRequestException e) {
             throw e;
@@ -162,19 +163,19 @@ public class ImageServiceImpl implements ImageService {
                     requestId, imageCount, contentList.size());
 
             // 处理每张图片
-            List<String> ossUrls = new ArrayList<>();
+            List<OssImageResult> ossResults = new ArrayList<>();
             for (int i = 0; i < contentList.size(); i++) {
                 String tempImageUrl = extractImageUrlFromContent(contentList.get(i));
-                String finalUrl = downloadAndUploadToOss(tempImageUrl);
-                ossUrls.add(finalUrl);
+                OssImageResult ossResult = downloadAndUploadToOss(tempImageUrl);
+                ossResults.add(ossResult);
 
                 // 每张图保存一条独立记录
                 saveImageRecord(request.getPrompt(), request.getNegativePrompt(), request.getModel(),
                         request.getSize(), imageCount, request.getPromptExtend(), request.getWatermark(),
-                        request.getSeed(), finalUrl, requestId);
+                        request.getSeed(), ossResult.getImageUrl(), requestId);
             }
 
-            return new QwenImageBatchResponse(ossUrls);
+            return new QwenImageBatchResponse(ossResults);
 
         } catch (BadRequestException e) {
             throw e;
@@ -291,8 +292,9 @@ public class ImageServiceImpl implements ImageService {
 
     /**
      * 从临时 URL 下载图片并上传到自有 OSS
+     * @return OSS 存储记录 ID 与访问 URL
      */
-    private String downloadAndUploadToOss(String imageUrl) {
+    private OssImageResult downloadAndUploadToOss(String imageUrl) {
         byte[] imageBytes;
         try (InputStream in = new URL(imageUrl).openStream()) {
             imageBytes = IoUtil.readBytes(in);
@@ -328,7 +330,7 @@ public class ImageServiceImpl implements ImageService {
             storage.setBusinessType(OssBusinessType.IMAGE.getValue());
             aliOssStorageRepository.save(storage);
 
-            return fileUrl;
+            return new OssImageResult(storage.getId(), fileUrl);
 
         } catch (Exception e) {
             log.error("上传图片到 OSS 失败: {}", e.getMessage(), e);

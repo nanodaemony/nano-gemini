@@ -13,23 +13,29 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package com.naon.grid.service.dto;
+package com.naon.grid.service.impl;
 
-import io.swagger.annotations.ApiModelProperty;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import com.naon.grid.service.AliOssStorageService;
+import com.naon.grid.service.OssResourceService;
+import com.naon.grid.service.dto.AliOssStorageDto;
+import org.springframework.stereotype.Service;
 
 /**
- * 千问文生图（Qwen-Image）响应 DTO
+ * OSS 资源查询 Service 实现
  * @author nano
  * @date 2026-05-30
  */
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-public class QwenImageResponse {
+@Slf4j
+@Service
+@RequiredArgsConstructor
+public class OssResourceServiceImpl implements OssResourceService {
 
-    @ApiModelProperty(value = "生成图像的 OSS 存储记录 ID 与访问 URL")
-    private OssImageResult result;
+    private final AliOssStorageService aliOssStorageService;
+
+    @Override
+    public AliOssStorageDto findById(Long id) {
+        return aliOssStorageService.findById(id);
+    }
 }

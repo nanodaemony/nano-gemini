@@ -32,6 +32,6 @@ import java.util.List;
 @AllArgsConstructor
 public class QwenImageBatchResponse {
 
-    @ApiModelProperty(value = "生成图像的 OSS 永久 URL 列表")
-    private List<String> imageUrls;
+    @ApiModelProperty(value = "生成图像的 OSS 存储记录 ID 与访问 URL 列表")
+    private List<OssImageResult> results;
 }

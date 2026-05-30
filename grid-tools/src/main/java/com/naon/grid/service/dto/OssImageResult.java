@@ -21,15 +21,18 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * 千问文生图（Qwen-Image）响应 DTO
+ * 图片上传至 OSS 后的结果包装对象
  * @author nano
  * @date 2026-05-30
  */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class QwenImageResponse {
+public class OssImageResult {
 
-    @ApiModelProperty(value = "生成图像的 OSS 存储记录 ID 与访问 URL")
-    private OssImageResult result;
+    @ApiModelProperty(value = "OSS 存储记录 ID")
+    private Long imageId;
+
+    @ApiModelProperty(value = "生成图像的 OSS 永久 URL")
+    private String imageUrl;
 }

@@ -115,6 +115,12 @@ public class CharCharacterServiceImpl implements CharCharacterService {
         charCharacterRepository.save(charCharacter);
     }
 
+    @Override
+    public List<CharCharacterDto> searchByCharacter(String blurry) {
+        List<CharCharacter> characters = charCharacterRepository.findByCharacterContainingAndStatus(blurry, StatusEnum.ENABLED.getCode());
+        return characters.stream().map(charCharacterMapper::toDto).collect(java.util.stream.Collectors.toList());
+    }
+
     private void saveChildren(CharCharacterDto resources, Integer charId) {
         if (resources.getDiscriminations() != null) {
             for (CharDiscriminationDto discriminationDto : resources.getDiscriminations()) {

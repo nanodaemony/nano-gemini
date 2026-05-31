@@ -11,7 +11,6 @@ import com.naon.grid.utils.PageResult;
 import com.naon.grid.utils.PageUtil;
 import com.naon.grid.utils.QueryHelp;
 import lombok.RequiredArgsConstructor;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -36,23 +35,22 @@ public class VocabOutlineRecordServiceImpl implements VocabOutlineRecordService 
             return;
         }
 
-        // 尝试直接增加计数（避免先查询再插入的竞态条件）
-        int updated = vocabOutlineRecordRepository.incrementSearchCount(processedWord);
-        if (updated > 0) {
-            return;
-        }
-
-        // 没有更新到记录，说明是新词，尝试插入
-        try {
-            VocabOutlineRecord record = new VocabOutlineRecord();
-            record.setWord(processedWord);
-            record.setSearchCount(1);
-            record.setStatus(0); // 0:未处理
-            vocabOutlineRecordRepository.save(record);
-        } catch (DataIntegrityViolationException e) {
-            // 并发情况下，另一个线程已经插入了，再次尝试增加计数
-            vocabOutlineRecordRepository.incrementSearchCount(processedWord);
-        }
+        // 简单查询后处理
+        vocabOutlineRecordRepository.findByWord(processedWord).ifPresentOrElse(
+            record -> {
+                // 已存在，增加计数
+                record.setSearchCount(record.getSearchCount() + 1);
+                vocabOutlineRecordRepository.save(record);
+            },
+            () -> {
+                // 不存在，插入新记录
+                VocabOutlineRecord record = new VocabOutlineRecord();
+                record.setWord(processedWord);
+                record.setSearchCount(1);
+                record.setStatus(0); // 0:未处理
+                vocabOutlineRecordRepository.save(record);
+            }
+        );
     }
 
     @Override

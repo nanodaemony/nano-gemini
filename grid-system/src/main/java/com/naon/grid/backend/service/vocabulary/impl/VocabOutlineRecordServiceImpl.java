@@ -16,6 +16,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Optional;
 import java.util.regex.Pattern;
 
 @Service
@@ -35,22 +36,21 @@ public class VocabOutlineRecordServiceImpl implements VocabOutlineRecordService 
             return;
         }
 
-        // 简单查询后处理
-        vocabOutlineRecordRepository.findByWord(processedWord).ifPresentOrElse(
-            record -> {
-                // 已存在，增加计数
-                record.setSearchCount(record.getSearchCount() + 1);
-                vocabOutlineRecordRepository.save(record);
-            },
-            () -> {
-                // 不存在，插入新记录
-                VocabOutlineRecord record = new VocabOutlineRecord();
-                record.setWord(processedWord);
-                record.setSearchCount(1);
-                record.setStatus(0); // 0:未处理
-                vocabOutlineRecordRepository.save(record);
-            }
-        );
+        // 简单查询后处理 - Java 8兼容写法
+        Optional<VocabOutlineRecord> recordOpt = vocabOutlineRecordRepository.findByWord(processedWord);
+        if (recordOpt.isPresent()) {
+            // 已存在，增加计数
+            VocabOutlineRecord record = recordOpt.get();
+            record.setSearchCount(record.getSearchCount() + 1);
+            vocabOutlineRecordRepository.save(record);
+        } else {
+            // 不存在，插入新记录
+            VocabOutlineRecord record = new VocabOutlineRecord();
+            record.setWord(processedWord);
+            record.setSearchCount(1);
+            record.setStatus(0); // 0:未处理
+            vocabOutlineRecordRepository.save(record);
+        }
     }
 
     @Override

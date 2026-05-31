@@ -11,23 +11,30 @@ import com.naon.grid.backend.rest.request.VocabWordCreateRequest;
 import com.naon.grid.backend.rest.request.VocabWordQueryRequest;
 import com.naon.grid.backend.rest.vo.ExerciseOptionVO;
 import com.naon.grid.backend.rest.vo.TextTranslationVO;
+import com.naon.grid.backend.rest.vo.VocabOutlineRecordVO;
 import com.naon.grid.backend.rest.vo.VocabWordBaseVO;
 import com.naon.grid.backend.rest.vo.VocabWordCreateVO;
 import com.naon.grid.backend.rest.vo.VocabWordVO;
 import com.naon.grid.domain.common.ExerciseOption;
+import com.naon.grid.backend.service.vocabulary.VocabOutlineRecordService;
 import com.naon.grid.backend.service.vocabulary.VocabWordService;
 import com.naon.grid.backend.service.vocabulary.dto.VocabExampleDto;
 import com.naon.grid.backend.service.vocabulary.dto.VocabExerciseDto;
+import com.naon.grid.backend.service.vocabulary.dto.VocabOutlineRecordDto;
+import com.naon.grid.backend.service.vocabulary.dto.VocabOutlineRecordQueryCriteria;
 import com.naon.grid.backend.service.vocabulary.dto.VocabSenseDto;
 import com.naon.grid.backend.service.vocabulary.dto.VocabStructureDto;
 import com.naon.grid.backend.service.vocabulary.dto.VocabWordDto;
 import com.naon.grid.backend.service.vocabulary.dto.VocabWordQueryCriteria;
+import com.naon.grid.backend.service.vocabulary.mapstruct.VocabOutlineRecordMapper;
 import com.naon.grid.domain.common.TextTranslation;
 import com.naon.grid.utils.PageResult;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -48,6 +55,8 @@ import java.util.stream.Collectors;
 public class VocabWordController {
 
     private final VocabWordService vocabWordService;
+    private final VocabOutlineRecordService vocabOutlineRecordService;
+    private final VocabOutlineRecordMapper vocabOutlineRecordMapper;
 
     @Log("查询词汇详情")
     @ApiOperation("根据ID查询词汇详情")
@@ -86,6 +95,36 @@ public class VocabWordController {
     @AnonymousDeleteMapping("/{id}")
     public ResponseEntity<Object> delete(@PathVariable Integer id) {
         vocabWordService.delete(id);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    @Log("查询纲外词列表")
+    @ApiOperation("分页查询纲外词列表")
+    @AnonymousGetMapping("/outline")
+    public ResponseEntity<PageResult<VocabOutlineRecordVO>> queryOutline(
+            VocabOutlineRecordQueryCriteria criteria,
+            Pageable pageable) {
+        // 默认按搜索次数降序、创建时间降序
+        if (pageable.getSort().isEmpty()) {
+            pageable = PageRequest.of(
+                    pageable.getPageNumber(),
+                    pageable.getPageSize(),
+                    Sort.by(Sort.Direction.DESC, "searchCount")
+                            .and(Sort.by(Sort.Direction.DESC, "createTime"))
+            );
+        }
+        PageResult<VocabOutlineRecordDto> pageResult = vocabOutlineRecordService.queryAll(criteria, pageable);
+        List<VocabOutlineRecordVO> vos = pageResult.getContent().stream()
+                .map(vocabOutlineRecordMapper::toVo)
+                .collect(Collectors.toList());
+        return new ResponseEntity<>(new PageResult<>(vos, pageResult.getTotalElements()), HttpStatus.OK);
+    }
+
+    @Log("标记纲外词已处理")
+    @ApiOperation("标记纲外词为已处理")
+    @AnonymousPutMapping("/outline/{id}/complete")
+    public ResponseEntity<Object> completeOutline(@PathVariable Integer id) {
+        vocabOutlineRecordService.markAsCompleted(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 

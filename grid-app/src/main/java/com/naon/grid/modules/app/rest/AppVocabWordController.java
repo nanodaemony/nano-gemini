@@ -4,6 +4,7 @@ import com.naon.grid.annotation.rest.AnonymousGetMapping;
 import com.naon.grid.backend.rest.vo.ExerciseOptionVO;
 import com.naon.grid.backend.rest.vo.TextTranslationVO;
 import com.naon.grid.backend.service.vocabulary.VocabWordService;
+import com.naon.grid.backend.service.vocabulary.VocabOutlineRecordService;
 import com.naon.grid.backend.service.vocabulary.dto.VocabExampleDto;
 import com.naon.grid.backend.service.vocabulary.dto.VocabExerciseDto;
 import com.naon.grid.backend.service.vocabulary.dto.VocabSenseDto;
@@ -39,6 +40,7 @@ public class AppVocabWordController {
 
     private final VocabWordService vocabWordService;
     private final AudioResourceService audioResourceService;
+    private final VocabOutlineRecordService vocabOutlineRecordService;
 
     @ApiOperation("搜索词汇")
     @AnonymousGetMapping("/search")
@@ -48,6 +50,12 @@ public class AppVocabWordController {
         Pageable pageable = PageRequest.of(0, 100, Sort.by(Sort.Direction.ASC, "id"));
         List<VocabWordDto> dtos = vocabWordService.queryAll(criteria, pageable).getContent();
         List<AppVocabWordBaseVO> vos = toBaseVOList(dtos);
+
+        // 如果搜索结果为空，记录纲外词
+        if (vos.isEmpty()) {
+            vocabOutlineRecordService.recordIfNeeded(request.getBlurry());
+        }
+
         return new ResponseEntity<>(vos, HttpStatus.OK);
     }
 

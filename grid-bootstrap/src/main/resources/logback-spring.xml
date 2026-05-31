@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <!-- 变量定义 -->
+    <property name="LOG_PATH" value="logs"/>
+    <property name="LOG_PATTERN" value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] [%X{traceId}] %-5level %logger{36} - %msg%n"/>
+    <property name="MAX_FILE_SIZE" value="100MB"/>
+    <property name="MAX_HISTORY" value="30"/>
+
+    <!-- 控制台 Appender -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>${LOG_PATTERN}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+
+    <!-- INFO 文件 Appender（包含 INFO+WARN+ERROR） -->
+    <appender name="INFO_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_PATH}/info.log</file>
+        <encoder>
+            <pattern>${LOG_PATTERN}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_PATH}/archive/info-%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
+            <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <maxFileSize>${MAX_FILE_SIZE}</maxFileSize>
+            </timeBasedFileNamingAndTriggeringPolicy>
+            <maxHistory>${MAX_HISTORY}</maxHistory>
+        </rollingPolicy>
+    </appender>
+
+    <!-- ERROR 文件 Appender（仅 ERROR） -->
+    <appender name="ERROR_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_PATH}/error.log</file>
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>ERROR</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+        <encoder>
+            <pattern>${LOG_PATTERN}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_PATH}/archive/error-%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
+            <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <maxFileSize>${MAX_FILE_SIZE}</maxFileSize>
+            </timeBasedFileNamingAndTriggeringPolicy>
+            <maxHistory>${MAX_HISTORY}</maxHistory>
+        </rollingPolicy>
+    </appender>
+
+    <!-- 异步 INFO Appender -->
+    <appender name="ASYNC_INFO" class="ch.qos.logback.classic.AsyncAppender">
+        <queueSize>512</queueSize>
+        <discardingThreshold>128</discardingThreshold>
+        <neverBlock>false</neverBlock>
+        <appender-ref ref="INFO_FILE"/>
+    </appender>
+
+    <!-- 异步 ERROR Appender -->
+    <appender name="ASYNC_ERROR" class="ch.qos.logback.classic.AsyncAppender">
+        <queueSize>512</queueSize>
+        <discardingThreshold>0</discardingThreshold>
+        <neverBlock>false</neverBlock>
+        <appender-ref ref="ERROR_FILE"/>
+    </appender>
+
+    <!-- Spring Profile: dev -->
+    <springProfile name="dev">
+        <root level="INFO">
+            <appender-ref ref="CONSOLE"/>
+            <appender-ref ref="ASYNC_INFO"/>
+            <appender-ref ref="ASYNC_ERROR"/>
+        </root>
+        <!-- 细化 SQL 日志 -->
+        <logger name="org.hibernate.SQL" level="DEBUG"/>
+        <logger name="org.hibernate.type.descriptor.sql.BasicBinder" level="TRACE"/>
+    </springProfile>
+
+    <!-- Spring Profile: prod -->
+    <springProfile name="prod">
+        <root level="INFO">
+            <appender-ref ref="ASYNC_INFO"/>
+            <appender-ref ref="ASYNC_ERROR"/>
+        </root>
+    </springProfile>
+
+    <!-- Spring Profile: quartz -->
+    <springProfile name="quartz">
+        <root level="INFO">
+            <appender-ref ref="ASYNC_INFO"/>
+            <appender-ref ref="ASYNC_ERROR"/>
+        </root>
+    </springProfile>
+
+</configuration>

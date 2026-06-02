@@ -68,6 +68,26 @@ public class CharCharacterServiceImpl implements CharCharacterService {
         if (charCharacter.getId() == null || StatusEnum.DISABLED.getCode().equals(charCharacter.getStatus())) {
             throw new EntityNotFoundException(CharCharacter.class, "id", String.valueOf(id));
         }
+
+        // If in DRAFT or REVIEWED status, return draftContent
+        if (EditStatusEnum.DRAFT.getCode().equals(charCharacter.getEditStatus()) ||
+            EditStatusEnum.REVIEWED.getCode().equals(charCharacter.getEditStatus())) {
+            if (charCharacter.getDraftContent() == null) {
+                throw new BadRequestException("Draft content not found");
+            }
+            CharCharacterDto dto = JsonUtils.fromJson(charCharacter.getDraftContent(), CharCharacterDto.class);
+            dto.setId(charCharacter.getId());
+            dto.setStatus(charCharacter.getStatus());
+            dto.setPublishStatus(charCharacter.getPublishStatus());
+            dto.setEditStatus(charCharacter.getEditStatus());
+            dto.setCreateBy(charCharacter.getCreateBy());
+            dto.setUpdateBy(charCharacter.getUpdateBy());
+            dto.setCreateTime(charCharacter.getCreateTime());
+            dto.setUpdateTime(charCharacter.getUpdateTime());
+            return dto;
+        }
+
+        // If in PUBLISHED status, return main table + child tables
         CharCharacterDto charCharacterDto = charCharacterMapper.toDto(charCharacter);
         charCharacterDto.setDiscriminations(convertToDiscriminationDtos(charDiscriminationRepository.findByCharIdAndStatus(id, StatusEnum.ENABLED.getCode())));
         charCharacterDto.setWords(convertToWordDtos(charWordRepository.findByCharIdAndStatus(id, StatusEnum.ENABLED.getCode())));

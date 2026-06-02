@@ -416,9 +416,8 @@ public class CharCharacterServiceImpl implements CharCharacterService {
         // Parse draft content
         CharCharacterDto draftDto = JsonUtils.fromJson(charCharacter.getDraftContent(), CharCharacterDto.class);
 
-        // Update main table fields
+        // Update main table fields (character字段不更新)
         charCharacter.setSequenceNo(draftDto.getSequenceNo());
-        charCharacter.setCharacter(draftDto.getCharacter());
         charCharacter.setLevel(draftDto.getLevel());
         charCharacter.setPinyin(draftDto.getPinyin());
         charCharacter.setAudioId(draftDto.getAudioId());

@@ -33,8 +33,7 @@ public class VocabWord extends BaseEntity implements Serializable {
     @ApiModelProperty(value = "繁体词汇")
     private String wordTraditional;
 
-    @NotBlank
-    @Column(name = "pinyin", nullable = false, length = 100)
+    @Column(name = "pinyin", length = 100)
     @ApiModelProperty(value = "标准拼音（含声调）")
     private String pinyin;
 

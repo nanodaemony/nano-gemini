@@ -5,7 +5,8 @@ import lombok.Getter;
 @Getter
 public enum EditStatusEnum {
     DRAFT("draft", "草稿"),
-    REVIEWED("reviewed", "已审核");
+    REVIEWED("reviewed", "已审核"),
+    PUBLISHED("published", "已发布");
 
     private final String code;
     private final String description;

@@ -14,7 +14,6 @@ import com.naon.grid.backend.rest.vo.CharCharacterVO;
 import com.naon.grid.backend.rest.vo.TextTranslationVO;
 import com.naon.grid.backend.service.character.CharCharacterService;
 import com.naon.grid.backend.service.character.dto.CharCharacterDto;
-import com.naon.grid.backend.service.character.dto.CharCharacterDraftDto;
 import com.naon.grid.backend.service.character.dto.CharCharacterQueryCriteria;
 import com.naon.grid.backend.service.character.dto.CharDiscriminationDto;
 import com.naon.grid.backend.service.character.dto.CharWordDto;
@@ -85,56 +84,6 @@ public class CharCharacterController {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
-    @Log("查询汉字草稿详情")
-    @ApiOperation("根据ID查询汉字草稿详情")
-    @AnonymousGetMapping("/{id}/draft")
-    public ResponseEntity<CharCharacterVO> getDraft(@PathVariable Integer id) {
-        CharCharacterDraftDto draftDto = charCharacterService.getDraft(id);
-        // 转换为VO
-        CharCharacterVO vo = new CharCharacterVO();
-        vo.setId(draftDto.getId());
-        vo.setSequenceNo(draftDto.getSequenceNo());
-        vo.setCharacter(draftDto.getCharacter());
-        vo.setLevel(draftDto.getLevel());
-        vo.setPinyin(draftDto.getPinyin());
-        vo.setAudioId(draftDto.getAudioId());
-        vo.setTraditional(draftDto.getTraditional());
-        vo.setRadical(draftDto.getRadical());
-        vo.setStroke(draftDto.getStroke());
-        vo.setCharDesc(draftDto.getCharDesc());
-        vo.setDescTranslations(toTextTranslationVOList(draftDto.getDescTranslations()));
-        vo.setDiscriminations(toDiscriminationVOList(draftDto.getDiscriminations()));
-        vo.setWords(toWordVOList(draftDto.getWords()));
-        return new ResponseEntity<>(vo, HttpStatus.OK);
-    }
-
-    @Log("新增汉字草稿")
-    @ApiOperation("新增汉字草稿")
-    @AnonymousPostMapping("/draft")
-    public ResponseEntity<CharCharacterCreateVO> createDraft(@Valid @RequestBody CharCharacterCreateRequest request) {
-        CharCharacterDraftDto draftDto = convertToDraftDto(request);
-        CharCharacterCreateVO vo = new CharCharacterCreateVO();
-        vo.setId(charCharacterService.createDraft(draftDto));
-        return new ResponseEntity<>(vo, HttpStatus.CREATED);
-    }
-
-    @Log("修改汉字草稿")
-    @ApiOperation("修改汉字草稿")
-    @AnonymousPutMapping("/{id}/draft")
-    public ResponseEntity<Object> updateDraft(@PathVariable Integer id, @Valid @RequestBody CharCharacterCreateRequest request) {
-        CharCharacterDraftDto draftDto = convertToDraftDto(request);
-        charCharacterService.saveDraft(id, draftDto);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-    }
-
-    @Log("从已发布内容创建草稿")
-    @ApiOperation("从已发布内容创建草稿")
-    @AnonymousPostMapping("/{id}/draft/from-published")
-    public ResponseEntity<Object> createDraftFromPublished(@PathVariable Integer id) {
-        charCharacterService.createDraftFromPublished(id);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-    }
-
     @Log("审核汉字草稿")
     @ApiOperation("审核汉字草稿（草稿→已审核）")
     @AnonymousPutMapping("/{id}/review")
@@ -167,23 +116,6 @@ public class CharCharacterController {
 
     private CharCharacterDto toDto(CharCharacterCreateRequest request) {
         CharCharacterDto dto = new CharCharacterDto();
-        dto.setSequenceNo(request.getSequenceNo());
-        dto.setCharacter(request.getCharacter());
-        dto.setLevel(request.getLevel());
-        dto.setPinyin(request.getPinyin());
-        dto.setAudioId(request.getAudioId());
-        dto.setTraditional(request.getTraditional());
-        dto.setRadical(request.getRadical());
-        dto.setStroke(request.getStroke());
-        dto.setCharDesc(request.getCharDesc());
-        dto.setDescTranslations(toTextTranslationList(request.getDescTranslations()));
-        dto.setDiscriminations(toDiscriminationDtoList(request.getDiscriminations()));
-        dto.setWords(toWordDtoList(request.getWords()));
-        return dto;
-    }
-
-    private CharCharacterDraftDto convertToDraftDto(CharCharacterCreateRequest request) {
-        CharCharacterDraftDto dto = new CharCharacterDraftDto();
         dto.setSequenceNo(request.getSequenceNo());
         dto.setCharacter(request.getCharacter());
         dto.setLevel(request.getLevel());

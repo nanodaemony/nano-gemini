@@ -28,16 +28,14 @@ public class CharCharacter extends BaseEntity implements Serializable {
     @ApiModelProperty(value = "Excel中的序号")
     private Integer sequenceNo;
 
-    @NotBlank
-    @Column(name = "`character`", nullable = false, length = 10)
+    @Column(name = "`character`", length = 10)
     private String character;
 
     @Column(name = "level", length = 20)
     @ApiModelProperty(value = "HSK等级，值为数字字符串\"1\"-\"9\"")
     private String level;
 
-    @NotBlank
-    @Column(name = "pinyin", nullable = false, length = 100)
+    @Column(name = "pinyin", length = 100)
     private String pinyin;
 
     @Column(name = "audio_id")

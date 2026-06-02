@@ -118,6 +118,9 @@ public class CharCharacterServiceImpl implements CharCharacterService {
         charCharacter.setStatus(StatusEnum.ENABLED.getCode());
         charCharacter.setPublishStatus(PublishStatusEnum.UNPUBLISHED.getCode());
         charCharacter.setEditStatus(EditStatusEnum.DRAFT.getCode());
+        charCharacter.setCharacter(resources.getCharacter());
+        charCharacter.setPinyin(resources.getPinyin());
+        charCharacter.setLevel(resources.getLevel());
         charCharacter.setDraftContent(JsonUtils.toJson(resources));
         charCharacter = charCharacterRepository.save(charCharacter);
         return charCharacter.getId();

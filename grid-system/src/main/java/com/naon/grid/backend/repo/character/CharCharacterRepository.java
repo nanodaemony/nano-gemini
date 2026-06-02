@@ -20,4 +20,14 @@ public interface CharCharacterRepository extends JpaRepository<CharCharacter, In
      */
     @Query("SELECT c FROM CharCharacter c WHERE c.character LIKE %:blurry% AND c.status = :status")
     List<CharCharacter> findByCharacterContainingAndStatus(@Param("blurry") String blurry, @Param("status") Integer status);
+
+    /**
+     * 根据汉字模糊搜索（仅匹配character字段），只返回已发布的
+     * @param blurry 搜索关键词
+     * @param status 状态
+     * @param publishStatus 发布状态
+     * @return 匹配的汉字列表
+     */
+    @Query("SELECT c FROM CharCharacter c WHERE c.character LIKE %:blurry% AND c.status = :status AND c.publishStatus = :publishStatus")
+    List<CharCharacter> findByCharacterContainingAndStatusAndPublishStatus(@Param("blurry") String blurry, @Param("status") Integer status, @Param("publishStatus") String publishStatus);
 }

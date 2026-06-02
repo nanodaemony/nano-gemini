@@ -40,7 +40,7 @@ public class AppCharCharacterController {
     @ApiOperation("搜索汉字（仅匹配汉字字段）")
     @AnonymousGetMapping("/search")
     public ResponseEntity<List<AppCharCharacterBaseVO>> search(AppCharCharacterSearchRequest request) {
-        List<CharCharacterDto> dtos = charCharacterService.searchByCharacter(request.getBlurry());
+        List<CharCharacterDto> dtos = charCharacterService.searchPublishedByCharacter(request.getBlurry());
         List<AppCharCharacterBaseVO> vos = toBaseVOList(dtos);
         return new ResponseEntity<>(vos, HttpStatus.OK);
     }

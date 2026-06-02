@@ -11,4 +11,8 @@ public class VocabWordQueryCriteria implements Serializable {
     @ApiModelProperty(value = "词汇模糊查询")
     @Query(blurry = "word")
     private String blurry;
+
+    @ApiModelProperty(value = "发布状态")
+    @Query
+    private String publishStatus;
 }

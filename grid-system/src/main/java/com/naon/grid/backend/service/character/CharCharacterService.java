@@ -28,6 +28,13 @@ public interface CharCharacterService {
     List<CharCharacterDto> searchByCharacter(String blurry);
 
     /**
+     * 根据汉字模糊搜索（仅匹配character字段），只返回已发布的
+     * @param blurry 搜索关键词
+     * @return 匹配的汉字列表
+     */
+    List<CharCharacterDto> searchPublishedByCharacter(String blurry);
+
+    /**
      * 获取草稿详情
      * @param id 汉字ID
      * @return 草稿DTO

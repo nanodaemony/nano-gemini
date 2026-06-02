@@ -124,6 +124,12 @@ public class CharCharacterServiceImpl implements CharCharacterService {
         return characters.stream().map(charCharacterMapper::toDto).collect(java.util.stream.Collectors.toList());
     }
 
+    @Override
+    public List<CharCharacterDto> searchPublishedByCharacter(String blurry) {
+        List<CharCharacter> characters = charCharacterRepository.findByCharacterContainingAndStatusAndPublishStatus(blurry, StatusEnum.ENABLED.getCode(), "published");
+        return characters.stream().map(charCharacterMapper::toDto).collect(java.util.stream.Collectors.toList());
+    }
+
     private void saveChildren(CharCharacterDto resources, Integer charId) {
         if (resources.getDiscriminations() != null) {
             for (CharDiscriminationDto discriminationDto : resources.getDiscriminations()) {

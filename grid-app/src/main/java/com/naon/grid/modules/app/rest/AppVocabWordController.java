@@ -47,6 +47,7 @@ public class AppVocabWordController {
     public ResponseEntity<List<AppVocabWordBaseVO>> search(AppVocabWordSearchRequest request) {
         VocabWordQueryCriteria criteria = new VocabWordQueryCriteria();
         criteria.setBlurry(request.getBlurry());
+        criteria.setPublishStatus("published");
         Pageable pageable = PageRequest.of(0, 100, Sort.by(Sort.Direction.ASC, "id"));
         List<VocabWordDto> dtos = vocabWordService.queryAll(criteria, pageable).getContent();
         List<AppVocabWordBaseVO> vos = toBaseVOList(dtos);

@@ -8,11 +8,14 @@ import com.naon.grid.backend.repo.character.CharDiscriminationRepository;
 import com.naon.grid.backend.repo.character.CharWordRepository;
 import com.naon.grid.backend.service.character.CharCharacterService;
 import com.naon.grid.backend.service.character.dto.CharCharacterDto;
+import com.naon.grid.backend.service.character.dto.CharCharacterDraftDto;
 import com.naon.grid.backend.service.character.dto.CharCharacterQueryCriteria;
 import com.naon.grid.backend.service.character.dto.CharDiscriminationDto;
 import com.naon.grid.backend.service.character.dto.CharWordDto;
 import com.naon.grid.backend.service.character.mapstruct.CharCharacterMapper;
 import com.naon.grid.domain.common.TextTranslation;
+import com.naon.grid.enums.EditStatusEnum;
+import com.naon.grid.enums.PublishStatusEnum;
 import com.naon.grid.enums.StatusEnum;
 import com.naon.grid.exception.BadRequestException;
 import com.naon.grid.exception.EntityNotFoundException;
@@ -326,5 +329,197 @@ public class CharCharacterServiceImpl implements CharCharacterService {
         entity.setExampleImage(dto.getExampleImage());
         entity.setStatus(StatusEnum.ENABLED.getCode());
         return entity;
+    }
+
+    @Override
+    public CharCharacterDraftDto getDraft(Integer id) {
+        CharCharacter charCharacter = charCharacterRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException(CharCharacter.class, "id", String.valueOf(id)));
+
+        if (StatusEnum.DISABLED.getCode().equals(charCharacter.getStatus())) {
+            throw new EntityNotFoundException(CharCharacter.class, "id", String.valueOf(id));
+        }
+
+        if (charCharacter.getDraftContent() != null) {
+            return JsonUtils.fromJson(charCharacter.getDraftContent(), CharCharacterDraftDto.class);
+        }
+
+        // 如果没有草稿，但有发布内容，返回发布内容
+        if (PublishStatusEnum.PUBLISHED.getCode().equals(charCharacter.getPublishStatus())) {
+            CharCharacterDto dto = charCharacterMapper.toDto(charCharacter);
+            dto.setDiscriminations(convertToDiscriminationDtos(charDiscriminationRepository.findByCharIdAndStatus(id, StatusEnum.ENABLED.getCode())));
+            dto.setWords(convertToWordDtos(charWordRepository.findByCharIdAndStatus(id, StatusEnum.ENABLED.getCode())));
+
+            // 转换为 DraftDto
+            CharCharacterDraftDto draftDto = new CharCharacterDraftDto();
+            draftDto.setId(dto.getId());
+            draftDto.setSequenceNo(dto.getSequenceNo());
+            draftDto.setCharacter(dto.getCharacter());
+            draftDto.setLevel(dto.getLevel());
+            draftDto.setPinyin(dto.getPinyin());
+            draftDto.setAudioId(dto.getAudioId());
+            draftDto.setTraditional(dto.getTraditional());
+            draftDto.setRadical(dto.getRadical());
+            draftDto.setStroke(dto.getStroke());
+            draftDto.setCharDesc(dto.getCharDesc());
+            draftDto.setDescTranslations(dto.getDescTranslations());
+            draftDto.setDiscriminations(dto.getDiscriminations());
+            draftDto.setWords(dto.getWords());
+            return draftDto;
+        }
+
+        throw new BadRequestException("草稿不存在");
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Integer createDraft(CharCharacterDraftDto draft) {
+        CharCharacter charCharacter = new CharCharacter();
+        charCharacter.setStatus(StatusEnum.ENABLED.getCode());
+        charCharacter.setPublishStatus(PublishStatusEnum.UNPUBLISHED.getCode());
+        charCharacter.setEditStatus(EditStatusEnum.DRAFT.getCode());
+        charCharacter.setDraftContent(JsonUtils.toJson(draft));
+        charCharacter = charCharacterRepository.save(charCharacter);
+        return charCharacter.getId();
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void saveDraft(Integer id, CharCharacterDraftDto draft) {
+        CharCharacter charCharacter = charCharacterRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException(CharCharacter.class, "id", String.valueOf(id)));
+
+        if (StatusEnum.DISABLED.getCode().equals(charCharacter.getStatus())) {
+            throw new EntityNotFoundException(CharCharacter.class, "id", String.valueOf(id));
+        }
+
+        charCharacter.setDraftContent(JsonUtils.toJson(draft));
+        charCharacter.setEditStatus(EditStatusEnum.DRAFT.getCode());
+        charCharacterRepository.save(charCharacter);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void reviewDraft(Integer id) {
+        CharCharacter charCharacter = charCharacterRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException(CharCharacter.class, "id", String.valueOf(id)));
+
+        if (StatusEnum.DISABLED.getCode().equals(charCharacter.getStatus())) {
+            throw new EntityNotFoundException(CharCharacter.class, "id", String.valueOf(id));
+        }
+
+        if (charCharacter.getDraftContent() == null) {
+            throw new BadRequestException("草稿不存在");
+        }
+
+        if (!EditStatusEnum.DRAFT.getCode().equals(charCharacter.getEditStatus())) {
+            throw new BadRequestException("仅草稿状态可审核");
+        }
+
+        charCharacter.setEditStatus(EditStatusEnum.REVIEWED.getCode());
+        charCharacterRepository.save(charCharacter);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void publishDraft(Integer id) {
+        CharCharacter charCharacter = charCharacterRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException(CharCharacter.class, "id", String.valueOf(id)));
+
+        if (StatusEnum.DISABLED.getCode().equals(charCharacter.getStatus())) {
+            throw new EntityNotFoundException(CharCharacter.class, "id", String.valueOf(id));
+        }
+
+        if (charCharacter.getDraftContent() == null) {
+            throw new BadRequestException("草稿不存在");
+        }
+
+        if (!EditStatusEnum.REVIEWED.getCode().equals(charCharacter.getEditStatus())) {
+            throw new BadRequestException("仅已审核状态可发布");
+        }
+
+        // 解析草稿
+        CharCharacterDraftDto draftDto = JsonUtils.fromJson(charCharacter.getDraftContent(), CharCharacterDraftDto.class);
+
+        // 更新主表
+        charCharacter.setSequenceNo(draftDto.getSequenceNo());
+        charCharacter.setCharacter(draftDto.getCharacter());
+        charCharacter.setLevel(draftDto.getLevel());
+        charCharacter.setPinyin(draftDto.getPinyin());
+        charCharacter.setAudioId(draftDto.getAudioId());
+        charCharacter.setTraditional(draftDto.getTraditional());
+        charCharacter.setRadical(draftDto.getRadical());
+        charCharacter.setStroke(draftDto.getStroke());
+        charCharacter.setCharDesc(draftDto.getCharDesc());
+        charCharacter.setDescTranslations(JsonUtils.toTranslationJson(draftDto.getDescTranslations()));
+
+        // 更新子表
+        syncDiscriminations(id, draftDto.getDiscriminations());
+        syncWords(id, draftDto.getWords());
+
+        // 更新状态
+        charCharacter.setPublishStatus(PublishStatusEnum.PUBLISHED.getCode());
+        charCharacter.setDraftContent(null);
+        charCharacterRepository.save(charCharacter);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void offline(Integer id) {
+        CharCharacter charCharacter = charCharacterRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException(CharCharacter.class, "id", String.valueOf(id)));
+
+        if (StatusEnum.DISABLED.getCode().equals(charCharacter.getStatus())) {
+            throw new EntityNotFoundException(CharCharacter.class, "id", String.valueOf(id));
+        }
+
+        // 逻辑删除子表
+        deleteChildren(id);
+
+        // 更新状态
+        charCharacter.setPublishStatus(PublishStatusEnum.UNPUBLISHED.getCode());
+        charCharacterRepository.save(charCharacter);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void createDraftFromPublished(Integer id) {
+        CharCharacter charCharacter = charCharacterRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException(CharCharacter.class, "id", String.valueOf(id)));
+
+        if (StatusEnum.DISABLED.getCode().equals(charCharacter.getStatus())) {
+            throw new EntityNotFoundException(CharCharacter.class, "id", String.valueOf(id));
+        }
+
+        // 如果已有草稿，跳过
+        if (charCharacter.getDraftContent() != null) {
+            return;
+        }
+
+        // 从正式字段构建DTO
+        CharCharacterDto dto = charCharacterMapper.toDto(charCharacter);
+        dto.setDiscriminations(convertToDiscriminationDtos(charDiscriminationRepository.findByCharIdAndStatus(id, StatusEnum.ENABLED.getCode())));
+        dto.setWords(convertToWordDtos(charWordRepository.findByCharIdAndStatus(id, StatusEnum.ENABLED.getCode())));
+
+        // 转换为 DraftDto
+        CharCharacterDraftDto draftDto = new CharCharacterDraftDto();
+        draftDto.setId(dto.getId());
+        draftDto.setSequenceNo(dto.getSequenceNo());
+        draftDto.setCharacter(dto.getCharacter());
+        draftDto.setLevel(dto.getLevel());
+        draftDto.setPinyin(dto.getPinyin());
+        draftDto.setAudioId(dto.getAudioId());
+        draftDto.setTraditional(dto.getTraditional());
+        draftDto.setRadical(dto.getRadical());
+        draftDto.setStroke(dto.getStroke());
+        draftDto.setCharDesc(dto.getCharDesc());
+        draftDto.setDescTranslations(dto.getDescTranslations());
+        draftDto.setDiscriminations(dto.getDiscriminations());
+        draftDto.setWords(dto.getWords());
+
+        // 存为草稿
+        charCharacter.setDraftContent(JsonUtils.toJson(draftDto));
+        charCharacter.setEditStatus(EditStatusEnum.DRAFT.getCode());
+        charCharacterRepository.save(charCharacter);
     }
 }

@@ -18,8 +18,6 @@ package com.naon.grid.service.impl;
 import com.alibaba.dashscope.aigc.generation.Generation;
 import com.alibaba.dashscope.aigc.generation.GenerationParam;
 import com.alibaba.dashscope.aigc.generation.GenerationResult;
-import com.alibaba.dashscope.common.Message;
-import com.alibaba.dashscope.common.Role;
 import com.alibaba.dashscope.utils.Constants;
 import com.naon.grid.config.ChatAliyunConfig;
 import com.naon.grid.enums.ChatProviderEnum;
@@ -30,9 +28,6 @@ import com.naon.grid.service.dto.ChatResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * 阿里云百炼对话 Provider
@@ -58,29 +53,17 @@ public class AliyunChatProvider implements ChatProvider {
                 Constants.baseHttpApiUrl = chatAliyunConfig.getBaseUrl();
             }
 
-            List<Message> messages = new ArrayList<>();
-            if (systemPrompt != null && !systemPrompt.isEmpty()) {
-                messages.add(Message.builder().role(Role.SYSTEM.getValue()).content(systemPrompt).build());
-            }
-            messages.add(Message.builder().role(Role.USER.getValue()).content(request.getUserPrompt()).build());
+            // 构建完整 prompt
+            String fullPrompt = buildFullPrompt(systemPrompt, request.getUserPrompt());
 
-            GenerationParam.Builder paramBuilder = GenerationParam.builder()
+            GenerationParam param = GenerationParam.builder()
                     .apiKey(chatAliyunConfig.getApiKey())
                     .model(request.getModel())
-                    .messages(messages);
-
-            if (request.getTemperature() != null) {
-                paramBuilder.temperature(request.getTemperature().floatValue());
-            }
-            if (request.getTopP() != null) {
-                paramBuilder.topP(request.getTopP().floatValue());
-            }
-            if (request.getMaxTokens() != null) {
-                paramBuilder.maxTokens(request.getMaxTokens());
-            }
+                    .prompt(fullPrompt)
+                    .build();
 
             Generation gen = new Generation();
-            GenerationResult result = gen.call(paramBuilder.build());
+            GenerationResult result = gen.call(param);
 
             String content = "";
             Integer inputTokens = null;
@@ -109,5 +92,12 @@ public class AliyunChatProvider implements ChatProvider {
             log.error("阿里云对话失败", e);
             throw new BadRequestException("阿里云对话失败: " + e.getMessage());
         }
+    }
+
+    private String buildFullPrompt(String systemPrompt, String userPrompt) {
+        if (systemPrompt != null && !systemPrompt.isEmpty()) {
+            return systemPrompt + "\n\n" + userPrompt;
+        }
+        return userPrompt;
     }
 }

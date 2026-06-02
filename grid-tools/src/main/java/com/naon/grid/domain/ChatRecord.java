@@ -98,7 +98,7 @@ public class ChatRecord implements Serializable {
 
     @ApiModelProperty(value = "请求耗时（毫秒）")
     @Column(name = "latency_ms")
-    private Integer latencyMs;
+    private Long latencyMs;
 
     @ApiModelProperty(value = "用户 ID")
     @Column(name = "user_id")

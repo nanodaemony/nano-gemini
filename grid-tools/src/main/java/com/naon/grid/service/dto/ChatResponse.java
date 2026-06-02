@@ -48,5 +48,5 @@ public class ChatResponse {
     private Integer totalTokens;
 
     @ApiModelProperty(value = "请求耗时（毫秒）")
-    private Integer latencyMs;
+    private Long latencyMs;
 }

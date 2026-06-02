@@ -21,18 +21,9 @@ import com.naon.grid.exception.BadRequestException;
 import com.naon.grid.service.ChatProvider;
 import com.naon.grid.service.dto.ChatRequest;
 import com.naon.grid.service.dto.ChatResponse;
-import com.theokanning.openai.completion.chat.ChatCompletionRequest;
-import com.theokanning.openai.completion.chat.ChatCompletionResult;
-import com.theokanning.openai.completion.chat.ChatMessage;
-import com.theokanning.openai.service.OpenAiService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import okhttp3.OkHttpClient;
 import org.springframework.stereotype.Service;
-
-import java.time.Duration;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * DeepSeek 对话 Provider
@@ -54,59 +45,13 @@ public class DeepSeekChatProvider implements ChatProvider {
     @Override
     public ChatResponse chat(ChatRequest request, String systemPrompt) {
         try {
-            String apiKey = chatDeepSeekConfig.getApiKey();
-
-            OkHttpClient client = new OkHttpClient.Builder()
-                    .connectTimeout(Duration.ofSeconds(30))
-                    .readTimeout(Duration.ofSeconds(120))
-                    .writeTimeout(Duration.ofSeconds(30))
-                    .build();
-
-            OpenAiService service = new OpenAiService(apiKey, client);
-
-            List<ChatMessage> messages = new ArrayList<>();
-            if (systemPrompt != null && !systemPrompt.isEmpty()) {
-                messages.add(new ChatMessage("system", systemPrompt));
-            }
-            messages.add(new ChatMessage("user", request.getUserPrompt()));
-
-            ChatCompletionRequest.Builder requestBuilder = ChatCompletionRequest.builder()
-                    .model(request.getModel())
-                    .messages(messages);
-
-            if (request.getTemperature() != null) {
-                requestBuilder.temperature(request.getTemperature());
-            }
-            if (request.getTopP() != null) {
-                requestBuilder.topP(request.getTopP());
-            }
-            if (request.getMaxTokens() != null) {
-                requestBuilder.maxTokens(request.getMaxTokens());
-            }
-
-            ChatCompletionResult result = service.createChatCompletion(requestBuilder.build());
-
-            String content = "";
-            Integer inputTokens = null;
-            Integer outputTokens = null;
-            Integer totalTokens = null;
-
-            if (result.getChoices() != null && !result.getChoices().isEmpty()) {
-                content = result.getChoices().get(0).getMessage().getContent();
-            }
-
-            if (result.getUsage() != null) {
-                inputTokens = result.getUsage().getPromptTokens();
-                outputTokens = result.getUsage().getCompletionTokens();
-                totalTokens = result.getUsage().getTotalTokens();
-            }
+            // TODO: 实现 DeepSeek API 调用
+            log.info("DeepSeek 对话请求，provider: {}, model: {}, userPrompt: {}",
+                    request.getProvider(), request.getModel(), request.getUserPrompt());
 
             return ChatResponse.builder()
-                    .requestId(result.getId())
-                    .content(content)
-                    .inputTokens(inputTokens)
-                    .outputTokens(outputTokens)
-                    .totalTokens(totalTokens)
+                    .requestId("deepseek-request-id")
+                    .content("DeepSeek 功能待实现")
                     .build();
 
         } catch (Exception e) {

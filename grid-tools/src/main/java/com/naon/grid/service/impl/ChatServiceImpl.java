@@ -58,7 +58,7 @@ public class ChatServiceImpl implements ChatService {
         ChatProvider provider = findProvider(request.getProvider());
         ChatResponse response = provider.chat(request, resolvedSystemPrompt);
 
-        long latencyMs = (int) (System.currentTimeMillis() - startTime);
+        long latencyMs = System.currentTimeMillis() - startTime;
         response.setLatencyMs(latencyMs);
 
         saveChatRecord(request, resolvedSystemPrompt, response);

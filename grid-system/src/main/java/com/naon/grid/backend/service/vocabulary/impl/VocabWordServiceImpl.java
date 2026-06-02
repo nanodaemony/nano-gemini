@@ -154,7 +154,7 @@ public class VocabWordServiceImpl implements VocabWordService {
             throw new EntityNotFoundException(VocabWord.class, "id", String.valueOf(id));
         }
 
-        deleteChildren(id);
+        // 仅更新状态，不改动子表
         vocabWord.setStatus(StatusEnum.DISABLED.getCode());
         vocabWordRepository.save(vocabWord);
     }
@@ -688,10 +688,9 @@ public class VocabWordServiceImpl implements VocabWordService {
         }
 
         // 解析草稿
-        VocabWordDraftDto draftDto = JsonUtils.fromJson(vocabWord.getDraftContent(), VocabWordDraftDto.class);
+        VocabWordDto draftDto = JsonUtils.fromJson(vocabWord.getDraftContent(), VocabWordDto.class);
 
-        // 更新主表
-        vocabWord.setWord(draftDto.getWord());
+        // 更新主表（不更新word字段）
         vocabWord.setWordTraditional(draftDto.getWordTraditional());
         vocabWord.setPinyin(draftDto.getPinyin());
         vocabWord.setAudioId(draftDto.getAudioId());
@@ -703,6 +702,7 @@ public class VocabWordServiceImpl implements VocabWordService {
 
         // 更新状态
         vocabWord.setPublishStatus(PublishStatusEnum.PUBLISHED.getCode());
+        vocabWord.setEditStatus(EditStatusEnum.PUBLISHED.getCode());
         vocabWord.setDraftContent(null);
         vocabWordRepository.save(vocabWord);
     }
@@ -717,10 +717,7 @@ public class VocabWordServiceImpl implements VocabWordService {
             throw new EntityNotFoundException(VocabWord.class, "id", String.valueOf(id));
         }
 
-        // 逻辑删除子表
-        deleteChildren(id);
-
-        // 更新状态
+        // 仅更新状态，不改动子表
         vocabWord.setPublishStatus(PublishStatusEnum.UNPUBLISHED.getCode());
         vocabWordRepository.save(vocabWord);
     }

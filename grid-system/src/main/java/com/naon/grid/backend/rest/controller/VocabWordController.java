@@ -25,6 +25,7 @@ import com.naon.grid.backend.service.vocabulary.dto.VocabOutlineRecordQueryCrite
 import com.naon.grid.backend.service.vocabulary.dto.VocabSenseDto;
 import com.naon.grid.backend.service.vocabulary.dto.VocabStructureDto;
 import com.naon.grid.backend.service.vocabulary.dto.VocabWordDto;
+import com.naon.grid.backend.service.vocabulary.dto.VocabWordDraftDto;
 import com.naon.grid.backend.service.vocabulary.dto.VocabWordQueryCriteria;
 import com.naon.grid.backend.service.vocabulary.mapstruct.VocabOutlineRecordMapper;
 import com.naon.grid.domain.common.TextTranslation;
@@ -98,6 +99,75 @@ public class VocabWordController {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
+    @Log("查询词汇草稿详情")
+    @ApiOperation("根据ID查询词汇草稿详情")
+    @AnonymousGetMapping("/{id}/draft")
+    public ResponseEntity<VocabWordVO> getDraft(@PathVariable Integer id) {
+        VocabWordDraftDto draftDto = vocabWordService.getDraft(id);
+        // 转换为VO
+        VocabWordVO vo = new VocabWordVO();
+        vo.setId(draftDto.getId());
+        vo.setWord(draftDto.getWord());
+        vo.setWordTraditional(draftDto.getWordTraditional());
+        vo.setPinyin(draftDto.getPinyin());
+        vo.setAudioId(draftDto.getAudioId());
+        vo.setHskLevel(draftDto.getHskLevel());
+        vo.setSenses(toSenseVOList(draftDto.getSenses()));
+        vo.setExercises(toExerciseVOList(draftDto.getExercises()));
+        return new ResponseEntity<>(vo, HttpStatus.OK);
+    }
+
+    @Log("新增词汇草稿")
+    @ApiOperation("新增词汇草稿")
+    @AnonymousPostMapping("/draft")
+    public ResponseEntity<VocabWordCreateVO> createDraft(@Valid @RequestBody VocabWordCreateRequest request) {
+        VocabWordDraftDto draftDto = convertToDraftDto(request);
+        VocabWordCreateVO vo = new VocabWordCreateVO();
+        vo.setId(vocabWordService.createDraft(draftDto));
+        return new ResponseEntity<>(vo, HttpStatus.CREATED);
+    }
+
+    @Log("修改词汇草稿")
+    @ApiOperation("修改词汇草稿")
+    @AnonymousPutMapping("/{id}/draft")
+    public ResponseEntity<Object> updateDraft(@PathVariable Integer id, @Valid @RequestBody VocabWordCreateRequest request) {
+        VocabWordDraftDto draftDto = convertToDraftDto(request);
+        vocabWordService.saveDraft(id, draftDto);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    @Log("从已发布内容创建草稿")
+    @ApiOperation("从已发布内容创建草稿")
+    @AnonymousPostMapping("/{id}/draft/from-published")
+    public ResponseEntity<Object> createDraftFromPublished(@PathVariable Integer id) {
+        vocabWordService.createDraftFromPublished(id);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    @Log("审核词汇草稿")
+    @ApiOperation("审核词汇草稿（草稿→已审核）")
+    @AnonymousPutMapping("/{id}/review")
+    public ResponseEntity<Object> reviewDraft(@PathVariable Integer id) {
+        vocabWordService.reviewDraft(id);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    @Log("发布词汇")
+    @ApiOperation("发布词汇（已审核→已发布）")
+    @AnonymousPutMapping("/{id}/publish")
+    public ResponseEntity<Object> publishDraft(@PathVariable Integer id) {
+        vocabWordService.publishDraft(id);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    @Log("下线词汇")
+    @ApiOperation("下线词汇")
+    @AnonymousPutMapping("/{id}/offline")
+    public ResponseEntity<Object> offline(@PathVariable Integer id) {
+        vocabWordService.offline(id);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
     @Log("查询纲外词列表")
     @ApiOperation("分页查询纲外词列表")
     @AnonymousGetMapping("/outline")
@@ -136,6 +206,18 @@ public class VocabWordController {
 
     private VocabWordDto toDto(VocabWordCreateRequest request) {
         VocabWordDto dto = new VocabWordDto();
+        dto.setWord(request.getWord());
+        dto.setWordTraditional(request.getWordTraditional());
+        dto.setPinyin(request.getPinyin());
+        dto.setAudioId(request.getAudioId());
+        dto.setHskLevel(request.getHskLevel());
+        dto.setSenses(toSenseDtoList(request.getSenses()));
+        dto.setExercises(toExerciseDtoList(request.getExercises()));
+        return dto;
+    }
+
+    private VocabWordDraftDto convertToDraftDto(VocabWordCreateRequest request) {
+        VocabWordDraftDto dto = new VocabWordDraftDto();
         dto.setWord(request.getWord());
         dto.setWordTraditional(request.getWordTraditional());
         dto.setPinyin(request.getPinyin());
@@ -250,6 +332,11 @@ public class VocabWordController {
         vo.setPinyin(dto.getPinyin());
         vo.setAudioId(dto.getAudioId());
         vo.setHskLevel(dto.getHskLevel());
+        vo.setPublishStatus(dto.getPublishStatus());
+        vo.setEditStatus(dto.getEditStatus());
+        vo.setHasDraft(dto.getDraftContent() != null);
+        vo.setCreateBy(dto.getCreateBy());
+        vo.setUpdateBy(dto.getUpdateBy());
         vo.setCreateTime(dto.getCreateTime());
         vo.setUpdateTime(dto.getUpdateTime());
         return vo;
@@ -263,6 +350,9 @@ public class VocabWordController {
         vo.setPinyin(dto.getPinyin());
         vo.setAudioId(dto.getAudioId());
         vo.setHskLevel(dto.getHskLevel());
+        vo.setPublishStatus(dto.getPublishStatus());
+        vo.setEditStatus(dto.getEditStatus());
+        vo.setHasDraft(dto.getDraftContent() != null);
         vo.setSenses(toSenseVOList(dto.getSenses()));
         vo.setExercises(toExerciseVOList(dto.getExercises()));
         vo.setCreateBy(dto.getCreateBy());

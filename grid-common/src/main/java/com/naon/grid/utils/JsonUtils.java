@@ -14,6 +14,33 @@ public class JsonUtils {
     }
 
     /**
+     * 将对象序列化为 JSON 字符串
+     *
+     * @param obj 对象
+     * @return JSON 字符串，null 返回 null
+     */
+    public static String toJson(Object obj) {
+        if (obj == null) {
+            return null;
+        }
+        return JSON.toJSONString(obj);
+    }
+
+    /**
+     * 将 JSON 字符串反序列化为对象
+     *
+     * @param json JSON 字符串
+     * @param clazz 对象类型
+     * @return 对象，null 或空白字符串返回 null
+     */
+    public static <T> T fromJson(String json, Class<T> clazz) {
+        if (StringUtils.isBlank(json)) {
+            return null;
+        }
+        return JSON.parseObject(json, clazz);
+    }
+
+    /**
      * 将 TextTranslation 列表序列化为 JSON 字符串
      *
      * @param list 翻译列表

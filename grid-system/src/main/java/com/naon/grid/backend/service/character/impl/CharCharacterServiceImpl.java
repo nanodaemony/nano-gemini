@@ -95,10 +95,12 @@ public class CharCharacterServiceImpl implements CharCharacterService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Integer create(CharCharacterDto resources) {
-        CharCharacter charCharacter = charCharacterMapper.toEntity(resources);
+        CharCharacter charCharacter = new CharCharacter();
         charCharacter.setStatus(StatusEnum.ENABLED.getCode());
+        charCharacter.setPublishStatus(PublishStatusEnum.UNPUBLISHED.getCode());
+        charCharacter.setEditStatus(EditStatusEnum.DRAFT.getCode());
+        charCharacter.setDraftContent(JsonUtils.toJson(resources));
         charCharacter = charCharacterRepository.save(charCharacter);
-        saveChildren(resources, charCharacter.getId());
         return charCharacter.getId();
     }
 

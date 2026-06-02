@@ -149,7 +149,7 @@ public class CharCharacterServiceImpl implements CharCharacterService {
         if (charCharacter.getId() == null) {
             throw new EntityNotFoundException(CharCharacter.class, "id", String.valueOf(id));
         }
-        deleteChildren(id);
+        // Only set status to DISABLED, don't change child tables or publishStatus
         charCharacter.setStatus(StatusEnum.DISABLED.getCode());
         charCharacterRepository.save(charCharacter);
     }

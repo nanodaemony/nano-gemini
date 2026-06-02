@@ -52,6 +52,21 @@ public class VocabWordServiceImpl implements VocabWordService {
         if (vocabWord.getId() == null || StatusEnum.DISABLED.getCode().equals(vocabWord.getStatus())) {
             throw new EntityNotFoundException(VocabWord.class, "id", String.valueOf(id));
         }
+
+        if (EditStatusEnum.DRAFT.getCode().equals(vocabWord.getEditStatus()) ||
+            EditStatusEnum.REVIEWED.getCode().equals(vocabWord.getEditStatus())) {
+            VocabWordDto dto = JsonUtils.fromJson(vocabWord.getDraftContent(), VocabWordDto.class);
+            dto.setId(vocabWord.getId());
+            dto.setStatus(vocabWord.getStatus());
+            dto.setPublishStatus(vocabWord.getPublishStatus());
+            dto.setEditStatus(vocabWord.getEditStatus());
+            dto.setCreateTime(vocabWord.getCreateTime());
+            dto.setUpdateTime(vocabWord.getUpdateTime());
+            dto.setCreateBy(vocabWord.getCreateBy());
+            dto.setUpdateBy(vocabWord.getUpdateBy());
+            return dto;
+        }
+
         VocabWordDto vocabWordDto = vocabWordMapper.toDto(vocabWord);
 
         List<VocabSenseDto> senseDtos = new ArrayList<>();

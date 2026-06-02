@@ -8,7 +8,6 @@ import com.naon.grid.backend.repo.character.CharDiscriminationRepository;
 import com.naon.grid.backend.repo.character.CharWordRepository;
 import com.naon.grid.backend.service.character.CharCharacterService;
 import com.naon.grid.backend.service.character.dto.CharCharacterDto;
-import com.naon.grid.backend.service.character.dto.CharCharacterDraftDto;
 import com.naon.grid.backend.service.character.dto.CharCharacterQueryCriteria;
 import com.naon.grid.backend.service.character.dto.CharDiscriminationDto;
 import com.naon.grid.backend.service.character.dto.CharWordDto;
@@ -374,73 +373,6 @@ public class CharCharacterServiceImpl implements CharCharacterService {
     }
 
     @Override
-    public CharCharacterDraftDto getDraft(Integer id) {
-        CharCharacter charCharacter = charCharacterRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException(CharCharacter.class, "id", String.valueOf(id)));
-
-        if (StatusEnum.DISABLED.getCode().equals(charCharacter.getStatus())) {
-            throw new EntityNotFoundException(CharCharacter.class, "id", String.valueOf(id));
-        }
-
-        if (charCharacter.getDraftContent() != null) {
-            return JsonUtils.fromJson(charCharacter.getDraftContent(), CharCharacterDraftDto.class);
-        }
-
-        // 如果没有草稿，但有发布内容，返回发布内容
-        if (PublishStatusEnum.PUBLISHED.getCode().equals(charCharacter.getPublishStatus())) {
-            CharCharacterDto dto = charCharacterMapper.toDto(charCharacter);
-            dto.setDiscriminations(convertToDiscriminationDtos(charDiscriminationRepository.findByCharIdAndStatus(id, StatusEnum.ENABLED.getCode())));
-            dto.setWords(convertToWordDtos(charWordRepository.findByCharIdAndStatus(id, StatusEnum.ENABLED.getCode())));
-
-            // 转换为 DraftDto
-            CharCharacterDraftDto draftDto = new CharCharacterDraftDto();
-            draftDto.setId(dto.getId());
-            draftDto.setSequenceNo(dto.getSequenceNo());
-            draftDto.setCharacter(dto.getCharacter());
-            draftDto.setLevel(dto.getLevel());
-            draftDto.setPinyin(dto.getPinyin());
-            draftDto.setAudioId(dto.getAudioId());
-            draftDto.setTraditional(dto.getTraditional());
-            draftDto.setRadical(dto.getRadical());
-            draftDto.setStroke(dto.getStroke());
-            draftDto.setCharDesc(dto.getCharDesc());
-            draftDto.setDescTranslations(dto.getDescTranslations());
-            draftDto.setDiscriminations(dto.getDiscriminations());
-            draftDto.setWords(dto.getWords());
-            return draftDto;
-        }
-
-        throw new BadRequestException("草稿不存在");
-    }
-
-    @Override
-    @Transactional(rollbackFor = Exception.class)
-    public Integer createDraft(CharCharacterDraftDto draft) {
-        CharCharacter charCharacter = new CharCharacter();
-        charCharacter.setStatus(StatusEnum.ENABLED.getCode());
-        charCharacter.setPublishStatus(PublishStatusEnum.UNPUBLISHED.getCode());
-        charCharacter.setEditStatus(EditStatusEnum.DRAFT.getCode());
-        charCharacter.setDraftContent(JsonUtils.toJson(draft));
-        charCharacter = charCharacterRepository.save(charCharacter);
-        return charCharacter.getId();
-    }
-
-    @Override
-    @Transactional(rollbackFor = Exception.class)
-    public void saveDraft(Integer id, CharCharacterDraftDto draft) {
-        CharCharacter charCharacter = charCharacterRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException(CharCharacter.class, "id", String.valueOf(id)));
-
-        if (StatusEnum.DISABLED.getCode().equals(charCharacter.getStatus())) {
-            throw new EntityNotFoundException(CharCharacter.class, "id", String.valueOf(id));
-        }
-
-        charCharacter.setDraftContent(JsonUtils.toJson(draft));
-        charCharacter.setEditStatus(EditStatusEnum.DRAFT.getCode());
-        charCharacterRepository.save(charCharacter);
-    }
-
-    @Override
     @Transactional(rollbackFor = Exception.class)
     public void reviewDraft(Integer id) {
         CharCharacter charCharacter = charCharacterRepository.findById(id)
@@ -521,45 +453,4 @@ public class CharCharacterServiceImpl implements CharCharacterService {
         charCharacterRepository.save(charCharacter);
     }
 
-    @Override
-    @Transactional(rollbackFor = Exception.class)
-    public void createDraftFromPublished(Integer id) {
-        CharCharacter charCharacter = charCharacterRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException(CharCharacter.class, "id", String.valueOf(id)));
-
-        if (StatusEnum.DISABLED.getCode().equals(charCharacter.getStatus())) {
-            throw new EntityNotFoundException(CharCharacter.class, "id", String.valueOf(id));
-        }
-
-        // 如果已有草稿，跳过
-        if (charCharacter.getDraftContent() != null) {
-            return;
-        }
-
-        // 从正式字段构建DTO
-        CharCharacterDto dto = charCharacterMapper.toDto(charCharacter);
-        dto.setDiscriminations(convertToDiscriminationDtos(charDiscriminationRepository.findByCharIdAndStatus(id, StatusEnum.ENABLED.getCode())));
-        dto.setWords(convertToWordDtos(charWordRepository.findByCharIdAndStatus(id, StatusEnum.ENABLED.getCode())));
-
-        // 转换为 DraftDto
-        CharCharacterDraftDto draftDto = new CharCharacterDraftDto();
-        draftDto.setId(dto.getId());
-        draftDto.setSequenceNo(dto.getSequenceNo());
-        draftDto.setCharacter(dto.getCharacter());
-        draftDto.setLevel(dto.getLevel());
-        draftDto.setPinyin(dto.getPinyin());
-        draftDto.setAudioId(dto.getAudioId());
-        draftDto.setTraditional(dto.getTraditional());
-        draftDto.setRadical(dto.getRadical());
-        draftDto.setStroke(dto.getStroke());
-        draftDto.setCharDesc(dto.getCharDesc());
-        draftDto.setDescTranslations(dto.getDescTranslations());
-        draftDto.setDiscriminations(dto.getDiscriminations());
-        draftDto.setWords(dto.getWords());
-
-        // 存为草稿
-        charCharacter.setDraftContent(JsonUtils.toJson(draftDto));
-        charCharacter.setEditStatus(EditStatusEnum.DRAFT.getCode());
-        charCharacterRepository.save(charCharacter);
-    }
 }

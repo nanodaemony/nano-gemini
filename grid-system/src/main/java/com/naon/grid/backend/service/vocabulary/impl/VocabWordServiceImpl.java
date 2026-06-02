@@ -126,6 +126,7 @@ public class VocabWordServiceImpl implements VocabWordService {
         vocabWord.setPublishStatus(PublishStatusEnum.UNPUBLISHED.getCode());
         vocabWord.setEditStatus(EditStatusEnum.DRAFT.getCode());
         vocabWord.setWord(resources.getWord());
+        vocabWord.setPinyin(resources.getPinyin());
         vocabWord.setDraftContent(JsonUtils.toJson(resources));
         vocabWord = vocabWordRepository.save(vocabWord);
         return vocabWord.getId();

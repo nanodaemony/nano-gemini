@@ -95,3 +95,12 @@ volcengine:
     api-key: ${VOLCENGINE_API_KEY:}
     api-resource-id: seed-tts-2.0
     base-url: https://openspeech.bytedance.com/api/v3/tts/unidirectional
+
+# 大模型 Chat 配置
+chat:
+  aliyun:
+    api-key: ${DASHSCOPE_API_KEY:}
+    base-url: ${ALI_CHAT_BASE_URL:https://dashscope.aliyuncs.com/api/v1}
+  deepseek:
+    api-key: ${DEEPSEEK_API_KEY:}
+    base-url: ${DEEPSEEK_CHAT_BASE_URL:https://api.deepseek.com/v1}

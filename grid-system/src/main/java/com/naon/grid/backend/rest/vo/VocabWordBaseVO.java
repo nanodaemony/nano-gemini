@@ -29,6 +29,21 @@ public class VocabWordBaseVO implements Serializable {
     @ApiModelProperty(value = "HSK等级，值为数字字符串\"1\"-\"9\"")
     private String hskLevel;
 
+    @ApiModelProperty(value = "发布状态: unpublished=未发布, published=已发布")
+    private String publishStatus;
+
+    @ApiModelProperty(value = "编辑状态: draft=草稿, reviewed=已审核")
+    private String editStatus;
+
+    @ApiModelProperty(value = "是否有草稿")
+    private Boolean hasDraft;
+
+    @ApiModelProperty(value = "创建人")
+    private String createBy;
+
+    @ApiModelProperty(value = "更新人")
+    private String updateBy;
+
     @ApiModelProperty(value = "创建时间: yyyy-MM-dd HH:mm:ss", required = true)
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     private Timestamp createTime;

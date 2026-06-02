@@ -46,6 +46,15 @@ public class CharCharacterVO implements Serializable {
     @ApiModelProperty(value = "说明翻译")
     private List<TextTranslationVO> descTranslations;
 
+    @ApiModelProperty(value = "发布状态: unpublished=未发布, published=已发布")
+    private String publishStatus;
+
+    @ApiModelProperty(value = "编辑状态: draft=草稿, reviewed=已审核")
+    private String editStatus;
+
+    @ApiModelProperty(value = "是否有草稿")
+    private Boolean hasDraft;
+
     @ApiModelProperty(value = "辨析列表")
     private List<CharDiscriminationVO> discriminations;
 

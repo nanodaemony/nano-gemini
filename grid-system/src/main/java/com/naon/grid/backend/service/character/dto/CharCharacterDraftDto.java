@@ -1,6 +1,5 @@
 package com.naon.grid.backend.service.character.dto;
 
-import com.naon.grid.base.BaseDTO;
 import com.naon.grid.domain.common.TextTranslation;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
@@ -11,7 +10,7 @@ import java.util.List;
 
 @Getter
 @Setter
-public class CharCharacterDto extends BaseDTO implements Serializable {
+public class CharCharacterDraftDto implements Serializable {
 
     @ApiModelProperty(value = "汉字唯一ID")
     private Integer id;
@@ -51,16 +50,4 @@ public class CharCharacterDto extends BaseDTO implements Serializable {
 
     @ApiModelProperty(value = "组词列表")
     private List<CharWordDto> words;
-
-    @ApiModelProperty(value = "状态: 1=可用, 0=不可用")
-    private Integer status;
-
-    @ApiModelProperty(value = "发布状态: unpublished=未发布, published=已发布")
-    private String publishStatus;
-
-    @ApiModelProperty(value = "编辑状态: draft=草稿, reviewed=已审核")
-    private String editStatus;
-
-    @ApiModelProperty(value = "草稿内容JSON")
-    private String draftContent;
 }

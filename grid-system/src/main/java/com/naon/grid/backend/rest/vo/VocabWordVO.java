@@ -30,6 +30,15 @@ public class VocabWordVO implements Serializable {
     @ApiModelProperty(value = "HSK等级，值为数字字符串\"1\"-\"9\"")
     private String hskLevel;
 
+    @ApiModelProperty(value = "发布状态: unpublished=未发布, published=已发布")
+    private String publishStatus;
+
+    @ApiModelProperty(value = "编辑状态: draft=草稿, reviewed=已审核")
+    private String editStatus;
+
+    @ApiModelProperty(value = "是否有草稿")
+    private Boolean hasDraft;
+
     @ApiModelProperty(value = "义项列表")
     private List<VocabSenseVO> senses;
 

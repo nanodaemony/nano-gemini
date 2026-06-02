@@ -106,12 +106,13 @@ public class VocabWordServiceImpl implements VocabWordService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Integer create(VocabWordDto resources) {
-        VocabWord vocabWord = vocabWordMapper.toEntity(resources);
+        VocabWord vocabWord = new VocabWord();
         vocabWord.setStatus(StatusEnum.ENABLED.getCode());
+        vocabWord.setPublishStatus(PublishStatusEnum.UNPUBLISHED.getCode());
+        vocabWord.setEditStatus(EditStatusEnum.DRAFT.getCode());
+        vocabWord.setWord(resources.getWord());
+        vocabWord.setDraftContent(JsonUtils.toJson(resources));
         vocabWord = vocabWordRepository.save(vocabWord);
-
-        saveChildren(resources, vocabWord.getId());
-
         return vocabWord.getId();
     }
 
@@ -119,19 +120,15 @@ public class VocabWordServiceImpl implements VocabWordService {
     @Transactional(rollbackFor = Exception.class)
     public void update(Integer id, VocabWordDto resources) {
         VocabWord vocabWord = vocabWordRepository.findById(id).orElseGet(VocabWord::new);
-        if (vocabWord.getId() == null) {
+        if (vocabWord.getId() == null || StatusEnum.DISABLED.getCode().equals(vocabWord.getStatus())) {
             throw new EntityNotFoundException(VocabWord.class, "id", String.valueOf(id));
         }
-
-        vocabWord.setWord(resources.getWord());
-        vocabWord.setWordTraditional(resources.getWordTraditional());
-        vocabWord.setPinyin(resources.getPinyin());
-        vocabWord.setAudioId(resources.getAudioId());
-        vocabWord.setHskLevel(resources.getHskLevel());
+        if (EditStatusEnum.REVIEWED.getCode().equals(vocabWord.getEditStatus()) ||
+            EditStatusEnum.PUBLISHED.getCode().equals(vocabWord.getEditStatus())) {
+            vocabWord.setEditStatus(EditStatusEnum.DRAFT.getCode());
+        }
+        vocabWord.setDraftContent(JsonUtils.toJson(resources));
         vocabWordRepository.save(vocabWord);
-
-        syncSenses(id, resources.getSenses());
-        syncExercises(id, resources.getExercises());
     }
 
     @Override

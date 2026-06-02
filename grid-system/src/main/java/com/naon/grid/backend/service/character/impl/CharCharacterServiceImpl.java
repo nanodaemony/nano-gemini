@@ -516,10 +516,7 @@ public class CharCharacterServiceImpl implements CharCharacterService {
             throw new EntityNotFoundException(CharCharacter.class, "id", String.valueOf(id));
         }
 
-        // 逻辑删除子表
-        deleteChildren(id);
-
-        // 更新状态
+        // Only update publish status, don't change child tables
         charCharacter.setPublishStatus(PublishStatusEnum.UNPUBLISHED.getCode());
         charCharacterRepository.save(charCharacter);
     }

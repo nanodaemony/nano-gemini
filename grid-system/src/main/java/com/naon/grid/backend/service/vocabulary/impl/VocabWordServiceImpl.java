@@ -586,68 +586,6 @@ public class VocabWordServiceImpl implements VocabWordService {
     }
 
     @Override
-    public VocabWordDraftDto getDraft(Integer id) {
-        VocabWord vocabWord = vocabWordRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException(VocabWord.class, "id", String.valueOf(id)));
-
-        if (StatusEnum.DISABLED.getCode().equals(vocabWord.getStatus())) {
-            throw new EntityNotFoundException(VocabWord.class, "id", String.valueOf(id));
-        }
-
-        if (vocabWord.getDraftContent() != null) {
-            return JsonUtils.fromJson(vocabWord.getDraftContent(), VocabWordDraftDto.class);
-        }
-
-        // 如果没有草稿，但有发布内容，返回发布内容
-        if (PublishStatusEnum.PUBLISHED.getCode().equals(vocabWord.getPublishStatus())) {
-            VocabWordDto dto = vocabWordMapper.toDto(vocabWord);
-            dto.setSenses(convertToSenseDtos(vocabSenseRepository.findByWordIdAndStatus(id, StatusEnum.ENABLED.getCode())));
-            dto.setExercises(convertToExerciseDtos(vocabExerciseRepository.findByWordIdAndStatus(id, StatusEnum.ENABLED.getCode())));
-
-            // 转换为 DraftDto
-            VocabWordDraftDto draftDto = new VocabWordDraftDto();
-            draftDto.setId(dto.getId());
-            draftDto.setWord(dto.getWord());
-            draftDto.setWordTraditional(dto.getWordTraditional());
-            draftDto.setPinyin(dto.getPinyin());
-            draftDto.setAudioId(dto.getAudioId());
-            draftDto.setHskLevel(dto.getHskLevel());
-            draftDto.setSenses(dto.getSenses());
-            draftDto.setExercises(dto.getExercises());
-            return draftDto;
-        }
-
-        throw new BadRequestException("草稿不存在");
-    }
-
-    @Override
-    @Transactional(rollbackFor = Exception.class)
-    public Integer createDraft(VocabWordDraftDto draft) {
-        VocabWord vocabWord = new VocabWord();
-        vocabWord.setStatus(StatusEnum.ENABLED.getCode());
-        vocabWord.setPublishStatus(PublishStatusEnum.UNPUBLISHED.getCode());
-        vocabWord.setEditStatus(EditStatusEnum.DRAFT.getCode());
-        vocabWord.setDraftContent(JsonUtils.toJson(draft));
-        vocabWord = vocabWordRepository.save(vocabWord);
-        return vocabWord.getId();
-    }
-
-    @Override
-    @Transactional(rollbackFor = Exception.class)
-    public void saveDraft(Integer id, VocabWordDraftDto draft) {
-        VocabWord vocabWord = vocabWordRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException(VocabWord.class, "id", String.valueOf(id)));
-
-        if (StatusEnum.DISABLED.getCode().equals(vocabWord.getStatus())) {
-            throw new EntityNotFoundException(VocabWord.class, "id", String.valueOf(id));
-        }
-
-        vocabWord.setDraftContent(JsonUtils.toJson(draft));
-        vocabWord.setEditStatus(EditStatusEnum.DRAFT.getCode());
-        vocabWordRepository.save(vocabWord);
-    }
-
-    @Override
     @Transactional(rollbackFor = Exception.class)
     public void reviewDraft(Integer id) {
         VocabWord vocabWord = vocabWordRepository.findById(id)
@@ -719,43 +657,6 @@ public class VocabWordServiceImpl implements VocabWordService {
 
         // 仅更新状态，不改动子表
         vocabWord.setPublishStatus(PublishStatusEnum.UNPUBLISHED.getCode());
-        vocabWordRepository.save(vocabWord);
-    }
-
-    @Override
-    @Transactional(rollbackFor = Exception.class)
-    public void createDraftFromPublished(Integer id) {
-        VocabWord vocabWord = vocabWordRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException(VocabWord.class, "id", String.valueOf(id)));
-
-        if (StatusEnum.DISABLED.getCode().equals(vocabWord.getStatus())) {
-            throw new EntityNotFoundException(VocabWord.class, "id", String.valueOf(id));
-        }
-
-        // 如果已有草稿，跳过
-        if (vocabWord.getDraftContent() != null) {
-            return;
-        }
-
-        // 从正式字段构建DTO
-        VocabWordDto dto = vocabWordMapper.toDto(vocabWord);
-        dto.setSenses(convertToSenseDtos(vocabSenseRepository.findByWordIdAndStatus(id, StatusEnum.ENABLED.getCode())));
-        dto.setExercises(convertToExerciseDtos(vocabExerciseRepository.findByWordIdAndStatus(id, StatusEnum.ENABLED.getCode())));
-
-        // 转换为 DraftDto
-        VocabWordDraftDto draftDto = new VocabWordDraftDto();
-        draftDto.setId(dto.getId());
-        draftDto.setWord(dto.getWord());
-        draftDto.setWordTraditional(dto.getWordTraditional());
-        draftDto.setPinyin(dto.getPinyin());
-        draftDto.setAudioId(dto.getAudioId());
-        draftDto.setHskLevel(dto.getHskLevel());
-        draftDto.setSenses(dto.getSenses());
-        draftDto.setExercises(dto.getExercises());
-
-        // 存为草稿
-        vocabWord.setDraftContent(JsonUtils.toJson(draftDto));
-        vocabWord.setEditStatus(EditStatusEnum.DRAFT.getCode());
         vocabWordRepository.save(vocabWord);
     }
 

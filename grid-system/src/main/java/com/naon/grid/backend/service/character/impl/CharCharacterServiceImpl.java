@@ -473,17 +473,17 @@ public class CharCharacterServiceImpl implements CharCharacterService {
         }
 
         if (charCharacter.getDraftContent() == null) {
-            throw new BadRequestException("草稿不存在");
+            throw new BadRequestException("Draft content not found");
         }
 
         if (!EditStatusEnum.REVIEWED.getCode().equals(charCharacter.getEditStatus())) {
-            throw new BadRequestException("仅已审核状态可发布");
+            throw new BadRequestException("Only reviewed drafts can be published");
         }
 
-        // 解析草稿
-        CharCharacterDraftDto draftDto = JsonUtils.fromJson(charCharacter.getDraftContent(), CharCharacterDraftDto.class);
+        // Parse draft content
+        CharCharacterDto draftDto = JsonUtils.fromJson(charCharacter.getDraftContent(), CharCharacterDto.class);
 
-        // 更新主表
+        // Update main table fields
         charCharacter.setSequenceNo(draftDto.getSequenceNo());
         charCharacter.setCharacter(draftDto.getCharacter());
         charCharacter.setLevel(draftDto.getLevel());
@@ -495,12 +495,13 @@ public class CharCharacterServiceImpl implements CharCharacterService {
         charCharacter.setCharDesc(draftDto.getCharDesc());
         charCharacter.setDescTranslations(JsonUtils.toTranslationJson(draftDto.getDescTranslations()));
 
-        // 更新子表
+        // Update child tables
         syncDiscriminations(id, draftDto.getDiscriminations());
         syncWords(id, draftDto.getWords());
 
-        // 更新状态
+        // Update status
         charCharacter.setPublishStatus(PublishStatusEnum.PUBLISHED.getCode());
+        charCharacter.setEditStatus(EditStatusEnum.PUBLISHED.getCode());
         charCharacter.setDraftContent(null);
         charCharacterRepository.save(charCharacter);
     }

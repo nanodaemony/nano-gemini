@@ -21,7 +21,6 @@ import com.naon.grid.exception.BadRequestException;
 import com.naon.grid.service.ChatProvider;
 import com.naon.grid.service.dto.ChatRequest;
 import com.naon.grid.service.dto.ChatResponse;
-import com.theokanning.openai.completion.chat.ChatCompletionChoice;
 import com.theokanning.openai.completion.chat.ChatCompletionRequest;
 import com.theokanning.openai.completion.chat.ChatCompletionResult;
 import com.theokanning.openai.completion.chat.ChatMessage;
@@ -30,9 +29,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.OkHttpClient;
 import org.springframework.stereotype.Service;
-import retrofit2.Retrofit;
-import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
-import retrofit2.converter.jackson.JacksonConverterFactory;
 
 import java.time.Duration;
 import java.util.ArrayList;
@@ -58,31 +54,15 @@ public class DeepSeekChatProvider implements ChatProvider {
     @Override
     public ChatResponse chat(ChatRequest request, String systemPrompt) {
         try {
-            String baseUrl = chatDeepSeekConfig.getBaseUrl();
             String apiKey = chatDeepSeekConfig.getApiKey();
 
             OkHttpClient client = new OkHttpClient.Builder()
                     .connectTimeout(Duration.ofSeconds(30))
                     .readTimeout(Duration.ofSeconds(120))
                     .writeTimeout(Duration.ofSeconds(30))
-                    .addInterceptor(chain -> {
-                        okhttp3.Request original = chain.request();
-                        okhttp3.Request.Builder requestBuilder = original.newBuilder()
-                                .header("Authorization", "Bearer " + apiKey)
-                                .header("Content-Type", "application/json")
-                                .method(original.method(), original.body());
-                        return chain.proceed(requestBuilder.build());
-                    })
                     .build();
 
-            Retrofit retrofit = new Retrofit.Builder()
-                    .baseUrl(baseUrl)
-                    .client(client)
-                    .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
-                    .addConverterFactory(JacksonConverterFactory.create())
-                    .build();
-
-            OpenAiService service = new OpenAiService(retrofit);
+            OpenAiService service = new OpenAiService(apiKey, client);
 
             List<ChatMessage> messages = new ArrayList<>();
             if (systemPrompt != null && !systemPrompt.isEmpty()) {

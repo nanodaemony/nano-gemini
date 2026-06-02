@@ -108,22 +108,18 @@ public class CharCharacterServiceImpl implements CharCharacterService {
     @Transactional(rollbackFor = Exception.class)
     public void update(Integer id, CharCharacterDto resources) {
         CharCharacter charCharacter = charCharacterRepository.findById(id).orElseGet(CharCharacter::new);
-        if (charCharacter.getId() == null) {
+        if (charCharacter.getId() == null || StatusEnum.DISABLED.getCode().equals(charCharacter.getStatus())) {
             throw new EntityNotFoundException(CharCharacter.class, "id", String.valueOf(id));
         }
-        charCharacter.setSequenceNo(resources.getSequenceNo());
-        charCharacter.setCharacter(resources.getCharacter());
-        charCharacter.setLevel(resources.getLevel());
-        charCharacter.setPinyin(resources.getPinyin());
-        charCharacter.setAudioId(resources.getAudioId());
-        charCharacter.setTraditional(resources.getTraditional());
-        charCharacter.setRadical(resources.getRadical());
-        charCharacter.setStroke(resources.getStroke());
-        charCharacter.setCharDesc(resources.getCharDesc());
-        charCharacter.setDescTranslations(JsonUtils.toTranslationJson(resources.getDescTranslations()));
+
+        // If current status is REVIEWED or PUBLISHED, revert to DRAFT
+        if (EditStatusEnum.REVIEWED.getCode().equals(charCharacter.getEditStatus()) ||
+            EditStatusEnum.PUBLISHED.getCode().equals(charCharacter.getEditStatus())) {
+            charCharacter.setEditStatus(EditStatusEnum.DRAFT.getCode());
+        }
+
+        charCharacter.setDraftContent(JsonUtils.toJson(resources));
         charCharacterRepository.save(charCharacter);
-        syncDiscriminations(id, resources.getDiscriminations());
-        syncWords(id, resources.getWords());
     }
 
     @Override

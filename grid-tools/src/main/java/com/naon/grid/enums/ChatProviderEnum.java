@@ -15,12 +15,21 @@
  */
 package com.naon.grid.enums;
 
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
+
 /**
  * 大模型厂商枚举
+ * 支持的大模型服务提供商
  * @author nano
  * @date 2026-06-02
  */
+@ApiModel(description = "大模型厂商枚举")
 public enum ChatProviderEnum {
+
+    @ApiModelProperty(value = "阿里云百炼", notes = "阿里云的大模型服务，支持 qwen-plus/qwen-max/qwen-turbo 等模型")
     ALIYUN,
+
+    @ApiModelProperty(value = "DeepSeek", notes = "深度求索的大模型服务，支持 deepseek-chat 等模型")
     DEEPSEEK
 }

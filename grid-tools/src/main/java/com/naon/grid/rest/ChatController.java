@@ -22,6 +22,8 @@ import com.naon.grid.service.dto.ChatRequest;
 import com.naon.grid.service.dto.ChatResponse;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -31,6 +33,7 @@ import org.springframework.web.bind.annotation.*;
 
 /**
  * 大模型对话控制器
+ * 提供与阿里云百炼、DeepSeek 等大模型的对话能力
  * @author nano
  * @date 2026-06-02
  */
@@ -43,8 +46,52 @@ public class ChatController {
 
     private final ChatService chatService;
 
+    /**
+     * 大模型对话接口
+     *
+     * 使用示例 1 - 直接对话：
+     * <pre>{@code
+     * {
+     *   "provider": "ALIYUN",
+     *   "model": "qwen-plus",
+     *   "systemPrompt": "你是一个乐于助人的AI助手",
+     *   "userPrompt": "你好，请介绍一下你自己",
+     *   "temperature": 0.7
+     * }
+     * }</pre>
+     *
+     * 使用示例 2 - 使用预设提示词：
+     * <pre>{@code
+     * {
+     *   "provider": "ALIYUN",
+     *   "model": "qwen-plus",
+     *   "promptName": "common_assistant",
+     *   "userPrompt": "你好，请介绍一下你自己",
+     *   "temperature": 0.7
+     * }
+     * }</pre>
+     *
+     * 使用示例 3 - 带占位符的预设提示词：
+     * <pre>{@code
+     * {
+     *   "provider": "ALIYUN",
+     *   "model": "qwen-plus",
+     *   "promptName": "translator",
+     *   "userPrompt": "你好",
+     *   "temperature": 0.7,
+     *   "placeholderValues": {
+     *     "targetLanguage": "English"
+     *   }
+     * }
+     * }</pre>
+     */
     @Log("大模型对话")
-    @ApiOperation("大模型对话")
+    @ApiOperation(value = "大模型对话", notes = "支持阿里云百炼和 DeepSeek，支持自定义提示词或预设提示词")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "对话成功"),
+            @ApiResponse(code = 400, message = "请求参数错误"),
+            @ApiResponse(code = 500, message = "服务内部错误")
+    })
     @AnonymousPostMapping("/completions")
     public ResponseEntity<ChatResponse> chat(@Validated @RequestBody ChatRequest request) {
         return new ResponseEntity<>(chatService.chat(request), HttpStatus.OK);

@@ -76,6 +76,24 @@ public class CharCharacterServiceImpl implements CharCharacterService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
+    public CharCharacterDto findPublishedById(Integer id) {
+        if (id == null) {
+            throw new EntityNotFoundException(CharCharacter.class, "id", String.valueOf(id));
+        }
+        CharCharacter charCharacter = charCharacterRepository.findById(id).orElseGet(CharCharacter::new);
+        if (charCharacter.getId() == null
+            || StatusEnum.DISABLED.getCode().equals(charCharacter.getStatus())
+            || !PublishStatusEnum.PUBLISHED.getCode().equals(charCharacter.getPublishStatus())) {
+            throw new EntityNotFoundException(CharCharacter.class, "id", String.valueOf(id));
+        }
+        CharCharacterDto charCharacterDto = charCharacterMapper.toDto(charCharacter);
+        charCharacterDto.setDiscriminations(convertToDiscriminationDtos(charDiscriminationRepository.findByCharIdAndStatus(id, StatusEnum.ENABLED.getCode())));
+        charCharacterDto.setWords(convertToWordDtos(charWordRepository.findByCharIdAndStatus(id, StatusEnum.ENABLED.getCode())));
+        return charCharacterDto;
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
     public Integer create(CharCharacterDto resources) {
         CharCharacter charCharacter = charCharacterMapper.toEntity(resources);
         charCharacter.setStatus(StatusEnum.ENABLED.getCode());

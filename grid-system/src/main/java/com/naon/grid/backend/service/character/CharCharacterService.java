@@ -14,6 +14,8 @@ public interface CharCharacterService {
 
     CharCharacterDto findById(Integer id);
 
+    CharCharacterDto findPublishedById(Integer id);
+
     Integer create(CharCharacterDto resources);
 
     void update(Integer id, CharCharacterDto resources);

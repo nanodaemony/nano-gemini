@@ -63,7 +63,7 @@ public class AppVocabWordController {
     @ApiOperation("词汇详情")
     @AnonymousGetMapping("/{id}")
     public ResponseEntity<AppVocabWordDetailVO> getDetail(@PathVariable Integer id) {
-        VocabWordDto dto = vocabWordService.findById(id);
+        VocabWordDto dto = vocabWordService.findPublishedById(id);
         Map<Long, AudioResourceDto> audioMap = collectAndBatchQueryAudios(dto);
         AppVocabWordDetailVO vo = toDetailVO(dto, audioMap);
         return new ResponseEntity<>(vo, HttpStatus.OK);

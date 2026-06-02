@@ -12,6 +12,8 @@ public interface VocabWordService {
 
     VocabWordDto findById(Integer id);
 
+    VocabWordDto findPublishedById(Integer id);
+
     Integer create(VocabWordDto resources);
 
     void update(Integer id, VocabWordDto resources);

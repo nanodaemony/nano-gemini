@@ -48,7 +48,7 @@ public class AppCharCharacterController {
     @ApiOperation("根据ID查询汉字详情")
     @AnonymousGetMapping("/{id}")
     public ResponseEntity<AppCharCharacterDetailVO> getDetail(@PathVariable Integer id) {
-        CharCharacterDto dto = charCharacterService.findById(id);
+        CharCharacterDto dto = charCharacterService.findPublishedById(id);
         AppCharCharacterDetailVO vo = toDetailVO(dto);
         return new ResponseEntity<>(vo, HttpStatus.OK);
     }

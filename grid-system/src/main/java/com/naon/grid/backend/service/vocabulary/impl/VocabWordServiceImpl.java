@@ -75,6 +75,36 @@ public class VocabWordServiceImpl implements VocabWordService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
+    public VocabWordDto findPublishedById(Integer id) {
+        VocabWord vocabWord = vocabWordRepository.findById(id).orElseGet(VocabWord::new);
+        if (vocabWord.getId() == null
+            || StatusEnum.DISABLED.getCode().equals(vocabWord.getStatus())
+            || !PublishStatusEnum.PUBLISHED.getCode().equals(vocabWord.getPublishStatus())) {
+            throw new EntityNotFoundException(VocabWord.class, "id", String.valueOf(id));
+        }
+        VocabWordDto vocabWordDto = vocabWordMapper.toDto(vocabWord);
+
+        List<VocabSenseDto> senseDtos = new ArrayList<>();
+        List<VocabSense> senses = vocabSenseRepository.findByWordIdAndStatus(id, StatusEnum.ENABLED.getCode());
+        for (VocabSense sense : senses) {
+            VocabSenseDto senseDto = convertToSenseDto(sense);
+            senseDtos.add(senseDto);
+        }
+        vocabWordDto.setSenses(senseDtos);
+
+        List<VocabExerciseDto> exerciseDtos = new ArrayList<>();
+        List<VocabExercise> exercises = vocabExerciseRepository.findByWordIdAndStatus(id, StatusEnum.ENABLED.getCode());
+        for (VocabExercise exercise : exercises) {
+            VocabExerciseDto exerciseDto = convertToExerciseDto(exercise);
+            exerciseDtos.add(exerciseDto);
+        }
+        vocabWordDto.setExercises(exerciseDtos);
+
+        return vocabWordDto;
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
     public Integer create(VocabWordDto resources) {
         VocabWord vocabWord = vocabWordMapper.toEntity(resources);
         vocabWord.setStatus(StatusEnum.ENABLED.getCode());

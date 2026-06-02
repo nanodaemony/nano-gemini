@@ -15,9 +15,12 @@
  */
 package com.naon.grid.service.impl;
 
+import cn.hutool.json.JSONUtil;
 import com.alibaba.dashscope.aigc.generation.Generation;
 import com.alibaba.dashscope.aigc.generation.GenerationParam;
 import com.alibaba.dashscope.aigc.generation.GenerationResult;
+import com.alibaba.dashscope.common.Message;
+import com.alibaba.dashscope.common.Role;
 import com.alibaba.dashscope.utils.Constants;
 import com.naon.grid.config.ChatAliyunConfig;
 import com.naon.grid.enums.ChatProviderEnum;
@@ -28,6 +31,9 @@ import com.naon.grid.service.dto.ChatResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 阿里云百炼对话 Provider
@@ -53,25 +59,59 @@ public class AliyunChatProvider implements ChatProvider {
                 Constants.baseHttpApiUrl = chatAliyunConfig.getBaseUrl();
             }
 
-            // 构建完整 prompt
-            String fullPrompt = buildFullPrompt(systemPrompt, request.getUserPrompt());
+            // 构建 messages 列表（推荐用于对话模型）
+            List<Message> messages = new ArrayList<>();
+            if (systemPrompt != null && !systemPrompt.isEmpty()) {
+                messages.add(Message.builder()
+                        .role(Role.SYSTEM.getValue())
+                        .content(systemPrompt)
+                        .build());
+            }
+            messages.add(Message.builder()
+                    .role(Role.USER.getValue())
+                    .content(request.getUserPrompt())
+                    .build());
 
-            GenerationParam param = GenerationParam.builder()
+            GenerationParam.GenerationParamBuilder<?, ?> builder = GenerationParam.builder()
                     .apiKey(chatAliyunConfig.getApiKey())
                     .model(request.getModel())
-                    .prompt(fullPrompt)
-                    .build();
+                    .messages(messages)
+                    .resultFormat(GenerationParam.ResultFormat.MESSAGE); // 设置响应格式为 message
+
+            // 设置可选参数
+            if (request.getTemperature() != null) {
+                builder.temperature(Float.valueOf(request.getTemperature().floatValue()));
+            }
+            if (request.getMaxTokens() != null) {
+                builder.maxTokens(request.getMaxTokens());
+            }
+            if (request.getTopP() != null) {
+                builder.topP(request.getTopP());
+            }
+
+            GenerationParam param = builder.build();
 
             Generation gen = new Generation();
             GenerationResult result = gen.call(param);
+
+            log.info("阿里云对话结果，result: {}", JSONUtil.toJsonStr(result));
 
             String content = "";
             Integer inputTokens = null;
             Integer outputTokens = null;
             Integer totalTokens = null;
 
-            if (result.getOutput() != null && result.getOutput().getChoices() != null && !result.getOutput().getChoices().isEmpty()) {
-                content = result.getOutput().getChoices().get(0).getMessage().getContent();
+            if (result.getOutput() != null) {
+                // 优先尝试从 choices 中获取（message 格式的响应）
+                if (result.getOutput().getChoices() != null && !result.getOutput().getChoices().isEmpty()) {
+                    if (result.getOutput().getChoices().get(0).getMessage() != null) {
+                        content = result.getOutput().getChoices().get(0).getMessage().getContent();
+                    }
+                }
+                // 再尝试从 text 字段获取（兼容某些模型）
+                else if (result.getOutput().getText() != null && !result.getOutput().getText().isEmpty()) {
+                    content = result.getOutput().getText();
+                }
             }
 
             if (result.getUsage() != null) {
@@ -79,6 +119,8 @@ public class AliyunChatProvider implements ChatProvider {
                 outputTokens = result.getUsage().getOutputTokens() != null ? result.getUsage().getOutputTokens().intValue() : null;
                 totalTokens = result.getUsage().getTotalTokens() != null ? result.getUsage().getTotalTokens().intValue() : null;
             }
+
+            log.info("解析后的响应内容，content: {}, requestId: {}", content, result.getRequestId());
 
             return ChatResponse.builder()
                     .requestId(result.getRequestId())

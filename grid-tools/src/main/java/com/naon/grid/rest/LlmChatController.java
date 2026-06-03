@@ -132,11 +132,6 @@ public class LlmChatController {
 
         PinyinResponse response = PinyinResponse.builder()
                 .pinyin(chatResponse.getContent())
-                .requestId(chatResponse.getRequestId())
-                .inputTokens(chatResponse.getInputTokens())
-                .outputTokens(chatResponse.getOutputTokens())
-                .totalTokens(chatResponse.getTotalTokens())
-                .latencyMs(chatResponse.getLatencyMs())
                 .build();
 
         return new ResponseEntity<>(response, HttpStatus.OK);

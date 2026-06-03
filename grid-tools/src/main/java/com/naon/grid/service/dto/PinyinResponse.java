@@ -37,18 +37,4 @@ public class PinyinResponse {
     @ApiModelProperty(value = "拼音结果", required = true, example = "Nǐ hǎo, wǒ xǐhuan chī mǐfàn")
     private String pinyin;
 
-    @ApiModelProperty(value = "厂商请求 ID", notes = "由大模型厂商返回的唯一请求标识，用于问题排查")
-    private String requestId;
-
-    @ApiModelProperty(value = "输入 token 数", notes = "用户输入的 token 数量，用于计费")
-    private Integer inputTokens;
-
-    @ApiModelProperty(value = "输出 token 数", notes = "模型输出的 token 数量，用于计费")
-    private Integer outputTokens;
-
-    @ApiModelProperty(value = "总 token 数", notes = "输入和输出的 token 总数，用于计费")
-    private Integer totalTokens;
-
-    @ApiModelProperty(value = "请求耗时", notes = "从收到请求到返回响应的总耗时，单位毫秒")
-    private Long latencyMs;
 }

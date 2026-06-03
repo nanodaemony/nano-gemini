@@ -4,25 +4,24 @@ import lombok.Getter;
 
 @Getter
 public enum HskLevelEnum {
-    HSK1(1, "HSK1"),
-    HSK2(2, "HSK2"),
-    HSK3(3, "HSK3"),
-    HSK4(4, "HSK4"),
-    HSK5(5, "HSK5"),
-    HSK6(6, "HSK6"),
-    HSK7(7, "HSK7"),
-    HSK8(8, "HSK8"),
-    HSK9(9, "HSK9");
+    HSK1("1", "HSK1"),
+    HSK2("2", "HSK2"),
+    HSK3("3", "HSK3"),
+    HSK4("4", "HSK4"),
+    HSK5("5", "HSK5"),
+    HSK6("6", "HSK6"),
+    HSK789("789", "HSK7-9")
+    ;
 
-    private final Integer code;
+    private final String code;
     private final String description;
 
-    HskLevelEnum(Integer code, String description) {
+    HskLevelEnum(String code, String description) {
         this.code = code;
         this.description = description;
     }
 
-    public static HskLevelEnum fromCode(Integer code) {
+    public static HskLevelEnum fromCode(String code) {
         if (code == null) {
             return null;
         }

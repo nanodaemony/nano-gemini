@@ -38,7 +38,7 @@ import org.springframework.web.bind.annotation.*;
  */
 @RestController
 @RequiredArgsConstructor
-@Api(tags = "翻译管理")
+@Api(tags = "工具：翻译管理")
 @RequestMapping("/api/translate")
 public class TranslateController {
 

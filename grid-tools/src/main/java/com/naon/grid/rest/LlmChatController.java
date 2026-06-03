@@ -17,9 +17,12 @@ package com.naon.grid.rest;
 
 import com.naon.grid.annotation.Log;
 import com.naon.grid.annotation.rest.AnonymousPostMapping;
+import com.naon.grid.constants.LlmChatConstants;
 import com.naon.grid.service.ChatService;
 import com.naon.grid.service.dto.ChatRequest;
 import com.naon.grid.service.dto.ChatResponse;
+import com.naon.grid.service.dto.PinyinRequest;
+import com.naon.grid.service.dto.PinyinResponse;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
@@ -41,8 +44,8 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequiredArgsConstructor
 @Api(tags = "工具：大模型对话")
-@RequestMapping("/api/chat")
-public class ChatController {
+@RequestMapping("/api/llm-chat")
+public class LlmChatController {
 
     private final ChatService chatService;
 
@@ -80,7 +83,7 @@ public class ChatController {
      *   "userPrompt": "你好",
      *   "temperature": 0.7,
      *   "placeholderValues": {
-     *     "targetLanguage": "English"
+     *     "key": "value"
      *   }
      * }
      * }</pre>
@@ -95,5 +98,47 @@ public class ChatController {
     @AnonymousPostMapping("/completions")
     public ResponseEntity<ChatResponse> chat(@Validated @RequestBody ChatRequest request) {
         return new ResponseEntity<>(chatService.chat(request), HttpStatus.OK);
+    }
+
+    /**
+     * 中文拼音生成接口
+     *
+     * 使用示例：
+     * <pre>{@code
+     * {
+     *   "provider": "ALIYUN",
+     *   "model": "qwen-plus",
+     *   "chineseText": "你好，我喜欢吃米饭"
+     * }
+     * }</pre>
+     */
+    @Log("中文拼音生成")
+    @ApiOperation(value = "中文拼音生成", notes = "将中文文案转换为带声调的拼音")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "转换成功"),
+            @ApiResponse(code = 400, message = "请求参数错误"),
+            @ApiResponse(code = 500, message = "服务内部错误")
+    })
+    @AnonymousPostMapping("/pinyin")
+    public ResponseEntity<PinyinResponse> pinyin(@Validated @RequestBody PinyinRequest request) {
+        ChatRequest chatRequest = new ChatRequest();
+        chatRequest.setProvider(request.getProvider());
+        chatRequest.setModel(request.getModel());
+        chatRequest.setSystemPrompt(LlmChatConstants.PINYIN_SYSTEM_PROMPT);
+        chatRequest.setUserPrompt(request.getChineseText());
+        chatRequest.setTemperature(LlmChatConstants.PINYIN_DEFAULT_TEMPERATURE);
+
+        ChatResponse chatResponse = chatService.chat(chatRequest);
+
+        PinyinResponse response = PinyinResponse.builder()
+                .pinyin(chatResponse.getContent())
+                .requestId(chatResponse.getRequestId())
+                .inputTokens(chatResponse.getInputTokens())
+                .outputTokens(chatResponse.getOutputTokens())
+                .totalTokens(chatResponse.getTotalTokens())
+                .latencyMs(chatResponse.getLatencyMs())
+                .build();
+
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 }

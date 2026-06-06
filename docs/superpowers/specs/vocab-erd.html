@@ -753,7 +753,7 @@ function auditKeysForSchema(schemaName) {
 
 function formatJsonValue(v) {
   if (v == null) return 'null';
-  return JSON.stringify(v, null, 0);
+  return JSON.stringify(v, null, 2);
 }
 
 function isFkField(schemaName, fieldName) {

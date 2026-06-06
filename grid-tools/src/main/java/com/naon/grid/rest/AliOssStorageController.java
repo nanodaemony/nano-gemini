@@ -21,10 +21,12 @@ import io.swagger.annotations.ApiParam;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import com.naon.grid.annotation.Log;
+import com.naon.grid.annotation.rest.AnonymousGetMapping;
 import com.naon.grid.annotation.rest.AnonymousPostMapping;
 import com.naon.grid.domain.AliOssStorage;
 import com.naon.grid.domain.enums.OssBusinessType;
 import com.naon.grid.exception.BadRequestException;
+import com.naon.grid.rest.vo.AliOssStorageVO;
 import com.naon.grid.service.AliOssStorageService;
 import com.naon.grid.service.dto.AliOssStorageDto;
 import com.naon.grid.service.dto.AliOssStorageQueryCriteria;
@@ -60,6 +62,31 @@ public class AliOssStorageController {
     @PreAuthorize("@el.check('editor')")
     public ResponseEntity<PageResult<AliOssStorageDto>> queryAliOssStorage(AliOssStorageQueryCriteria criteria, Pageable pageable) {
         return new ResponseEntity<>(aliOssStorageService.queryAll(criteria, pageable), HttpStatus.OK);
+    }
+
+    @ApiOperation("根据 ID 查询 OSS 资源信息")
+    @AnonymousGetMapping("/{id}")
+    public ResponseEntity<AliOssStorageVO> getResource(@PathVariable Long id) {
+        AliOssStorageDto dto = aliOssStorageService.findById(id);
+        return new ResponseEntity<>(toVO(dto), HttpStatus.OK);
+    }
+
+    private AliOssStorageVO toVO(AliOssStorageDto dto) {
+        if (dto == null) {
+            return null;
+        }
+        AliOssStorageVO vo = new AliOssStorageVO();
+        vo.setId(dto.getId());
+        vo.setFileName(dto.getFileName());
+        vo.setFileRealName(dto.getFileRealName());
+        vo.setFileSize(dto.getFileSize());
+        vo.setFileMimeType(dto.getFileMimeType());
+        vo.setFileType(dto.getFileType());
+        vo.setFileUrl(dto.getFileUrl());
+        vo.setBucketName(dto.getBucketName());
+        vo.setBusinessType(dto.getBusinessType());
+        vo.setCustomPath(dto.getCustomPath());
+        return vo;
     }
 
     @ApiOperation("导出数据")

@@ -704,6 +704,135 @@ function bindHover(root) {
   });
 }
 
+function findFkTarget(fkFieldName, fkValue) {
+  if (fkValue == null) return null;
+  if (fkFieldName === 'word_id') {
+    const w = INSTANCE_DATA.words.find(x => x.id === fkValue);
+    return w ? { icon: '🌿', text: `${w.word}(${w.pinyin})` } : null;
+  }
+  if (fkFieldName === 'sense_id') {
+    for (const w of INSTANCE_DATA.words) {
+      const s = (w.senses || []).find(x => x.id === fkValue);
+      if (s) return { icon: '📘', text: `${s.part_of_speech || ''} ${truncate(s.chinese_def, 20)}` };
+    }
+    return null;
+  }
+  if (fkFieldName === 'structure_id') {
+    for (const w of INSTANCE_DATA.words) {
+      for (const s of (w.senses || [])) {
+        const st = (s.structures || []).find(x => x.id === fkValue);
+        if (st) return { icon: '▶', text: `「${truncate(st.pattern, 25)}」` };
+      }
+    }
+    return null;
+  }
+  if (fkFieldName === 'audio_id' || fkFieldName === 'def_audio_id') {
+    return { icon: '🔊', text: `(audio_resource 表)` };
+  }
+  return null;
+}
+
+function isJsonField(schemaName, fieldName) {
+  const schema = SCHEMA[schemaName];
+  if (!schema) return false;
+  const f = schema.fields.find(x => x.name === fieldName);
+  return f && f.type === 'json';
+}
+
+function fieldKeysForSchema(schemaName) {
+  const schema = SCHEMA[schemaName];
+  if (!schema) return [];
+  return schema.fields.map(f => f.name);
+}
+
+function auditKeysForSchema(schemaName) {
+  const schema = SCHEMA[schemaName];
+  if (!schema || !schema.auditFields) return [];
+  return schema.auditFields.map(f => f.name);
+}
+
+function formatJsonValue(v) {
+  if (v == null) return 'null';
+  return JSON.stringify(v, null, 0);
+}
+
+function isFkField(schemaName, fieldName) {
+  const schema = SCHEMA[schemaName];
+  if (!schema) return false;
+  const f = schema.fields.find(x => x.name === fieldName);
+  return !!(f && f.fk);
+}
+
+function renderFieldValueCell(schemaName, fieldName, value) {
+  const cell = el('span', { class: 'fvalue' });
+  if (value == null) {
+    cell.classList.add('null');
+    cell.textContent = 'null';
+    return cell;
+  }
+  if (isJsonField(schemaName, fieldName)) {
+    cell.appendChild(el('div', { class: 'inst-json-block' }, formatJsonValue(value)));
+  } else {
+    cell.textContent = String(value);
+  }
+  if (isFkField(schemaName, fieldName)) {
+    const target = findFkTarget(fieldName, value);
+    if (target) {
+      cell.appendChild(el('span', { class: 'inst-fk-hint' },
+        `→ ${target.icon} #${value} ${target.text}`));
+    }
+  }
+  return cell;
+}
+
+function renderFieldRow(schemaName, fieldName, value) {
+  return el('div', { class: 'inst-field-row' },
+    el('span', { class: 'fname' }, fieldName),
+    renderFieldValueCell(schemaName, fieldName, value),
+  );
+}
+
+function renderFullFields(record, schemaName) {
+  const frag = document.createDocumentFragment();
+
+  const toggle = el('div', { class: 'inst-fields-toggle' }, '📋 完整字段 ▾');
+  const body = el('div', { class: 'inst-fields' });
+
+  const normalKeys = fieldKeysForSchema(schemaName);
+  for (const k of normalKeys) {
+    if (k in record) {
+      body.appendChild(renderFieldRow(schemaName, k, record[k]));
+    }
+  }
+
+  const auditKeys = auditKeysForSchema(schemaName).filter(k => k in record);
+  if (auditKeys.length > 0) {
+    const auditToggle = el('div', { class: 'inst-audit-toggle' },
+      `审计字段 (${auditKeys.length}) ▾`);
+    const auditBody = el('div', { class: 'inst-audit-fields' });
+    for (const k of auditKeys) {
+      auditBody.appendChild(renderFieldRow(schemaName, k, record[k]));
+    }
+    auditToggle.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const open = auditBody.classList.toggle('open');
+      auditToggle.textContent = `审计字段 (${auditKeys.length}) ${open ? '▴' : '▾'}`;
+    });
+    body.appendChild(auditToggle);
+    body.appendChild(auditBody);
+  }
+
+  toggle.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const open = body.classList.toggle('open');
+    toggle.textContent = `📋 完整字段 ${open ? '▴' : '▾'}`;
+  });
+
+  frag.appendChild(toggle);
+  frag.appendChild(body);
+  return frag;
+}
+
 function truncate(s, n) {
   if (s == null) return '';
   const str = String(s);
@@ -742,14 +871,17 @@ function makeCollapsibleNode(role, header, childrenChildren) {
 
 function renderExampleNode(example) {
   const header = nodeHeader('example', '•', example.id, example.sentence, null);
-  return makeCollapsibleNode('example', header, []);
+  return makeCollapsibleNode('example', header, [renderFullFields(example, 'vocab_example')]);
 }
 
 function renderStructureNode(structure) {
   const examples = structure.examples || [];
   const countText = `${examples.length} 例句`;
   const header = nodeHeader('structure', '▶', structure.id, `「${structure.pattern}」`, countText);
-  const children = examples.map(renderExampleNode);
+  const children = [
+    renderFullFields(structure, 'vocab_structure'),
+    ...examples.map(renderExampleNode),
+  ];
   return makeCollapsibleNode('structure', header, children);
 }
 
@@ -759,14 +891,17 @@ function renderSenseNode(sense) {
   const countText = `${structures.length} 结构 · ${totalExamples} 例句`;
   const pos = sense.part_of_speech ? `[${sense.part_of_speech}] ` : '';
   const header = nodeHeader('sense', '📘', sense.id, pos + (sense.chinese_def || ''), countText);
-  const children = structures.map(renderStructureNode);
+  const children = [
+    renderFullFields(sense, 'vocab_sense'),
+    ...structures.map(renderStructureNode),
+  ];
   return makeCollapsibleNode('sense', header, children);
 }
 
 function renderExerciseNode(exercise) {
   const qt = exercise.question_type ? `[${exercise.question_type}] ` : '';
   const header = nodeHeader('exercise', '📝', exercise.id, qt + (exercise.question_text || ''), null);
-  return makeCollapsibleNode('exercise', header, []);
+  return makeCollapsibleNode('exercise', header, [renderFullFields(exercise, 'vocab_exercise')]);
 }
 
 function renderWordNode(word) {
@@ -781,6 +916,7 @@ function renderWordNode(word) {
   const header = nodeHeader('word', '🌿', word.id, mainText, countText);
 
   const children = [
+    renderFullFields(word, 'vocab_word'),
     ...senses.map(renderSenseNode),
     ...exercises.map(renderExerciseNode),
   ];

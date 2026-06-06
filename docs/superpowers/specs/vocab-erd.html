@@ -48,6 +48,11 @@ main#diagram { padding: 24px; display: flex; flex-direction: column; gap: 24px; 
 .type-json      { background: #fde6cc; color: #b25a00; }
 .type-timestamp { background: #ececec; color: #555; }
 .type-string    { background: #e6f6ee; color: #2f9b6f; }
+.audit-toggle { padding: 4px 12px; font-size: 11px; color: #2f6fd6; cursor: pointer; user-select: none; border-top: 1px dashed #e3e5e8; background: #fafbfc; }
+.audit-toggle:hover { background: #f1f4f9; }
+.audit-fields { display: none; background: #fafbfc; }
+.audit-fields.open { display: flex; flex-direction: column; }
+.audit-fields .field-row { background: #fafbfc; }
 </style>
 </head>
 <body>
@@ -273,6 +278,22 @@ function renderField(tableName, f) {
   return row;
 }
 
+function renderAuditBlock(tableName, auditFields) {
+  if (!auditFields || auditFields.length === 0) return null;
+  const list = el('div', { class: 'audit-fields' },
+    ...auditFields.map(f => renderField(tableName, f)),
+  );
+  const toggle = el('div', { class: 'audit-toggle' }, `审计字段 (${auditFields.length}) ▾`);
+  toggle.addEventListener('click', () => {
+    const open = list.classList.toggle('open');
+    toggle.textContent = `审计字段 (${auditFields.length}) ${open ? '▴' : '▾'}`;
+  });
+  const wrap = document.createDocumentFragment();
+  wrap.appendChild(toggle);
+  wrap.appendChild(list);
+  return wrap;
+}
+
 function roleLabel(role) {
   return { main: '主表', sub: '子表', resource: '资源表', standalone: '独立表' }[role] || role;
 }
@@ -286,8 +307,8 @@ function renderTable(name, schema) {
     ),
     el('div', { class: 'fields' },
       ...schema.fields.map(f => renderField(name, f)),
-      // 审计字段后续任务添加
     ),
+    renderAuditBlock(name, schema.auditFields),
   );
   return card;
 }

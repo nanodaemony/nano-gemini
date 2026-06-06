@@ -87,6 +87,16 @@ main#diagram { padding: 24px; display: flex; flex-direction: column; gap: 24px; 
   <main id="diagram">
     <p style="color:#888">渲染中...</p>
   </main>
+  <section id="instance-section">
+    <h2>实例数据示例：爱好(àihào) vs. 爱好(àihǎo)</h2>
+    <p class="intro">
+      同一个"爱好"文本对应两条不同 ID 的词汇记录，分别有不同的义项、结构、例句。
+      点击任意节点展开下一层；点击 📋 查看该行所有字段的实际值。
+    </p>
+    <div id="instance-tree">
+      <p style="color:#888">渲染中...</p>
+    </div>
+  </section>
   <script>
 const SCHEMA = {
   vocab_word: {
@@ -422,6 +432,10 @@ function bindHover(root) {
   });
 }
 
+function renderInstance() {
+  // Task 4 中实现
+}
+
 function render() {
   const root = document.getElementById('diagram');
   root.innerHTML = '';
@@ -444,6 +458,7 @@ function render() {
 
   root.append(topRow, mainRow1, mainRow2, mainRow3, mainRow4);
   bindHover(root);
+  renderInstance();
 }
 
 document.addEventListener('DOMContentLoaded', render);

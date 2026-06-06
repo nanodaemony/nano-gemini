@@ -44,6 +44,39 @@ public class CharCharacterController {
 
     private final CharCharacterService charCharacterService;
 
+    @Log("新增汉字")
+    @ApiOperation("新增汉字")
+    @AnonymousPostMapping
+    public ResponseEntity<CharCharacterCreateVO> create(@Valid @RequestBody CharCharacterCreateRequest request) {
+        CharCharacterCreateVO vo = new CharCharacterCreateVO();
+        vo.setId(charCharacterService.create(toDto(request)));
+        return new ResponseEntity<>(vo, HttpStatus.CREATED);
+    }
+
+    @Log("修改汉字内容")
+    @ApiOperation("修改汉字内容")
+    @AnonymousPutMapping("/{id}")
+    public ResponseEntity<Object> update(@PathVariable Integer id, @Valid @RequestBody CharCharacterCreateRequest request) {
+        charCharacterService.update(id, toDto(request));
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    @Log("汉字草稿审核通过")
+    @ApiOperation("汉字草稿审核通过（草稿→已审核）")
+    @AnonymousPutMapping("/{id}/review")
+    public ResponseEntity<Object> reviewDraft(@PathVariable Integer id) {
+        charCharacterService.reviewDraft(id);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    @Log("发布汉字")
+    @ApiOperation("发布汉字（已审核→已发布）")
+    @AnonymousPutMapping("/{id}/publish")
+    public ResponseEntity<Object> publishDraft(@PathVariable Integer id) {
+        charCharacterService.publishDraft(id);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
     @Log("查询汉字详情")
     @ApiOperation("根据ID查询汉字详情")
     @AnonymousGetMapping("/{id}")
@@ -59,44 +92,11 @@ public class CharCharacterController {
         return new ResponseEntity<>(new PageResult<>(toBaseVOList(pageResult.getContent()), pageResult.getTotalElements()), HttpStatus.OK);
     }
 
-    @Log("新增汉字")
-    @ApiOperation("新增汉字")
-    @AnonymousPostMapping
-    public ResponseEntity<CharCharacterCreateVO> create(@Valid @RequestBody CharCharacterCreateRequest request) {
-        CharCharacterCreateVO vo = new CharCharacterCreateVO();
-        vo.setId(charCharacterService.create(toDto(request)));
-        return new ResponseEntity<>(vo, HttpStatus.CREATED);
-    }
-
-    @Log("修改汉字")
-    @ApiOperation("修改汉字")
-    @AnonymousPutMapping("/{id}")
-    public ResponseEntity<Object> update(@PathVariable Integer id, @Valid @RequestBody CharCharacterCreateRequest request) {
-        charCharacterService.update(id, toDto(request));
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-    }
-
     @Log("删除汉字")
     @ApiOperation("删除汉字")
     @AnonymousDeleteMapping("/{id}")
     public ResponseEntity<Object> delete(@PathVariable Integer id) {
         charCharacterService.delete(id);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-    }
-
-    @Log("审核汉字草稿")
-    @ApiOperation("审核汉字草稿（草稿→已审核）")
-    @AnonymousPutMapping("/{id}/review")
-    public ResponseEntity<Object> reviewDraft(@PathVariable Integer id) {
-        charCharacterService.reviewDraft(id);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-    }
-
-    @Log("发布汉字")
-    @ApiOperation("发布汉字（已审核→已发布）")
-    @AnonymousPutMapping("/{id}/publish")
-    public ResponseEntity<Object> publishDraft(@PathVariable Integer id) {
-        charCharacterService.publishDraft(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 

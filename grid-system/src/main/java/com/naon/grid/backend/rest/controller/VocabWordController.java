@@ -58,6 +58,39 @@ public class VocabWordController {
     private final VocabOutlineRecordService vocabOutlineRecordService;
     private final VocabOutlineRecordMapper vocabOutlineRecordMapper;
 
+    @Log("新增词汇")
+    @ApiOperation("新增词汇")
+    @AnonymousPostMapping
+    public ResponseEntity<VocabWordCreateVO> create(@Valid @RequestBody VocabWordCreateRequest request) {
+        VocabWordCreateVO vo = new VocabWordCreateVO();
+        vo.setId(vocabWordService.create(toDto(request)));
+        return new ResponseEntity<>(vo, HttpStatus.CREATED);
+    }
+
+    @Log("更新词汇内容")
+    @ApiOperation("更新词汇内容")
+    @AnonymousPutMapping("/{id}")
+    public ResponseEntity<Object> update(@PathVariable Integer id, @Valid @RequestBody VocabWordCreateRequest request) {
+        vocabWordService.update(id, toDto(request));
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    @Log("词汇草稿通过")
+    @ApiOperation("词汇草稿通过（草稿→已审核）")
+    @AnonymousPutMapping("/{id}/review")
+    public ResponseEntity<Object> reviewDraft(@PathVariable Integer id) {
+        vocabWordService.reviewDraft(id);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    @Log("发布词汇")
+    @ApiOperation("发布词汇（已审核→已发布）")
+    @AnonymousPutMapping("/{id}/publish")
+    public ResponseEntity<Object> publishDraft(@PathVariable Integer id) {
+        vocabWordService.publishDraft(id);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
     @Log("查询词汇详情")
     @ApiOperation("根据ID查询词汇详情")
     @AnonymousGetMapping("/{id}")
@@ -73,45 +106,11 @@ public class VocabWordController {
         return new ResponseEntity<>(new PageResult<>(toBaseVOList(pageResult.getContent()), pageResult.getTotalElements()), HttpStatus.OK);
     }
 
-    @Log("新增词汇")
-    @ApiOperation("新增词汇")
-    @AnonymousPostMapping
-    public ResponseEntity<VocabWordCreateVO> create(@Valid @RequestBody VocabWordCreateRequest request) {
-        VocabWordCreateVO vo = new VocabWordCreateVO();
-        vo.setId(vocabWordService.create(toDto(request)));
-        return new ResponseEntity<>(vo, HttpStatus.CREATED);
-    }
-
-    @Log("更新词汇")
-    @ApiOperation("更新词汇")
-    @AnonymousPutMapping("/{id}")
-    public ResponseEntity<Object> update(@PathVariable Integer id, @Valid @RequestBody VocabWordCreateRequest request) {
-        vocabWordService.update(id, toDto(request));
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-    }
-
     @Log("删除词汇")
     @ApiOperation("删除词汇")
     @AnonymousDeleteMapping("/{id}")
     public ResponseEntity<Object> delete(@PathVariable Integer id) {
         vocabWordService.delete(id);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-    }
-
-
-    @Log("审核词汇草稿")
-    @ApiOperation("审核词汇草稿（草稿→已审核）")
-    @AnonymousPutMapping("/{id}/review")
-    public ResponseEntity<Object> reviewDraft(@PathVariable Integer id) {
-        vocabWordService.reviewDraft(id);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-    }
-
-    @Log("发布词汇")
-    @ApiOperation("发布词汇（已审核→已发布）")
-    @AnonymousPutMapping("/{id}/publish")
-    public ResponseEntity<Object> publishDraft(@PathVariable Integer id) {
-        vocabWordService.publishDraft(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
@@ -170,7 +169,6 @@ public class VocabWordController {
         dto.setExercises(toExerciseDtoList(request.getExercises()));
         return dto;
     }
-
 
     private List<VocabSenseDto> toSenseDtoList(List<VocabWordCreateRequest.VocabSenseRequest> requests) {
         if (requests == null) {

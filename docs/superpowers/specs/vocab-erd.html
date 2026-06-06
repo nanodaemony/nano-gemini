@@ -19,7 +19,171 @@
     <p style="color:#888">渲染中...</p>
   </main>
   <script>
-    // 后续任务填充
+const SCHEMA = {
+  vocab_word: {
+    role: 'main',          // main | sub | resource | standalone
+    aliasZh: '词汇主表',
+    fields: [
+      { name: 'id',               type: 'int',          pk: true,  notNull: true,  zh: '词汇唯一ID' },
+      { name: 'word',             type: 'varchar(50)',              notNull: true,  zh: '词汇' },
+      { name: 'word_traditional', type: 'varchar(50)',                              zh: '繁体词汇' },
+      { name: 'pinyin',           type: 'varchar(100)',                             zh: '标准拼音（含声调）' },
+      { name: 'audio_id',         type: 'bigint',       fk: 'audio_resource.id',   zh: '词汇读音音频资源ID' },
+      { name: 'hsk_level',        type: 'varchar(20)',                              zh: 'HSK等级（"1"-"9"）' },
+      { name: 'status',           type: 'int',                                       zh: '状态：1=可用，0=已删除' },
+      { name: 'publish_status',   type: 'varchar(20)',                              zh: '发布状态：unpublished/published' },
+      { name: 'edit_status',      type: 'varchar(20)',                              zh: '编辑状态：draft/reviewed/published' },
+      { name: 'draft_content',    type: 'json',         jsonShape: 'draftContent', zh: '草稿内容JSON（含主表和子表快照）' },
+    ],
+    auditFields: [
+      { name: 'create_by',   type: 'varchar', zh: '创建人' },
+      { name: 'update_by',   type: 'varchar', zh: '更新人' },
+      { name: 'create_time', type: 'timestamp', zh: '创建时间' },
+      { name: 'update_time', type: 'timestamp', zh: '更新时间' },
+    ],
+  },
+
+  vocab_sense: {
+    role: 'sub',
+    aliasZh: '义项',
+    fields: [
+      { name: 'id',               type: 'int',    pk: true, notNull: true,                          zh: '义项ID' },
+      { name: 'word_id',          type: 'int',    fk: 'vocab_word.id', notNull: true,               zh: '所属词汇ID' },
+      { name: 'part_of_speech',   type: 'varchar(50)',                                              zh: '词性' },
+      { name: 'chinese_def',      type: 'text',                                                     zh: '中文释义' },
+      { name: 'def_audio_id',     type: 'bigint', fk: 'audio_resource.id',                          zh: '中文释义音频资源ID' },
+      { name: 'translations',     type: 'json',   jsonShape: 'textTranslation',                     zh: '外文翻译列表 → TextTranslation[]' },
+      { name: 'synonyms',         type: 'text',                                                     zh: '近义词列表' },
+      { name: 'antonyms',         type: 'text',                                                     zh: '反义词列表' },
+      { name: 'related_forward',  type: 'text',                                                     zh: '正序关联词汇' },
+      { name: 'related_backward', type: 'text',                                                     zh: '逆序关联词汇' },
+      { name: 'sense_order',      type: 'int',    notNull: true,                                    zh: '义项排序权重' },
+      { name: 'status',           type: 'int',                                                      zh: '状态' },
+    ],
+    auditFields: [
+      { name: 'create_time', type: 'timestamp', zh: '创建时间' },
+      { name: 'update_time', type: 'timestamp', zh: '更新时间' },
+    ],
+  },
+
+  vocab_structure: {
+    role: 'sub',
+    aliasZh: '结构搭配',
+    fields: [
+      { name: 'id',              type: 'int',    pk: true, notNull: true,                zh: '结构搭配ID' },
+      { name: 'word_id',         type: 'int',    fk: 'vocab_word.id', notNull: true,     zh: '所属词汇ID' },
+      { name: 'sense_id',        type: 'int',    fk: 'vocab_sense.id', notNull: true,    zh: '所属义项ID' },
+      { name: 'pattern',         type: 'varchar(255)', notNull: true,                    zh: '结构搭配文案' },
+      { name: 'structure_order', type: 'int',    notNull: true,                          zh: '搭配排序权重' },
+      { name: 'status',          type: 'int',                                            zh: '状态' },
+    ],
+    auditFields: [
+      { name: 'create_time', type: 'timestamp', zh: '创建时间' },
+      { name: 'update_time', type: 'timestamp', zh: '更新时间' },
+    ],
+  },
+
+  vocab_example: {
+    role: 'sub',
+    aliasZh: '例句',
+    fields: [
+      { name: 'id',             type: 'int',    pk: true, notNull: true,                    zh: '例句唯一ID' },
+      { name: 'word_id',        type: 'int',    fk: 'vocab_word.id', notNull: true,         zh: '所属词汇ID' },
+      { name: 'sense_id',       type: 'int',    fk: 'vocab_sense.id', notNull: true,        zh: '所属义项ID' },
+      { name: 'structure_id',   type: 'int',    fk: 'vocab_structure.id', notNull: true,    zh: '所属结构搭配ID' },
+      { name: 'sentence',       type: 'text',   notNull: true,                              zh: '例句中文文案' },
+      { name: 'audio_id',       type: 'bigint', fk: 'audio_resource.id',                    zh: '例句音频资源ID' },
+      { name: 'pinyin',         type: 'varchar(500)',                                       zh: '例句拼音' },
+      { name: 'translations',   type: 'json',   jsonShape: 'textTranslation',               zh: '例句外文翻译列表 → TextTranslation[]' },
+      { name: 'example_order',  type: 'int',    notNull: true,                              zh: '例句排序权重' },
+      { name: 'status',         type: 'int',                                                zh: '状态' },
+    ],
+    auditFields: [
+      { name: 'create_time', type: 'timestamp', zh: '创建时间' },
+      { name: 'update_time', type: 'timestamp', zh: '更新时间' },
+    ],
+  },
+
+  vocab_exercise: {
+    role: 'sub',
+    aliasZh: '练习题',
+    fields: [
+      { name: 'id',              type: 'int',  pk: true, notNull: true,             zh: '练习题目唯一ID' },
+      { name: 'word_id',         type: 'int',  fk: 'vocab_word.id', notNull: true,  zh: '所属词汇ID' },
+      { name: 'question_type',   type: 'varchar(20)', notNull: true,                zh: '题目类型' },
+      { name: 'question_text',   type: 'text',  notNull: true,                      zh: '练习题干描述' },
+      { name: 'options',         type: 'json', jsonShape: 'exerciseOption',         zh: '选项列表 → ExerciseOption[]' },
+      { name: 'answers',         type: 'json',                                      zh: '答案列表（字符串数组）' },
+      { name: 'exercise_order',  type: 'int',  notNull: true,                       zh: '练习题目排序权重' },
+      { name: 'status',          type: 'int',                                       zh: '状态' },
+    ],
+    auditFields: [
+      { name: 'create_time', type: 'timestamp', zh: '创建时间' },
+      { name: 'update_time', type: 'timestamp', zh: '更新时间' },
+    ],
+  },
+
+  vocab_outline_record: {
+    role: 'standalone',
+    aliasZh: '纲外词记录',
+    fields: [
+      { name: 'id',           type: 'int',          pk: true, notNull: true, zh: '主键ID' },
+      { name: 'word',         type: 'varchar(50)',  notNull: true,           zh: '词汇文本' },
+      { name: 'search_count', type: 'int',          notNull: true,           zh: '未搜到次数' },
+      { name: 'status',       type: 'int',                                   zh: '处理状态：0=未处理，1=已处理' },
+    ],
+    auditFields: [
+      { name: 'create_time', type: 'timestamp', zh: '创建时间' },
+      { name: 'update_time', type: 'timestamp', zh: '更新时间' },
+    ],
+  },
+
+  audio_resource: {
+    role: 'resource',
+    aliasZh: '音频资源',
+    fields: [
+      { name: 'id',           type: 'bigint',       pk: true, notNull: true, zh: '主键' },
+      { name: 'text_content', type: 'text',         notNull: true,           zh: '音频对应的文字内容' },
+      { name: 'source_type',  type: 'varchar(50)',  notNull: true,           zh: '来源类型：tts/upload' },
+      { name: 'file_url',     type: 'varchar(500)', notNull: true,           zh: '音频文件地址' },
+      { name: 'file_format',  type: 'varchar(20)',                           zh: '文件格式：mp3/wav/m4a' },
+      { name: 'file_size',    type: 'bigint',                                zh: '文件大小（字节）' },
+      { name: 'status',       type: 'int',                                   zh: '有效状态：1=有效，0=无效' },
+    ],
+    auditFields: [
+      { name: 'create_time', type: 'timestamp', zh: '创建时间' },
+      { name: 'update_time', type: 'timestamp', zh: '更新时间' },
+    ],
+  },
+};
+
+const JSON_SHAPES = {
+  textTranslation: {
+    title: 'TextTranslation',
+    note: '语种 + 翻译文本（一个翻译条目）',
+    fields: [
+      { name: 'language',    type: 'string', zh: '语种枚举（LanguageCodeEnum.code）' },
+      { name: 'translation', type: 'string', zh: '翻译文案' },
+    ],
+  },
+  exerciseOption: {
+    title: 'ExerciseOption',
+    note: '练习题的一个选项',
+    fields: [
+      { name: 'option', type: 'string', zh: '选项标识（A/B/C/D）' },
+      { name: 'text',   type: 'string', zh: '选项文案' },
+    ],
+  },
+  draftContent: {
+    title: 'DraftContent（整词草稿快照）',
+    note: '保存在 vocab_word.draft_content；发布时回写主表 + 子表',
+    fields: [
+      { name: 'word / word_traditional / pinyin / audio_id / hsk_level', type: '字段', zh: '同 vocab_word 同名字段' },
+      { name: 'senses[]',     type: 'array',  zh: '义项快照（含 structures[] 和 examples[]）' },
+      { name: 'exercises[]',  type: 'array',  zh: '练习题快照' },
+    ],
+  },
+};
   </script>
 </body>
 </html>

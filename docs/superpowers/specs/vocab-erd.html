@@ -66,6 +66,10 @@ main#diagram { padding: 24px; display: flex; flex-direction: column; gap: 24px; 
 .json-shape .sub-field .sname { font-family: ui-monospace, Consolas, monospace; }
 .json-shape .sub-field .stype { font-family: ui-monospace, Consolas, monospace; color: #b25a00; font-size: 10px; }
 .json-shape .sub-field .szh { grid-column: 1 / -1; color: #777; font-size: 11px; }
+
+.table-card.highlight { box-shadow: 0 0 0 3px rgba(47, 111, 214, .25); border-color: #2f6fd6 !important; }
+.table-card.secondary-highlight { box-shadow: 0 0 0 2px rgba(47, 155, 111, .2); }
+.field-row.highlight { background: #fff3cd; }
 </style>
 </head>
 <body>
@@ -360,6 +364,65 @@ function renderTable(name, schema) {
   return card;
 }
 
+function parseFk(fkStr) {
+  if (!fkStr) return null;
+  const [table, field] = fkStr.split('.');
+  return { table, field };
+}
+
+function bindHover(root) {
+  // 1) hover FK 字段 -> 高亮目标表卡 + 目标字段
+  root.querySelectorAll('.field-row').forEach(row => {
+    const fkText = row.querySelector('.fk');
+    if (!fkText) return;
+    const target = parseFk(fkText.textContent.replace('→ ', '').trim());
+    if (!target) return;
+    const card = root.querySelector(`.table-card[data-table="${target.table}"]`);
+    const field = root.querySelector(`.field-row[data-table="${target.table}"][data-field="${target.field}"]`);
+    row.addEventListener('mouseenter', () => {
+      if (card) card.classList.add('highlight');
+      if (field) field.classList.add('highlight');
+    });
+    row.addEventListener('mouseleave', () => {
+      if (card) card.classList.remove('highlight');
+      if (field) field.classList.remove('highlight');
+    });
+  });
+
+  // 2) hover 表头 -> 高亮该表引用的 / 引用该表的所有表
+  root.querySelectorAll('.table-card').forEach(card => {
+    const tableName = card.dataset.table;
+    const referencedTables = new Set();
+    const schema = SCHEMA[tableName];
+    if (schema) {
+      schema.fields.forEach(f => {
+        if (f.fk) referencedTables.add(f.fk.split('.')[0]);
+      });
+    }
+    const referencingTables = new Set();
+    Object.entries(SCHEMA).forEach(([otherName, otherSchema]) => {
+      otherSchema.fields.forEach(f => {
+        if (f.fk && f.fk.split('.')[0] === tableName) referencingTables.add(otherName);
+      });
+    });
+    const allRelated = new Set([...referencedTables, ...referencingTables]);
+
+    const header = card.querySelector('.header');
+    header.addEventListener('mouseenter', () => {
+      allRelated.forEach(t => {
+        const c = root.querySelector(`.table-card[data-table="${t}"]`);
+        if (c) c.classList.add('secondary-highlight');
+      });
+    });
+    header.addEventListener('mouseleave', () => {
+      allRelated.forEach(t => {
+        const c = root.querySelector(`.table-card[data-table="${t}"]`);
+        if (c) c.classList.remove('secondary-highlight');
+      });
+    });
+  });
+}
+
 function render() {
   const root = document.getElementById('diagram');
   root.innerHTML = '';
@@ -381,6 +444,7 @@ function render() {
   const mainRow4 = el('div', { class: 'row' }, renderTable('vocab_example',   SCHEMA.vocab_example));
 
   root.append(topRow, mainRow1, mainRow2, mainRow3, mainRow4);
+  bindHover(root);
 }
 
 document.addEventListener('DOMContentLoaded', render);

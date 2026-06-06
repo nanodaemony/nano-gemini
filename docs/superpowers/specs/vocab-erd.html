@@ -4,17 +4,65 @@
   <meta charset="utf-8">
   <title>词汇模块 ER 图</title>
   <style>
-    /* 后续任务填充 */
-    body { margin: 0; font-family: -apple-system, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif; background: #f5f6f8; color: #222; }
-    header { padding: 16px 24px; background: #fff; border-bottom: 1px solid #e3e5e8; }
-    header h1 { margin: 0; font-size: 18px; }
-    main#diagram { padding: 24px; }
-  </style>
+body { margin: 0; font-family: -apple-system, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif; background: #f5f6f8; color: #222; }
+header { padding: 16px 24px; background: #fff; border-bottom: 1px solid #e3e5e8; }
+header h1 { margin: 0 0 8px; font-size: 18px; }
+header .legend { font-size: 12px; color: #666; display: flex; gap: 16px; flex-wrap: wrap; }
+header .legend .item { display: inline-flex; align-items: center; gap: 4px; }
+header .legend .badge { display: inline-block; width: 10px; height: 10px; border-radius: 2px; }
+
+main#diagram { padding: 24px; display: flex; flex-direction: column; gap: 24px; }
+.row { display: flex; gap: 24px; flex-wrap: wrap; justify-content: center; align-items: flex-start; }
+
+.table-card { background: #fff; border: 2px solid #ccd; border-radius: 8px; min-width: 320px; max-width: 480px; box-shadow: 0 1px 3px rgba(0,0,0,.06); overflow: hidden; transition: border-color .15s, box-shadow .15s; }
+.table-card.role-main      { border-color: #2f6fd6; }
+.table-card.role-sub       { border-color: #2f9b6f; }
+.table-card.role-resource  { border-color: #8a4fc9; }
+.table-card.role-standalone{ border-color: #6c757d; }
+
+.table-card .header { padding: 8px 12px; font-weight: 600; display: flex; align-items: baseline; gap: 8px; }
+.table-card.role-main      .header { background: #e8f0fc; }
+.table-card.role-sub       .header { background: #e6f6ee; }
+.table-card.role-resource  .header { background: #f0e8fa; }
+.table-card.role-standalone.header,
+.table-card.role-standalone .header { background: #eceef1; }
+.table-card .header .name  { font-family: ui-monospace, Consolas, monospace; font-size: 14px; }
+.table-card .header .alias { font-size: 12px; color: #555; font-weight: normal; }
+.table-card .header .role-tag { margin-left: auto; font-size: 11px; padding: 2px 6px; border-radius: 4px; background: rgba(0,0,0,.06); }
+
+.table-card .fields { display: flex; flex-direction: column; }
+.field-row { display: grid; grid-template-columns: 18px 1fr auto; gap: 6px; padding: 4px 12px; font-size: 12px; border-top: 1px solid #f1f2f4; align-items: baseline; }
+.field-row:first-child { border-top: none; }
+.field-row .icon { font-size: 11px; color: #888; }
+.field-row .name { font-family: ui-monospace, Consolas, monospace; }
+.field-row .name.notnull::after { content: ' *'; color: #c0392b; font-weight: bold; }
+.field-row .meta { display: flex; gap: 4px; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
+.field-row .zh { grid-column: 2 / -1; color: #777; font-size: 11px; padding-top: 1px; }
+.field-row .fk { grid-column: 2 / -1; font-size: 11px; color: #2f6fd6; font-family: ui-monospace, Consolas, monospace; }
+
+.type-badge { font-size: 10px; padding: 1px 5px; border-radius: 3px; font-family: ui-monospace, Consolas, monospace; white-space: nowrap; }
+.type-int       { background: #e3edfb; color: #2f6fd6; }
+.type-bigint    { background: #e3edfb; color: #2f6fd6; }
+.type-varchar   { background: #e6f6ee; color: #2f9b6f; }
+.type-text      { background: #fbf3d6; color: #9a7300; }
+.type-json      { background: #fde6cc; color: #b25a00; }
+.type-timestamp { background: #ececec; color: #555; }
+.type-string    { background: #e6f6ee; color: #2f9b6f; }
+</style>
 </head>
 <body>
   <header>
-    <h1>词汇模块 ER 图（VocabWordController 涉及表）</h1>
-  </header>
+  <h1>词汇模块 ER 图（VocabWordController 涉及表）</h1>
+  <div class="legend">
+    <span class="item"><span class="badge" style="background:#2f6fd6"></span>主表</span>
+    <span class="item"><span class="badge" style="background:#2f9b6f"></span>子表</span>
+    <span class="item"><span class="badge" style="background:#8a4fc9"></span>资源表</span>
+    <span class="item"><span class="badge" style="background:#6c757d"></span>独立表</span>
+    <span class="item">🔑 主键</span>
+    <span class="item">🔗 外键</span>
+    <span class="item"><span style="color:#c0392b">*</span> NOT NULL</span>
+  </div>
+</header>
   <main id="diagram">
     <p style="color:#888">渲染中...</p>
   </main>
@@ -184,6 +232,90 @@ const JSON_SHAPES = {
     ],
   },
 };
+
+function typeClass(type) {
+  if (!type) return '';
+  if (type.startsWith('varchar')) return 'type-varchar';
+  if (type === 'int' || type === 'bigint') return `type-${type}`;
+  if (type === 'text' || type === 'json' || type === 'timestamp' || type === 'string') return `type-${type}`;
+  return '';
+}
+
+function el(tag, attrs, ...children) {
+  const node = document.createElement(tag);
+  if (attrs) {
+    for (const k of Object.keys(attrs)) {
+      if (k === 'class') node.className = attrs[k];
+      else if (k === 'dataset') Object.assign(node.dataset, attrs[k]);
+      else if (k.startsWith('on')) node.addEventListener(k.slice(2), attrs[k]);
+      else node.setAttribute(k, attrs[k]);
+    }
+  }
+  for (const c of children) {
+    if (c == null || c === false) continue;
+    if (typeof c === 'string') node.appendChild(document.createTextNode(c));
+    else node.appendChild(c);
+  }
+  return node;
+}
+
+function renderField(tableName, f) {
+  const icon = f.pk ? '🔑' : (f.fk ? '🔗' : '');
+  const row = el('div', { class: 'field-row', dataset: { table: tableName, field: f.name } },
+    el('span', { class: 'icon' }, icon),
+    el('span', { class: `name${f.notNull ? ' notnull' : ''}` }, f.name),
+    el('span', { class: 'meta' },
+      el('span', { class: `type-badge ${typeClass(f.type)}` }, f.type),
+    ),
+    el('span', { class: 'zh' }, f.zh || ''),
+    f.fk ? el('span', { class: 'fk' }, `→ ${f.fk}`) : null,
+  );
+  return row;
+}
+
+function roleLabel(role) {
+  return { main: '主表', sub: '子表', resource: '资源表', standalone: '独立表' }[role] || role;
+}
+
+function renderTable(name, schema) {
+  const card = el('div', { class: `table-card role-${schema.role}`, dataset: { table: name } },
+    el('div', { class: 'header' },
+      el('span', { class: 'name' }, name),
+      el('span', { class: 'alias' }, schema.aliasZh),
+      el('span', { class: 'role-tag' }, roleLabel(schema.role)),
+    ),
+    el('div', { class: 'fields' },
+      ...schema.fields.map(f => renderField(name, f)),
+      // 审计字段后续任务添加
+    ),
+  );
+  return card;
+}
+
+function render() {
+  const root = document.getElementById('diagram');
+  root.innerHTML = '';
+
+  // 顶部行：独立表 + 资源表
+  const topRow = el('div', { class: 'row' },
+    renderTable('vocab_outline_record', SCHEMA.vocab_outline_record),
+    renderTable('audio_resource', SCHEMA.audio_resource),
+  );
+
+  // 主区行 1：vocab_word（中）与 vocab_exercise（右）
+  const mainRow1 = el('div', { class: 'row' },
+    renderTable('vocab_word', SCHEMA.vocab_word),
+    renderTable('vocab_exercise', SCHEMA.vocab_exercise),
+  );
+
+  const mainRow2 = el('div', { class: 'row' }, renderTable('vocab_sense',     SCHEMA.vocab_sense));
+  const mainRow3 = el('div', { class: 'row' }, renderTable('vocab_structure', SCHEMA.vocab_structure));
+  const mainRow4 = el('div', { class: 'row' }, renderTable('vocab_example',   SCHEMA.vocab_example));
+
+  root.append(topRow, mainRow1, mainRow2, mainRow3, mainRow4);
+}
+
+document.addEventListener('DOMContentLoaded', render);
   </script>
 </body>
 </html>

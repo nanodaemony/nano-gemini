@@ -69,6 +69,58 @@ main#diagram { padding: 24px; display: flex; flex-direction: column; gap: 24px; 
 .table-card.highlight { box-shadow: 0 0 0 3px rgba(47, 111, 214, .25); border-color: #2f6fd6 !important; }
 .table-card.secondary-highlight { box-shadow: 0 0 0 2px rgba(47, 155, 111, .2); }
 .field-row.highlight { background: #fff3cd; }
+/* ===== 实例数据示例区 ===== */
+#instance-section { padding: 24px; background: #fff; border-top: 1px solid #e3e5e8; margin-top: 24px; }
+#instance-section h2 { margin: 0 0 8px; font-size: 16px; color: #222; }
+#instance-section .intro { margin: 0 0 16px; font-size: 13px; color: #666; line-height: 1.6; }
+#instance-tree { display: flex; flex-direction: column; gap: 12px; }
+
+.inst-node { border-left: 2px solid #e3e5e8; padding-left: 12px; }
+.inst-node-header { display: flex; align-items: baseline; gap: 8px; padding: 6px 8px; cursor: pointer; border-radius: 4px; user-select: none; line-height: 1.5; font-size: 13px; }
+.inst-node-header:hover { background: #f3f5f8; }
+.inst-node-header .arrow { font-size: 10px; color: #888; margin-left: auto; }
+.inst-node-children { display: none; margin: 4px 0 8px 14px; }
+.inst-node.open > .inst-node-children { display: block; }
+
+.inst-icon { font-size: 13px; }
+.inst-id { font-family: ui-monospace, Consolas, monospace; font-size: 11px; color: #999; }
+.inst-text { color: #222; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.inst-count { font-size: 11px; color: #555; background: rgba(0,0,0,.05); padding: 1px 6px; border-radius: 8px; white-space: nowrap; }
+
+/* 各类型节点配色（边框 + 头部底色） */
+.inst-role-word      { border-left-color: #2f6fd6; }
+.inst-role-word      > .inst-node-header { background: #e8f0fc; font-weight: 600; }
+.inst-role-word      > .inst-node-header:hover { background: #dce8fa; }
+
+.inst-role-sense     { border-left-color: #2f9b6f; }
+.inst-role-sense     > .inst-node-header { background: #e6f6ee; }
+.inst-role-sense     > .inst-node-header:hover { background: #d6f0e1; }
+
+.inst-role-structure { border-left-color: #4ea888; }
+.inst-role-structure > .inst-node-header { background: #ecf7f1; }
+
+.inst-role-example   { border-left-color: #c8a86a; }
+.inst-role-example   > .inst-node-header { background: #fbf5e6; }
+
+.inst-role-exercise  { border-left-color: #8a4fc9; }
+.inst-role-exercise  > .inst-node-header { background: #f0e8fa; }
+
+/* 完整字段折叠区 */
+.inst-fields-toggle { display: inline-block; margin: 4px 0 4px 14px; padding: 2px 8px; font-size: 11px; color: #2f6fd6; cursor: pointer; user-select: none; border: 1px dashed #c8d4e8; border-radius: 4px; background: #fafbfc; }
+.inst-fields-toggle:hover { background: #eef2f8; }
+.inst-fields { display: none; margin: 4px 14px 8px; padding: 8px 12px; background: #fafbfc; border: 1px solid #e3e5e8; border-radius: 4px; font-size: 12px; }
+.inst-fields.open { display: block; }
+.inst-field-row { display: grid; grid-template-columns: 160px 1fr; gap: 8px; padding: 2px 0; align-items: baseline; }
+.inst-field-row .fname { font-family: ui-monospace, Consolas, monospace; color: #555; font-size: 11px; }
+.inst-field-row .fvalue { font-family: ui-monospace, Consolas, monospace; color: #222; word-break: break-all; }
+.inst-field-row .fvalue.null { color: #999; font-style: italic; }
+.inst-fk-hint { color: #888; font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif; font-size: 11px; margin-left: 6px; }
+.inst-json-block { background: #fff7ed; border: 1px solid #f0d9b8; border-radius: 3px; padding: 4px 8px; font-family: ui-monospace, Consolas, monospace; font-size: 11px; color: #6a4400; white-space: pre-wrap; word-break: break-all; }
+
+.inst-audit-toggle { display: inline-block; margin: 6px 0 2px; padding: 1px 6px; font-size: 11px; color: #888; cursor: pointer; user-select: none; border-top: 1px dashed #d8dce3; padding-top: 4px; }
+.inst-audit-toggle:hover { color: #555; }
+.inst-audit-fields { display: none; margin-top: 4px; padding-top: 4px; border-top: 1px dashed #e3e5e8; }
+.inst-audit-fields.open { display: block; }
 </style>
 </head>
 <body>

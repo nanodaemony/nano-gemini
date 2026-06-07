@@ -96,6 +96,9 @@ public class CharCharacterVO implements Serializable {
         @ApiModelProperty(value = "对比翻译")
         private List<TextTranslationVO> comparisonTranslations;
 
+        @ApiModelProperty(value = "辨析排序权重（值大的排前面）")
+        private Integer discriminationOrder;
+
         @ApiModelProperty(value = "创建时间: yyyy-MM-dd HH:mm:ss", required = true)
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
         private Timestamp createTime;
@@ -140,6 +143,9 @@ public class CharCharacterVO implements Serializable {
 
         @ApiModelProperty(value = "例句图片")
         private String exampleImage;
+
+        @ApiModelProperty(value = "组词排序权重（值大的排前面）")
+        private Integer wordOrder;
 
         @ApiModelProperty(value = "创建时间: yyyy-MM-dd HH:mm:ss", required = true)
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")

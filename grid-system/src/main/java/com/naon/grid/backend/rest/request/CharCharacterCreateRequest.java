@@ -71,6 +71,9 @@ public class CharCharacterCreateRequest implements Serializable {
 
         @ApiModelProperty(value = "对比翻译")
         private List<TextTranslationRequest> comparisonTranslations;
+
+        @ApiModelProperty(value = "辨析排序权重（值大的排前面，不传默认 0）")
+        private Integer discriminationOrder;
     }
 
     @Getter
@@ -106,5 +109,8 @@ public class CharCharacterCreateRequest implements Serializable {
 
         @ApiModelProperty(value = "例句图片")
         private String exampleImage;
+
+        @ApiModelProperty(value = "组词排序权重（值大的排前面，不传默认 0）")
+        private Integer wordOrder;
     }
 }

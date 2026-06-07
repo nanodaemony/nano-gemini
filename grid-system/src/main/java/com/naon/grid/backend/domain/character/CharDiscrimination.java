@@ -43,6 +43,11 @@ public class CharDiscrimination implements Serializable {
     @Column(name = "comparison_translations", columnDefinition = "text")
     private String comparisonTranslations;
 
+    @NotNull
+    @Column(name = "discrimination_order", nullable = false)
+    @ApiModelProperty(value = "辨析排序权重（值大的排前面）")
+    private Integer discriminationOrder = 0;
+
     @CreationTimestamp
     @Column(name = "create_time", updatable = false)
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")

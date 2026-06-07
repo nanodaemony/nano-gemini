@@ -36,6 +36,9 @@ public class VocabExampleDto extends BaseDTO implements Serializable {
     @ApiModelProperty(value = "例句外文翻译列表")
     private List<TextTranslation> translations;
 
+    @ApiModelProperty(value = "例句图片资源ID")
+    private Long image;
+
     @ApiModelProperty(value = "例句排序权重")
     private Integer exampleOrder;
 

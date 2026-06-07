@@ -45,8 +45,6 @@ import java.util.List;
 
 /**
  * 阿里云 OSS 存储管理
- * @author Zheng Jie
- * @date 2025-05-19
  */
 @Slf4j
 @RestController

@@ -75,6 +75,14 @@ public class AliOssStorageServiceImpl implements AliOssStorageService {
     }
 
     @Override
+    public List<AliOssStorageDto> findByIds(List<Long> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return Collections.emptyList();
+        }
+        return aliOssStorageMapper.toDto(aliOssStorageRepository.findAllById(ids));
+    }
+
+    @Override
     @Transactional(rollbackFor = Exception.class)
     public AliOssStorage upload(MultipartFile file) {
         return upload(file, OssBusinessType.DEFAULT, null);

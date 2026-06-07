@@ -58,6 +58,10 @@ public class VocabExample implements Serializable {
     @ApiModelProperty(value = "例句外文翻译列表")
     private String translations;
 
+    @Column(name = "image")
+    @ApiModelProperty(value = "例句图片资源ID")
+    private Long image;
+
     @NotNull
     @Column(name = "example_order", nullable = false)
     @ApiModelProperty(value = "例句排序权重")

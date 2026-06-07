@@ -41,6 +41,14 @@ public class VocabStructure implements Serializable {
     @ApiModelProperty(value = "结构搭配文案")
     private String pattern;
 
+    @Column(name = "pattern_def", length = 512)
+    @ApiModelProperty(value = "结构搭配释义")
+    private String patternDef;
+
+    @Column(name = "pattern_def_translations", length = 1024)
+    @ApiModelProperty(value = "结构搭配释义外文翻译（JSON）")
+    private String patternDefTranslations;
+
     @NotNull
     @Column(name = "structure_order", nullable = false)
     @ApiModelProperty(value = "搭配排序权重")

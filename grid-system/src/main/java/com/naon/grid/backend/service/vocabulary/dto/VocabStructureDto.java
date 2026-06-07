@@ -4,6 +4,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.Setter;
 import com.naon.grid.base.BaseDTO;
+import com.naon.grid.domain.common.TextTranslation;
 import java.io.Serializable;
 import java.util.List;
 
@@ -22,6 +23,12 @@ public class VocabStructureDto extends BaseDTO implements Serializable {
 
     @ApiModelProperty(value = "结构搭配文案")
     private String pattern;
+
+    @ApiModelProperty(value = "结构搭配释义")
+    private String patternDef;
+
+    @ApiModelProperty(value = "结构搭配释义外文翻译列表")
+    private List<TextTranslation> patternDefTranslations;
 
     @ApiModelProperty(value = "搭配排序权重")
     private Integer structureOrder;

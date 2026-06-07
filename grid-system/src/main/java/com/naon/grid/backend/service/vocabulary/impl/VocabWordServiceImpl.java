@@ -425,11 +425,13 @@ public class VocabWordServiceImpl implements VocabWordService {
         dto.setPartOfSpeech(sense.getPartOfSpeech());
         dto.setChineseDef(sense.getChineseDef());
         dto.setDefAudioId(sense.getDefAudioId());
+        dto.setDefImage(sense.getDefImage());
         dto.setTranslations(JsonUtils.parseTranslationList(sense.getTranslations()));
         dto.setSynonyms(JsonUtils.parseStringList(sense.getSynonyms()));
         dto.setAntonyms(JsonUtils.parseStringList(sense.getAntonyms()));
         dto.setRelatedForward(JsonUtils.parseStringList(sense.getRelatedForward()));
         dto.setRelatedBackward(JsonUtils.parseStringList(sense.getRelatedBackward()));
+        dto.setRelatedOther(JsonUtils.parseStringList(sense.getRelatedOther()));
         dto.setSenseOrder(sense.getSenseOrder());
         dto.setCreateTime(sense.getCreateTime());
         dto.setUpdateTime(sense.getUpdateTime());
@@ -452,6 +454,8 @@ public class VocabWordServiceImpl implements VocabWordService {
         dto.setWordId(structure.getWordId());
         dto.setSenseId(structure.getSenseId());
         dto.setPattern(structure.getPattern());
+        dto.setPatternDef(structure.getPatternDef());
+        dto.setPatternDefTranslations(JsonUtils.parseTranslationList(structure.getPatternDefTranslations()));
         dto.setStructureOrder(structure.getStructureOrder());
         dto.setCreateTime(structure.getCreateTime());
         dto.setUpdateTime(structure.getUpdateTime());
@@ -478,6 +482,7 @@ public class VocabWordServiceImpl implements VocabWordService {
         dto.setAudioId(example.getAudioId());
         dto.setPinyin(example.getPinyin());
         dto.setTranslations(JsonUtils.parseTranslationList(example.getTranslations()));
+        dto.setImage(example.getImage());
         dto.setExampleOrder(example.getExampleOrder());
         dto.setCreateTime(example.getCreateTime());
         dto.setUpdateTime(example.getUpdateTime());
@@ -504,16 +509,20 @@ public class VocabWordServiceImpl implements VocabWordService {
         entity.setPartOfSpeech(dto.getPartOfSpeech());
         entity.setChineseDef(dto.getChineseDef());
         entity.setDefAudioId(dto.getDefAudioId());
+        entity.setDefImage(dto.getDefImage());
         entity.setTranslations(JsonUtils.toTranslationJson(dto.getTranslations()));
         entity.setSynonyms(JsonUtils.toStringListJson(dto.getSynonyms()));
         entity.setAntonyms(JsonUtils.toStringListJson(dto.getAntonyms()));
         entity.setRelatedForward(JsonUtils.toStringListJson(dto.getRelatedForward()));
         entity.setRelatedBackward(JsonUtils.toStringListJson(dto.getRelatedBackward()));
+        entity.setRelatedOther(JsonUtils.toStringListJson(dto.getRelatedOther()));
         entity.setSenseOrder(dto.getSenseOrder() != null ? dto.getSenseOrder() : 0);
     }
 
     private void updateStructure(VocabStructure entity, VocabStructureDto dto) {
         entity.setPattern(dto.getPattern());
+        entity.setPatternDef(dto.getPatternDef());
+        entity.setPatternDefTranslations(JsonUtils.toTranslationJson(dto.getPatternDefTranslations()));
         entity.setStructureOrder(dto.getStructureOrder() != null ? dto.getStructureOrder() : 0);
     }
 
@@ -522,6 +531,7 @@ public class VocabWordServiceImpl implements VocabWordService {
         entity.setAudioId(dto.getAudioId());
         entity.setPinyin(dto.getPinyin());
         entity.setTranslations(JsonUtils.toTranslationJson(dto.getTranslations()));
+        entity.setImage(dto.getImage());
         entity.setExampleOrder(dto.getExampleOrder() != null ? dto.getExampleOrder() : 0);
     }
 
@@ -539,11 +549,13 @@ public class VocabWordServiceImpl implements VocabWordService {
         entity.setPartOfSpeech(dto.getPartOfSpeech());
         entity.setChineseDef(dto.getChineseDef());
         entity.setDefAudioId(dto.getDefAudioId());
+        entity.setDefImage(dto.getDefImage());
         entity.setTranslations(JsonUtils.toTranslationJson(dto.getTranslations()));
         entity.setSynonyms(JsonUtils.toStringListJson(dto.getSynonyms()));
         entity.setAntonyms(JsonUtils.toStringListJson(dto.getAntonyms()));
         entity.setRelatedForward(JsonUtils.toStringListJson(dto.getRelatedForward()));
         entity.setRelatedBackward(JsonUtils.toStringListJson(dto.getRelatedBackward()));
+        entity.setRelatedOther(JsonUtils.toStringListJson(dto.getRelatedOther()));
         entity.setSenseOrder(dto.getSenseOrder() != null ? dto.getSenseOrder() : 0);
         entity.setStatus(StatusEnum.ENABLED.getCode());
         return entity;
@@ -554,6 +566,8 @@ public class VocabWordServiceImpl implements VocabWordService {
         entity.setWordId(wordId);
         entity.setSenseId(senseId);
         entity.setPattern(dto.getPattern());
+        entity.setPatternDef(dto.getPatternDef());
+        entity.setPatternDefTranslations(JsonUtils.toTranslationJson(dto.getPatternDefTranslations()));
         entity.setStructureOrder(dto.getStructureOrder() != null ? dto.getStructureOrder() : 0);
         entity.setStatus(StatusEnum.ENABLED.getCode());
         return entity;
@@ -568,6 +582,7 @@ public class VocabWordServiceImpl implements VocabWordService {
         entity.setAudioId(dto.getAudioId());
         entity.setPinyin(dto.getPinyin());
         entity.setTranslations(JsonUtils.toTranslationJson(dto.getTranslations()));
+        entity.setImage(dto.getImage());
         entity.setExampleOrder(dto.getExampleOrder() != null ? dto.getExampleOrder() : 0);
         entity.setStatus(StatusEnum.ENABLED.getCode());
         return entity;

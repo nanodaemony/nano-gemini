@@ -46,6 +46,13 @@ public class AppVocabWordDetailVO implements Serializable {
 
     @Getter
     @Setter
+    public static class ImageVO implements Serializable {
+        @ApiModelProperty(value = "图片文件地址")
+        private String imageUrl;
+    }
+
+    @Getter
+    @Setter
     public static class VocabSenseVO implements Serializable {
         @ApiModelProperty(value = "义项ID")
         private Integer id;
@@ -58,6 +65,9 @@ public class AppVocabWordDetailVO implements Serializable {
 
         @ApiModelProperty(value = "释义音频")
         private AudioVO defAudio;
+
+        @ApiModelProperty(value = "释义图片")
+        private ImageVO defImage;
 
         @ApiModelProperty(value = "外文翻译列表")
         private List<TextTranslationVO> translations;
@@ -73,6 +83,9 @@ public class AppVocabWordDetailVO implements Serializable {
 
         @ApiModelProperty(value = "逆序关联词汇")
         private List<RelatedWordVO> relatedBackward;
+
+        @ApiModelProperty(value = "其他关联词汇")
+        private List<RelatedWordVO> relatedOther;
 
         @ApiModelProperty(value = "义项排序")
         private Integer senseOrder;
@@ -111,6 +124,12 @@ public class AppVocabWordDetailVO implements Serializable {
         @ApiModelProperty(value = "搭配文案")
         private String pattern;
 
+        @ApiModelProperty(value = "搭配释义")
+        private String patternDef;
+
+        @ApiModelProperty(value = "搭配释义外文翻译列表")
+        private List<TextTranslationVO> patternDefTranslations;
+
         @ApiModelProperty(value = "搭配排序")
         private Integer structureOrder;
 
@@ -135,6 +154,9 @@ public class AppVocabWordDetailVO implements Serializable {
 
         @ApiModelProperty(value = "例句外文翻译列表")
         private List<TextTranslationVO> translations;
+
+        @ApiModelProperty(value = "例句图片")
+        private ImageVO image;
 
         @ApiModelProperty(value = "例句排序")
         private Integer exampleOrder;

@@ -13,6 +13,8 @@ import com.naon.grid.backend.service.vocabulary.dto.VocabWordDto;
 import com.naon.grid.backend.service.vocabulary.dto.VocabWordQueryCriteria;
 import com.naon.grid.backend.service.resource.AudioResourceService;
 import com.naon.grid.backend.service.resource.dto.AudioResourceDto;
+import com.naon.grid.service.AliOssStorageService;
+import com.naon.grid.service.dto.AliOssStorageDto;
 import com.naon.grid.modules.app.rest.request.AppVocabWordSearchRequest;
 import com.naon.grid.modules.app.rest.vo.AppVocabWordBaseVO;
 import com.naon.grid.modules.app.rest.vo.AppVocabWordDetailVO;
@@ -40,6 +42,7 @@ public class AppVocabWordController {
 
     private final VocabWordService vocabWordService;
     private final AudioResourceService audioResourceService;
+    private final AliOssStorageService aliOssStorageService;
     private final VocabOutlineRecordService vocabOutlineRecordService;
 
     @ApiOperation("搜索词汇")
@@ -65,7 +68,8 @@ public class AppVocabWordController {
     public ResponseEntity<AppVocabWordDetailVO> getDetail(@PathVariable Integer id) {
         VocabWordDto dto = vocabWordService.findPublishedById(id);
         Map<Long, AudioResourceDto> audioMap = collectAndBatchQueryAudios(dto);
-        AppVocabWordDetailVO vo = toDetailVO(dto, audioMap);
+        Map<Long, AliOssStorageDto> imageMap = collectAndBatchQueryImages(dto);
+        AppVocabWordDetailVO vo = toDetailVO(dto, audioMap, imageMap);
         return new ResponseEntity<>(vo, HttpStatus.OK);
     }
 
@@ -114,7 +118,32 @@ public class AppVocabWordController {
                 .collect(Collectors.toMap(AudioResourceDto::getId, audio -> audio));
     }
 
-    private AppVocabWordDetailVO toDetailVO(VocabWordDto dto, Map<Long, AudioResourceDto> audioMap) {
+    private Map<Long, AliOssStorageDto> collectAndBatchQueryImages(VocabWordDto dto) {
+        List<Long> imageIds = new ArrayList<>();
+        if (dto.getSenses() != null) {
+            for (VocabSenseDto sense : dto.getSenses()) {
+                if (sense.getDefImage() != null) {
+                    imageIds.add(sense.getDefImage());
+                }
+                if (sense.getStructures() != null) {
+                    for (VocabStructureDto structure : sense.getStructures()) {
+                        if (structure.getExamples() != null) {
+                            for (VocabExampleDto example : structure.getExamples()) {
+                                if (example.getImage() != null) {
+                                    imageIds.add(example.getImage());
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        List<AliOssStorageDto> imageDtos = aliOssStorageService.findByIds(imageIds);
+        return imageDtos.stream()
+                .collect(Collectors.toMap(AliOssStorageDto::getId, img -> img));
+    }
+
+    private AppVocabWordDetailVO toDetailVO(VocabWordDto dto, Map<Long, AudioResourceDto> audioMap, Map<Long, AliOssStorageDto> imageMap) {
         AppVocabWordDetailVO vo = new AppVocabWordDetailVO();
         vo.setId(dto.getId());
         vo.setWord(dto.getWord());
@@ -126,19 +155,19 @@ public class AppVocabWordController {
             vo.setAudio(audioVO);
         }
         vo.setHskLevel(dto.getHskLevel());
-        vo.setSenses(toSenseVOList(dto.getSenses(), audioMap));
+        vo.setSenses(toSenseVOList(dto.getSenses(), audioMap, imageMap));
         vo.setExercises(toExerciseVOList(dto.getExercises()));
         return vo;
     }
 
-    private List<AppVocabWordDetailVO.VocabSenseVO> toSenseVOList(List<VocabSenseDto> dtos, Map<Long, AudioResourceDto> audioMap) {
+    private List<AppVocabWordDetailVO.VocabSenseVO> toSenseVOList(List<VocabSenseDto> dtos, Map<Long, AudioResourceDto> audioMap, Map<Long, AliOssStorageDto> imageMap) {
         if (dtos == null) {
             return Collections.emptyList();
         }
-        return dtos.stream().map(dto -> toSenseVO(dto, audioMap)).collect(Collectors.toList());
+        return dtos.stream().map(dto -> toSenseVO(dto, audioMap, imageMap)).collect(Collectors.toList());
     }
 
-    private AppVocabWordDetailVO.VocabSenseVO toSenseVO(VocabSenseDto dto, Map<Long, AudioResourceDto> audioMap) {
+    private AppVocabWordDetailVO.VocabSenseVO toSenseVO(VocabSenseDto dto, Map<Long, AudioResourceDto> audioMap, Map<Long, AliOssStorageDto> imageMap) {
         AppVocabWordDetailVO.VocabSenseVO vo = new AppVocabWordDetailVO.VocabSenseVO();
         vo.setId(dto.getId());
         vo.setPartOfSpeech(dto.getPartOfSpeech());
@@ -148,13 +177,19 @@ public class AppVocabWordController {
             audioVO.setAudioUrl(audioMap.get(dto.getDefAudioId()).getFileUrl());
             vo.setDefAudio(audioVO);
         }
+        if (dto.getDefImage() != null && imageMap.containsKey(dto.getDefImage())) {
+            AppVocabWordDetailVO.ImageVO imageVO = new AppVocabWordDetailVO.ImageVO();
+            imageVO.setImageUrl(imageMap.get(dto.getDefImage()).getFileUrl());
+            vo.setDefImage(imageVO);
+        }
         vo.setTranslations(toTextTranslationVOList(dto.getTranslations()));
         vo.setSynonyms(toSynonymVOList(dto.getSynonyms()));
         vo.setAntonyms(toAntonymVOList(dto.getAntonyms()));
         vo.setRelatedForward(toRelatedWordVOList(dto.getRelatedForward()));
         vo.setRelatedBackward(toRelatedWordVOList(dto.getRelatedBackward()));
+        vo.setRelatedOther(toRelatedWordVOList(dto.getRelatedOther()));
         vo.setSenseOrder(dto.getSenseOrder());
-        vo.setStructures(toStructureVOList(dto.getStructures(), audioMap));
+        vo.setStructures(toStructureVOList(dto.getStructures(), audioMap, imageMap));
         return vo;
     }
 
@@ -191,30 +226,32 @@ public class AppVocabWordController {
         }).collect(Collectors.toList());
     }
 
-    private List<AppVocabWordDetailVO.VocabStructureVO> toStructureVOList(List<VocabStructureDto> dtos, Map<Long, AudioResourceDto> audioMap) {
+    private List<AppVocabWordDetailVO.VocabStructureVO> toStructureVOList(List<VocabStructureDto> dtos, Map<Long, AudioResourceDto> audioMap, Map<Long, AliOssStorageDto> imageMap) {
         if (dtos == null) {
             return Collections.emptyList();
         }
-        return dtos.stream().map(dto -> toStructureVO(dto, audioMap)).collect(Collectors.toList());
+        return dtos.stream().map(dto -> toStructureVO(dto, audioMap, imageMap)).collect(Collectors.toList());
     }
 
-    private AppVocabWordDetailVO.VocabStructureVO toStructureVO(VocabStructureDto dto, Map<Long, AudioResourceDto> audioMap) {
+    private AppVocabWordDetailVO.VocabStructureVO toStructureVO(VocabStructureDto dto, Map<Long, AudioResourceDto> audioMap, Map<Long, AliOssStorageDto> imageMap) {
         AppVocabWordDetailVO.VocabStructureVO vo = new AppVocabWordDetailVO.VocabStructureVO();
         vo.setId(dto.getId());
         vo.setPattern(dto.getPattern());
+        vo.setPatternDef(dto.getPatternDef());
+        vo.setPatternDefTranslations(toTextTranslationVOList(dto.getPatternDefTranslations()));
         vo.setStructureOrder(dto.getStructureOrder());
-        vo.setExamples(toExampleVOList(dto.getExamples(), audioMap));
+        vo.setExamples(toExampleVOList(dto.getExamples(), audioMap, imageMap));
         return vo;
     }
 
-    private List<AppVocabWordDetailVO.VocabExampleVO> toExampleVOList(List<VocabExampleDto> dtos, Map<Long, AudioResourceDto> audioMap) {
+    private List<AppVocabWordDetailVO.VocabExampleVO> toExampleVOList(List<VocabExampleDto> dtos, Map<Long, AudioResourceDto> audioMap, Map<Long, AliOssStorageDto> imageMap) {
         if (dtos == null) {
             return Collections.emptyList();
         }
-        return dtos.stream().map(dto -> toExampleVO(dto, audioMap)).collect(Collectors.toList());
+        return dtos.stream().map(dto -> toExampleVO(dto, audioMap, imageMap)).collect(Collectors.toList());
     }
 
-    private AppVocabWordDetailVO.VocabExampleVO toExampleVO(VocabExampleDto dto, Map<Long, AudioResourceDto> audioMap) {
+    private AppVocabWordDetailVO.VocabExampleVO toExampleVO(VocabExampleDto dto, Map<Long, AudioResourceDto> audioMap, Map<Long, AliOssStorageDto> imageMap) {
         AppVocabWordDetailVO.VocabExampleVO vo = new AppVocabWordDetailVO.VocabExampleVO();
         vo.setId(dto.getId());
         vo.setSentence(dto.getSentence());
@@ -225,6 +262,11 @@ public class AppVocabWordController {
         }
         vo.setPinyin(dto.getPinyin());
         vo.setTranslations(toTextTranslationVOList(dto.getTranslations()));
+        if (dto.getImage() != null && imageMap.containsKey(dto.getImage())) {
+            AppVocabWordDetailVO.ImageVO imageVO = new AppVocabWordDetailVO.ImageVO();
+            imageVO.setImageUrl(imageMap.get(dto.getImage()).getFileUrl());
+            vo.setImage(imageVO);
+        }
         vo.setExampleOrder(dto.getExampleOrder());
         return vo;
     }

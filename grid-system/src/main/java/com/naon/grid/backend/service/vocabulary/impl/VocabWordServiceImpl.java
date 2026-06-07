@@ -75,7 +75,15 @@ public class VocabWordServiceImpl implements VocabWordService {
         if (draftJson == null) {
             throw new BadRequestException("草稿内容不存在");
         }
-        VocabWordDto draft = JsonUtils.fromJson(draftJson, VocabWordDto.class);
+        VocabWordDto draft;
+        try {
+            draft = JsonUtils.fromJson(draftJson, VocabWordDto.class);
+        } catch (Exception e) {
+            throw new BadRequestException("草稿数据解析失败");
+        }
+        if (draft == null) {
+            throw new BadRequestException("草稿内容不存在");
+        }
         if (draft.getWord() != null)            dto.setWord(draft.getWord());
         if (draft.getWordTraditional() != null) dto.setWordTraditional(draft.getWordTraditional());
         if (draft.getPinyin() != null)          dto.setPinyin(draft.getPinyin());

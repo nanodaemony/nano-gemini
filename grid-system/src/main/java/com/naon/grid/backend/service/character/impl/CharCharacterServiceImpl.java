@@ -31,6 +31,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.persistence.criteria.Predicate;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -83,13 +84,15 @@ public class CharCharacterServiceImpl implements CharCharacterService {
             dto.setUpdateBy(charCharacter.getUpdateBy());
             dto.setCreateTime(charCharacter.getCreateTime());
             dto.setUpdateTime(charCharacter.getUpdateTime());
+            dto.setDiscriminations(sortDiscriminationsDesc(dto.getDiscriminations()));
+            dto.setWords(sortWordsDesc(dto.getWords()));
             return dto;
         }
 
         // If in PUBLISHED status, return main table + child tables
         CharCharacterDto charCharacterDto = charCharacterMapper.toDto(charCharacter);
-        charCharacterDto.setDiscriminations(convertToDiscriminationDtos(charDiscriminationRepository.findByCharIdAndStatus(id, StatusEnum.ENABLED.getCode())));
-        charCharacterDto.setWords(convertToWordDtos(charWordRepository.findByCharIdAndStatus(id, StatusEnum.ENABLED.getCode())));
+        charCharacterDto.setDiscriminations(sortDiscriminationsDesc(convertToDiscriminationDtos(charDiscriminationRepository.findByCharIdAndStatus(id, StatusEnum.ENABLED.getCode()))));
+        charCharacterDto.setWords(sortWordsDesc(convertToWordDtos(charWordRepository.findByCharIdAndStatus(id, StatusEnum.ENABLED.getCode()))));
         return charCharacterDto;
     }
 
@@ -106,8 +109,8 @@ public class CharCharacterServiceImpl implements CharCharacterService {
             throw new EntityNotFoundException(CharCharacter.class, "id", String.valueOf(id));
         }
         CharCharacterDto charCharacterDto = charCharacterMapper.toDto(charCharacter);
-        charCharacterDto.setDiscriminations(convertToDiscriminationDtos(charDiscriminationRepository.findByCharIdAndStatus(id, StatusEnum.ENABLED.getCode())));
-        charCharacterDto.setWords(convertToWordDtos(charWordRepository.findByCharIdAndStatus(id, StatusEnum.ENABLED.getCode())));
+        charCharacterDto.setDiscriminations(sortDiscriminationsDesc(convertToDiscriminationDtos(charDiscriminationRepository.findByCharIdAndStatus(id, StatusEnum.ENABLED.getCode()))));
+        charCharacterDto.setWords(sortWordsDesc(convertToWordDtos(charWordRepository.findByCharIdAndStatus(id, StatusEnum.ENABLED.getCode()))));
         return charCharacterDto;
     }
 
@@ -293,6 +296,7 @@ public class CharCharacterServiceImpl implements CharCharacterService {
         dto.setDiscrimPinyin(discrimination.getDiscrimPinyin());
         dto.setDiscrimCharTranslations(JsonUtils.parseTranslationList(discrimination.getDiscrimCharTranslations()));
         dto.setComparisonTranslations(JsonUtils.parseTranslationList(discrimination.getComparisonTranslations()));
+        dto.setDiscriminationOrder(discrimination.getDiscriminationOrder());
         dto.setCreateTime(discrimination.getCreateTime());
         dto.setUpdateTime(discrimination.getUpdateTime());
         dto.setStatus(discrimination.getStatus());
@@ -321,6 +325,7 @@ public class CharCharacterServiceImpl implements CharCharacterService {
         dto.setExamplePinyin(word.getExamplePinyin());
         dto.setExampleTranslations(JsonUtils.parseTranslationList(word.getExampleTranslations()));
         dto.setExampleImage(word.getExampleImage());
+        dto.setWordOrder(word.getWordOrder());
         dto.setCreateTime(word.getCreateTime());
         dto.setUpdateTime(word.getUpdateTime());
         dto.setStatus(word.getStatus());
@@ -332,6 +337,7 @@ public class CharCharacterServiceImpl implements CharCharacterService {
         entity.setDiscrimPinyin(dto.getDiscrimPinyin());
         entity.setDiscrimCharTranslations(JsonUtils.toTranslationJson(dto.getDiscrimCharTranslations()));
         entity.setComparisonTranslations(JsonUtils.toTranslationJson(dto.getComparisonTranslations()));
+        entity.setDiscriminationOrder(dto.getDiscriminationOrder() != null ? dto.getDiscriminationOrder() : 0);
     }
 
     private void updateWord(CharWord entity, CharWordDto dto) {
@@ -344,6 +350,7 @@ public class CharCharacterServiceImpl implements CharCharacterService {
         entity.setExamplePinyin(dto.getExamplePinyin());
         entity.setExampleTranslations(JsonUtils.toTranslationJson(dto.getExampleTranslations()));
         entity.setExampleImage(dto.getExampleImage());
+        entity.setWordOrder(dto.getWordOrder() != null ? dto.getWordOrder() : 0);
     }
 
     private CharDiscrimination convertToDiscriminationEntity(CharDiscriminationDto dto, Integer charId) {
@@ -353,6 +360,7 @@ public class CharCharacterServiceImpl implements CharCharacterService {
         entity.setDiscrimPinyin(dto.getDiscrimPinyin());
         entity.setDiscrimCharTranslations(JsonUtils.toTranslationJson(dto.getDiscrimCharTranslations()));
         entity.setComparisonTranslations(JsonUtils.toTranslationJson(dto.getComparisonTranslations()));
+        entity.setDiscriminationOrder(dto.getDiscriminationOrder() != null ? dto.getDiscriminationOrder() : 0);
         entity.setStatus(StatusEnum.ENABLED.getCode());
         return entity;
     }
@@ -369,8 +377,31 @@ public class CharCharacterServiceImpl implements CharCharacterService {
         entity.setExamplePinyin(dto.getExamplePinyin());
         entity.setExampleTranslations(JsonUtils.toTranslationJson(dto.getExampleTranslations()));
         entity.setExampleImage(dto.getExampleImage());
+        entity.setWordOrder(dto.getWordOrder() != null ? dto.getWordOrder() : 0);
         entity.setStatus(StatusEnum.ENABLED.getCode());
         return entity;
+    }
+
+    private List<CharDiscriminationDto> sortDiscriminationsDesc(List<CharDiscriminationDto> list) {
+        if (list == null || list.isEmpty()) {
+            return list;
+        }
+        list.sort(Comparator.comparing(
+            CharDiscriminationDto::getDiscriminationOrder,
+            Comparator.nullsLast(Comparator.reverseOrder())
+        ));
+        return list;
+    }
+
+    private List<CharWordDto> sortWordsDesc(List<CharWordDto> list) {
+        if (list == null || list.isEmpty()) {
+            return list;
+        }
+        list.sort(Comparator.comparing(
+            CharWordDto::getWordOrder,
+            Comparator.nullsLast(Comparator.reverseOrder())
+        ));
+        return list;
     }
 
     @Override

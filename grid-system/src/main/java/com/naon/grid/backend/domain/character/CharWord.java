@@ -59,6 +59,11 @@ public class CharWord implements Serializable {
     @Column(name = "example_image", length = 255)
     private String exampleImage;
 
+    @NotNull
+    @Column(name = "word_order", nullable = false)
+    @ApiModelProperty(value = "组词排序权重（值大的排前面）")
+    private Integer wordOrder = 0;
+
     @CreationTimestamp
     @Column(name = "create_time", updatable = false)
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")

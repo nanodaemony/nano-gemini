@@ -52,9 +52,6 @@ public class CharCharacterBaseVO implements Serializable {
     @ApiModelProperty(value = "编辑状态: draft=草稿, reviewed=已审核")
     private String editStatus;
 
-    @ApiModelProperty(value = "是否有草稿")
-    private Boolean hasDraft;
-
     @ApiModelProperty(value = "创建人")
     private String createBy;
 

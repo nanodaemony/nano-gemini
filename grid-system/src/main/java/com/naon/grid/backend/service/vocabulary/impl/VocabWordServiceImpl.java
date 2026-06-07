@@ -42,7 +42,45 @@ public class VocabWordServiceImpl implements VocabWordService {
             Predicate statusPredicate = criteriaBuilder.equal(root.get("status"), StatusEnum.ENABLED.getCode());
             return criteriaBuilder.and(basePredicate, statusPredicate);
         }, pageable);
-        return PageUtil.toPage(page.map(vocabWordMapper::toDto));
+        return PageUtil.toPage(page.map(this::toDtoWithDraftOverlay));
+    }
+
+    /**
+     * 主表实体 → DTO；若处于 draft/reviewed，将 draftContent 中的业务字段覆盖回 DTO。
+     * 仅供 {@link #queryAll} 调用。
+     */
+    private VocabWordDto toDtoWithDraftOverlay(VocabWord entity) {
+        VocabWordDto dto = vocabWordMapper.toDto(entity);
+        if (EditStatusEnum.DRAFT.getCode().equals(entity.getEditStatus())
+                || EditStatusEnum.REVIEWED.getCode().equals(entity.getEditStatus())) {
+            applyDraftOverlay(dto, entity.getDraftContent());
+        }
+        return dto;
+    }
+
+    /**
+     * 把 draftContent JSON 中"列表页需要的业务字段"覆盖到 DTO 上。
+     *
+     * 覆盖范围应与 {@link com.naon.grid.backend.rest.vo.VocabWordBaseVO} 暴露的业务字段保持一致。
+     * BaseVO 新增业务字段时，请同步在此方法添加覆盖。
+     *
+     * 永远不覆盖：id、status、publishStatus、editStatus、createBy、updateBy、
+     * createTime、updateTime —— 这些字段以主表为准。
+     *
+     * 不读取：senses、exercises —— 列表页不返回子表。
+     *
+     * @throws BadRequestException 草稿数据缺失或解析失败
+     */
+    private void applyDraftOverlay(VocabWordDto dto, String draftJson) {
+        if (draftJson == null) {
+            throw new BadRequestException("草稿内容不存在");
+        }
+        VocabWordDto draft = JsonUtils.fromJson(draftJson, VocabWordDto.class);
+        if (draft.getWord() != null)            dto.setWord(draft.getWord());
+        if (draft.getWordTraditional() != null) dto.setWordTraditional(draft.getWordTraditional());
+        if (draft.getPinyin() != null)          dto.setPinyin(draft.getPinyin());
+        if (draft.getAudioId() != null)         dto.setAudioId(draft.getAudioId());
+        if (draft.getHskLevel() != null)        dto.setHskLevel(draft.getHskLevel());
     }
 
     @Override

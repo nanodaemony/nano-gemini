@@ -139,14 +139,14 @@ public class CharCharacterWrapper {
         return vo;
     }
 
-    private List<CharCharacterVO.CharDiscriminationVO> toDiscriminationVOList(List<CharDiscriminationDto> resources) {
+    private static List<CharCharacterVO.CharDiscriminationVO> toDiscriminationVOList(List<CharDiscriminationDto> resources) {
         if (resources == null) {
             return Collections.emptyList();
         }
-        return resources.stream().map(this::toDiscriminationVO).collect(Collectors.toList());
+        return resources.stream().map(CharCharacterWrapper::toDiscriminationVO).collect(Collectors.toList());
     }
 
-    private CharCharacterVO.CharDiscriminationVO toDiscriminationVO(CharDiscriminationDto dto) {
+    private static CharCharacterVO.CharDiscriminationVO toDiscriminationVO(CharDiscriminationDto dto) {
         CharCharacterVO.CharDiscriminationVO vo = new CharCharacterVO.CharDiscriminationVO();
         vo.setId(dto.getId());
         vo.setCharId(dto.getCharId());
@@ -159,14 +159,14 @@ public class CharCharacterWrapper {
         return vo;
     }
 
-    private List<CharCharacterVO.CharWordVO> toWordVOList(List<CharWordDto> resources) {
+    private static List<CharCharacterVO.CharWordVO> toWordVOList(List<CharWordDto> resources) {
         if (resources == null) {
             return Collections.emptyList();
         }
-        return resources.stream().map(this::toWordVO).collect(Collectors.toList());
+        return resources.stream().map(CharCharacterWrapper::toWordVO).collect(Collectors.toList());
     }
 
-    private CharCharacterVO.CharWordVO toWordVO(CharWordDto dto) {
+    private static CharCharacterVO.CharWordVO toWordVO(CharWordDto dto) {
         CharCharacterVO.CharWordVO vo = new CharCharacterVO.CharWordVO();
         vo.setId(dto.getId());
         vo.setCharId(dto.getCharId());

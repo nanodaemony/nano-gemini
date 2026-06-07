@@ -56,6 +56,13 @@ public interface AliOssStorageService {
     AliOssStorageDto findById(Long id);
 
     /**
+     * 根据 ID 列表批量查询
+     * @param ids 文件 ID 列表
+     * @return 文件信息 DTO 列表（不存在的 ID 不在结果中）
+     */
+    List<AliOssStorageDto> findByIds(List<Long> ids);
+
+    /**
      * 上传文件到 OSS
      * @param file 上传的文件
      * @return 保存后的存储对象（包含完整 URL）

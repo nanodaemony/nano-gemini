@@ -19,4 +19,8 @@ public class CharCharacterQueryCriteria implements Serializable {
     @ApiModelProperty(value = "发布状态")
     @Query
     private String publishStatus;
+
+    @ApiModelProperty(value = "编辑状态")
+    @Query
+    private String editStatus;
 }

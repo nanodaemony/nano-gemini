@@ -28,6 +28,8 @@ public class CharCharacterWrapper {
     public static CharCharacterQueryCriteria toCriteria(CharCharacterQueryRequest request) {
         CharCharacterQueryCriteria criteria = new CharCharacterQueryCriteria();
         criteria.setBlurry(request.getBlurry());
+        criteria.setPublishStatus(request.getPublishStatus());
+        criteria.setEditStatus(request.getEditStatus());
         return criteria;
     }
 
@@ -108,7 +110,6 @@ public class CharCharacterWrapper {
         vo.setDescTranslations(toTextTranslationVOList(dto.getDescTranslations()));
         vo.setPublishStatus(dto.getPublishStatus());
         vo.setEditStatus(dto.getEditStatus());
-        vo.setHasDraft(dto.getDraftContent() != null);
         vo.setCreateBy(dto.getCreateBy());
         vo.setUpdateBy(dto.getUpdateBy());
         vo.setCreateTime(dto.getCreateTime());

@@ -62,6 +62,7 @@ public class CharCharacterWrapper {
         dto.setDiscrimPinyin(request.getDiscrimPinyin());
         dto.setDiscrimCharTranslations(toTextTranslationList(request.getDiscrimCharTranslations()));
         dto.setComparisonTranslations(toTextTranslationList(request.getComparisonTranslations()));
+        dto.setDiscriminationOrder(request.getDiscriminationOrder() != null ? request.getDiscriminationOrder() : 0);
         return dto;
     }
 
@@ -84,6 +85,7 @@ public class CharCharacterWrapper {
         dto.setExamplePinyin(request.getExamplePinyin());
         dto.setExampleTranslations(toTextTranslationList(request.getExampleTranslations()));
         dto.setExampleImage(request.getExampleImage());
+        dto.setWordOrder(request.getWordOrder() != null ? request.getWordOrder() : 0);
         return dto;
     }
 
@@ -154,6 +156,7 @@ public class CharCharacterWrapper {
         vo.setDiscrimPinyin(dto.getDiscrimPinyin());
         vo.setDiscrimCharTranslations(toTextTranslationVOList(dto.getDiscrimCharTranslations()));
         vo.setComparisonTranslations(toTextTranslationVOList(dto.getComparisonTranslations()));
+        vo.setDiscriminationOrder(dto.getDiscriminationOrder());
         vo.setCreateTime(dto.getCreateTime());
         vo.setUpdateTime(dto.getUpdateTime());
         return vo;
@@ -179,6 +182,7 @@ public class CharCharacterWrapper {
         vo.setExamplePinyin(dto.getExamplePinyin());
         vo.setExampleTranslations(toTextTranslationVOList(dto.getExampleTranslations()));
         vo.setExampleImage(dto.getExampleImage());
+        vo.setWordOrder(dto.getWordOrder());
         vo.setCreateTime(dto.getCreateTime());
         vo.setUpdateTime(dto.getUpdateTime());
         return vo;

@@ -1766,9 +1766,16 @@ ALTER TABLE `vocab_sense`
   ADD COLUMN `def_image` int(11) DEFAULT NULL COMMENT '中文释义图片(ID)' AFTER `def_audio_id`,
   ADD COLUMN `related_other` text DEFAULT NULL COMMENT '其他关联词汇, JSON列表格式List<String>' AFTER `related_backward`;
 
+-- 已存在但被旧脚本建成 NOT NULL 的列：先 MODIFY 成 DEFAULT NULL（用 IF NOT EXISTS 友好处理或手动判断后只跑一种）
+-- A. 全新环境：ADD COLUMN
 ALTER TABLE `vocab_structure`
   ADD COLUMN `pattern_def` varchar(512) DEFAULT NULL COMMENT '结构搭配释义(可空)' AFTER `pattern`,
   ADD COLUMN `pattern_def_translations` varchar(1024) DEFAULT NULL COMMENT '结构搭配释义外文翻译, JSON列表格式(List<TextTranslation>)' AFTER `pattern_def`;
+
+-- B. 已经按旧（NOT NULL）DDL 建过列的环境：MODIFY COLUMN 改为可空
+ALTER TABLE `vocab_structure`
+  MODIFY COLUMN `pattern_def` varchar(512) DEFAULT NULL COMMENT '结构搭配释义(可空)',
+  MODIFY COLUMN `pattern_def_translations` varchar(1024) DEFAULT NULL COMMENT '结构搭配释义外文翻译, JSON列表格式(List<TextTranslation>)';
 
 ALTER TABLE `vocab_example`
   ADD COLUMN `image` int(11) DEFAULT NULL COMMENT '例句图片(ID)' AFTER `translations`;

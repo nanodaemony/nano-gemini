@@ -56,11 +56,13 @@ public class VocabWordWrapper {
         dto.setPartOfSpeech(request.getPartOfSpeech());
         dto.setChineseDef(request.getChineseDef());
         dto.setDefAudioId(request.getDefAudioId());
+        dto.setDefImage(request.getDefImage());
         dto.setTranslations(toTextTranslationList(request.getTranslations()));
         dto.setSynonyms(request.getSynonyms());
         dto.setAntonyms(request.getAntonyms());
         dto.setRelatedForward(request.getRelatedForward());
         dto.setRelatedBackward(request.getRelatedBackward());
+        dto.setRelatedOther(request.getRelatedOther());
         dto.setSenseOrder(request.getSenseOrder() != null ? request.getSenseOrder() : 0);
         dto.setStructures(toStructureDtoList(request.getStructures()));
         return dto;
@@ -77,6 +79,8 @@ public class VocabWordWrapper {
         VocabStructureDto dto = new VocabStructureDto();
         dto.setId(request.getId());
         dto.setPattern(request.getPattern());
+        dto.setPatternDef(request.getPatternDef());
+        dto.setPatternDefTranslations(toTextTranslationList(request.getPatternDefTranslations()));
         dto.setStructureOrder(request.getStructureOrder() != null ? request.getStructureOrder() : 0);
         dto.setExamples(toExampleDtoList(request.getExamples()));
         return dto;
@@ -131,6 +135,7 @@ public class VocabWordWrapper {
         dto.setAudioId(request.getAudioId());
         dto.setPinyin(request.getPinyin());
         dto.setTranslations(toTextTranslationList(request.getTranslations()));
+        dto.setImage(request.getImage());
         dto.setExampleOrder(request.getExampleOrder() != null ? request.getExampleOrder() : 0);
         return dto;
     }
@@ -191,11 +196,13 @@ public class VocabWordWrapper {
         vo.setPartOfSpeech(dto.getPartOfSpeech());
         vo.setChineseDef(dto.getChineseDef());
         vo.setDefAudioId(dto.getDefAudioId());
+        vo.setDefImage(dto.getDefImage());
         vo.setTranslations(toTextTranslationVOList(dto.getTranslations()));
         vo.setSynonyms(dto.getSynonyms());
         vo.setAntonyms(dto.getAntonyms());
         vo.setRelatedForward(dto.getRelatedForward());
         vo.setRelatedBackward(dto.getRelatedBackward());
+        vo.setRelatedOther(dto.getRelatedOther());
         vo.setSenseOrder(dto.getSenseOrder());
         vo.setStructures(toStructureVOList(dto.getStructures()));
         vo.setCreateBy(dto.getCreateBy());
@@ -218,6 +225,8 @@ public class VocabWordWrapper {
         vo.setWordId(dto.getWordId());
         vo.setSenseId(dto.getSenseId());
         vo.setPattern(dto.getPattern());
+        vo.setPatternDef(dto.getPatternDef());
+        vo.setPatternDefTranslations(toTextTranslationVOList(dto.getPatternDefTranslations()));
         vo.setStructureOrder(dto.getStructureOrder());
         vo.setExamples(toExampleVOList(dto.getExamples()));
         vo.setCreateBy(dto.getCreateBy());
@@ -284,6 +293,7 @@ public class VocabWordWrapper {
         vo.setAudioId(dto.getAudioId());
         vo.setPinyin(dto.getPinyin());
         vo.setTranslations(toTextTranslationVOList(dto.getTranslations()));
+        vo.setImage(dto.getImage());
         vo.setExampleOrder(dto.getExampleOrder());
         vo.setCreateBy(dto.getCreateBy());
         vo.setUpdateBy(dto.getUpdateBy());

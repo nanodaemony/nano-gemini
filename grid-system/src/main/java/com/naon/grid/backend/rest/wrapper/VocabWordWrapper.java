@@ -28,6 +28,8 @@ public class VocabWordWrapper {
     public static VocabWordQueryCriteria toCriteria(VocabWordQueryRequest request) {
         VocabWordQueryCriteria criteria = new VocabWordQueryCriteria();
         criteria.setBlurry(request.getBlurry());
+        criteria.setPublishStatus(request.getPublishStatus());
+        criteria.setEditStatus(request.getEditStatus());
         return criteria;
     }
 
@@ -154,7 +156,6 @@ public class VocabWordWrapper {
         vo.setHskLevel(dto.getHskLevel());
         vo.setPublishStatus(dto.getPublishStatus());
         vo.setEditStatus(dto.getEditStatus());
-        vo.setHasDraft(dto.getDraftContent() != null);
         vo.setCreateBy(dto.getCreateBy());
         vo.setUpdateBy(dto.getUpdateBy());
         vo.setCreateTime(dto.getCreateTime());

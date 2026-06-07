@@ -27,6 +27,9 @@ public class VocabSenseDto extends BaseDTO implements Serializable {
     @ApiModelProperty(value = "中文释义音频资源ID")
     private Long defAudioId;
 
+    @ApiModelProperty(value = "中文释义图片资源ID")
+    private Long defImage;
+
     @ApiModelProperty(value = "外文翻译列表")
     private List<TextTranslation> translations;
 
@@ -41,6 +44,9 @@ public class VocabSenseDto extends BaseDTO implements Serializable {
 
     @ApiModelProperty(value = "逆序关联词汇")
     private List<String> relatedBackward;
+
+    @ApiModelProperty(value = "其他关联词汇")
+    private List<String> relatedOther;
 
     @ApiModelProperty(value = "义项排序权重")
     private Integer senseOrder;

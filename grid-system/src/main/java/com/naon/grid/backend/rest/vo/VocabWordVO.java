@@ -77,6 +77,9 @@ public class VocabWordVO implements Serializable {
         @ApiModelProperty(value = "中文释义音频资源ID")
         private Long defAudioId;
 
+        @ApiModelProperty(value = "中文释义图片资源ID")
+        private Long defImage;
+
         @ApiModelProperty(value = "外文翻译列表")
         private List<TextTranslationVO> translations;
 
@@ -91,6 +94,9 @@ public class VocabWordVO implements Serializable {
 
         @ApiModelProperty(value = "逆序关联词汇")
         private List<String> relatedBackward;
+
+        @ApiModelProperty(value = "其他关联词汇")
+        private List<String> relatedOther;
 
         @ApiModelProperty(value = "义项排序权重，值大的排前面", required = true)
         private Integer senseOrder;
@@ -127,6 +133,12 @@ public class VocabWordVO implements Serializable {
 
         @ApiModelProperty(value = "结构搭配文案", required = true)
         private String pattern;
+
+        @ApiModelProperty(value = "结构搭配释义")
+        private String patternDef;
+
+        @ApiModelProperty(value = "结构搭配释义外文翻译列表")
+        private List<TextTranslationVO> patternDefTranslations;
 
         @ApiModelProperty(value = "搭配排序权重，值大的排前面", required = true)
         private Integer structureOrder;
@@ -214,6 +226,9 @@ public class VocabWordVO implements Serializable {
 
         @ApiModelProperty(value = "例句外文翻译列表")
         private List<TextTranslationVO> translations;
+
+        @ApiModelProperty(value = "例句图片资源ID")
+        private Long image;
 
         @ApiModelProperty(value = "例句排序权重，值大的排前面", required = true)
         private Integer exampleOrder;

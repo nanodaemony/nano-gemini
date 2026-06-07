@@ -42,6 +42,10 @@ public class VocabSense implements Serializable {
     @ApiModelProperty(value = "中文释义音频资源ID")
     private Long defAudioId;
 
+    @Column(name = "def_image")
+    @ApiModelProperty(value = "中文释义图片资源ID")
+    private Long defImage;
+
     @Column(name = "translations", columnDefinition = "json")
     @ApiModelProperty(value = "外文翻译列表")
     private String translations;
@@ -61,6 +65,10 @@ public class VocabSense implements Serializable {
     @Column(name = "related_backward", columnDefinition = "text")
     @ApiModelProperty(value = "逆序关联词汇")
     private String relatedBackward;
+
+    @Column(name = "related_other", columnDefinition = "text")
+    @ApiModelProperty(value = "其他关联词汇")
+    private String relatedOther;
 
     @NotNull
     @Column(name = "sense_order", nullable = false)

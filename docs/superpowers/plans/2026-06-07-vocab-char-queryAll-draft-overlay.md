@@ -584,7 +584,15 @@ git commit -m "feat(char): remove hasDraft field from CharCharacterBaseVO"
         if (draftJson == null) {
             throw new BadRequestException("草稿内容不存在");
         }
-        CharCharacterDto draft = JsonUtils.fromJson(draftJson, CharCharacterDto.class);
+        CharCharacterDto draft;
+        try {
+            draft = JsonUtils.fromJson(draftJson, CharCharacterDto.class);
+        } catch (Exception e) {
+            throw new BadRequestException("草稿数据解析失败");
+        }
+        if (draft == null) {
+            throw new BadRequestException("草稿内容不存在");
+        }
         if (draft.getSequenceNo() != null)       dto.setSequenceNo(draft.getSequenceNo());
         if (draft.getCharacter() != null)        dto.setCharacter(draft.getCharacter());
         if (draft.getLevel() != null)            dto.setLevel(draft.getLevel());

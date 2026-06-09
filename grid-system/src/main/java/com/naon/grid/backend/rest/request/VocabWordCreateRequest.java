@@ -56,6 +56,9 @@ public class VocabWordCreateRequest implements Serializable {
         @ApiModelProperty(value = "中文释义图片资源ID")
         private Long defImage;
 
+        @ApiModelProperty("中文释义例句")
+        private String defExampleSentence;
+
         @ApiModelProperty(value = "外文翻译列表")
         private List<TextTranslationRequest> translations;
 

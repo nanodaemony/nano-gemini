@@ -28,6 +28,8 @@ public class VocabWordWrapper {
     public static VocabWordQueryCriteria toCriteria(VocabWordQueryRequest request) {
         VocabWordQueryCriteria criteria = new VocabWordQueryCriteria();
         criteria.setBlurry(request.getBlurry());
+        criteria.setPublishStatus(request.getPublishStatus());
+        criteria.setEditStatus(request.getEditStatus());
         return criteria;
     }
 
@@ -154,7 +156,6 @@ public class VocabWordWrapper {
         vo.setHskLevel(dto.getHskLevel());
         vo.setPublishStatus(dto.getPublishStatus());
         vo.setEditStatus(dto.getEditStatus());
-        vo.setHasDraft(dto.getDraftContent() != null);
         vo.setCreateBy(dto.getCreateBy());
         vo.setUpdateBy(dto.getUpdateBy());
         vo.setCreateTime(dto.getCreateTime());
@@ -172,7 +173,6 @@ public class VocabWordWrapper {
         vo.setHskLevel(dto.getHskLevel());
         vo.setPublishStatus(dto.getPublishStatus());
         vo.setEditStatus(dto.getEditStatus());
-        vo.setHasDraft(dto.getDraftContent() != null);
         vo.setSenses(toSenseVOList(dto.getSenses()));
         vo.setExercises(toExerciseVOList(dto.getExercises()));
         vo.setCreateBy(dto.getCreateBy());
@@ -203,10 +203,8 @@ public class VocabWordWrapper {
         vo.setRelatedForward(dto.getRelatedForward());
         vo.setRelatedBackward(dto.getRelatedBackward());
         vo.setRelatedOther(dto.getRelatedOther());
-        vo.setSenseOrder(dto.getSenseOrder());
+        vo.setOrder(dto.getSenseOrder());
         vo.setStructures(toStructureVOList(dto.getStructures()));
-        vo.setCreateBy(dto.getCreateBy());
-        vo.setUpdateBy(dto.getUpdateBy());
         vo.setCreateTime(dto.getCreateTime());
         vo.setUpdateTime(dto.getUpdateTime());
         return vo;
@@ -227,10 +225,8 @@ public class VocabWordWrapper {
         vo.setPattern(dto.getPattern());
         vo.setPatternDef(dto.getPatternDef());
         vo.setPatternDefTranslations(toTextTranslationVOList(dto.getPatternDefTranslations()));
-        vo.setStructureOrder(dto.getStructureOrder());
+        vo.setOrder(dto.getStructureOrder());
         vo.setExamples(toExampleVOList(dto.getExamples()));
-        vo.setCreateBy(dto.getCreateBy());
-        vo.setUpdateBy(dto.getUpdateBy());
         vo.setCreateTime(dto.getCreateTime());
         vo.setUpdateTime(dto.getUpdateTime());
         return vo;
@@ -294,9 +290,7 @@ public class VocabWordWrapper {
         vo.setPinyin(dto.getPinyin());
         vo.setTranslations(toTextTranslationVOList(dto.getTranslations()));
         vo.setImage(dto.getImage());
-        vo.setExampleOrder(dto.getExampleOrder());
-        vo.setCreateBy(dto.getCreateBy());
-        vo.setUpdateBy(dto.getUpdateBy());
+        vo.setOrder(dto.getExampleOrder());
         vo.setCreateTime(dto.getCreateTime());
         vo.setUpdateTime(dto.getUpdateTime());
         return vo;

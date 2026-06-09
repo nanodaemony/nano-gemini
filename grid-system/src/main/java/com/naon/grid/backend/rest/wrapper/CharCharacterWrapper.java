@@ -28,6 +28,8 @@ public class CharCharacterWrapper {
     public static CharCharacterQueryCriteria toCriteria(CharCharacterQueryRequest request) {
         CharCharacterQueryCriteria criteria = new CharCharacterQueryCriteria();
         criteria.setBlurry(request.getBlurry());
+        criteria.setPublishStatus(request.getPublishStatus());
+        criteria.setEditStatus(request.getEditStatus());
         return criteria;
     }
 
@@ -108,7 +110,6 @@ public class CharCharacterWrapper {
         vo.setDescTranslations(toTextTranslationVOList(dto.getDescTranslations()));
         vo.setPublishStatus(dto.getPublishStatus());
         vo.setEditStatus(dto.getEditStatus());
-        vo.setHasDraft(dto.getDraftContent() != null);
         vo.setCreateBy(dto.getCreateBy());
         vo.setUpdateBy(dto.getUpdateBy());
         vo.setCreateTime(dto.getCreateTime());
@@ -119,7 +120,6 @@ public class CharCharacterWrapper {
     public static CharCharacterVO toVO(CharCharacterDto dto) {
         CharCharacterVO vo = new CharCharacterVO();
         vo.setId(dto.getId());
-        vo.setSequenceNo(dto.getSequenceNo());
         vo.setCharacter(dto.getCharacter());
         vo.setLevel(dto.getLevel());
         vo.setPinyin(dto.getPinyin());
@@ -131,7 +131,6 @@ public class CharCharacterWrapper {
         vo.setDescTranslations(toTextTranslationVOList(dto.getDescTranslations()));
         vo.setPublishStatus(dto.getPublishStatus());
         vo.setEditStatus(dto.getEditStatus());
-        vo.setHasDraft(dto.getDraftContent() != null);
         vo.setDiscriminations(toDiscriminationVOList(dto.getDiscriminations()));
         vo.setWords(toWordVOList(dto.getWords()));
         vo.setCreateBy(dto.getCreateBy());
@@ -156,7 +155,7 @@ public class CharCharacterWrapper {
         vo.setDiscrimPinyin(dto.getDiscrimPinyin());
         vo.setDiscrimCharTranslations(toTextTranslationVOList(dto.getDiscrimCharTranslations()));
         vo.setComparisonTranslations(toTextTranslationVOList(dto.getComparisonTranslations()));
-        vo.setDiscriminationOrder(dto.getDiscriminationOrder());
+        vo.setOrder(dto.getDiscriminationOrder());
         vo.setCreateTime(dto.getCreateTime());
         vo.setUpdateTime(dto.getUpdateTime());
         return vo;
@@ -182,7 +181,7 @@ public class CharCharacterWrapper {
         vo.setExamplePinyin(dto.getExamplePinyin());
         vo.setExampleTranslations(toTextTranslationVOList(dto.getExampleTranslations()));
         vo.setExampleImage(dto.getExampleImage());
-        vo.setWordOrder(dto.getWordOrder());
+        vo.setOrder(dto.getWordOrder());
         vo.setCreateTime(dto.getCreateTime());
         vo.setUpdateTime(dto.getUpdateTime());
         return vo;

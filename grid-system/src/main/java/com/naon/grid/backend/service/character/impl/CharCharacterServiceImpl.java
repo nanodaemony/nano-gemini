@@ -55,7 +55,58 @@ public class CharCharacterServiceImpl implements CharCharacterService {
             Predicate statusPredicate = criteriaBuilder.equal(root.get("status"), StatusEnum.ENABLED.getCode());
             return criteriaBuilder.and(basePredicate, statusPredicate);
         }, pageable);
-        return PageUtil.toPage(page.map(charCharacterMapper::toDto));
+        return PageUtil.toPage(page.map(this::toDtoWithDraftOverlay));
+    }
+
+    /**
+     * 主表实体 → DTO；若处于 draft/reviewed，将 draftContent 中的业务字段覆盖回 DTO。
+     * 仅供 {@link #queryAll} 调用。
+     */
+    private CharCharacterDto toDtoWithDraftOverlay(CharCharacter entity) {
+        CharCharacterDto dto = charCharacterMapper.toDto(entity);
+        if (EditStatusEnum.DRAFT.getCode().equals(entity.getEditStatus())
+                || EditStatusEnum.REVIEWED.getCode().equals(entity.getEditStatus())) {
+            applyDraftOverlay(dto, entity.getDraftContent());
+        }
+        return dto;
+    }
+
+    /**
+     * 把 draftContent JSON 中"列表页需要的业务字段"覆盖到 DTO 上。
+     *
+     * 覆盖范围应与 {@link com.naon.grid.backend.rest.vo.CharCharacterBaseVO} 暴露的业务字段保持一致。
+     * BaseVO 新增业务字段时，请同步在此方法添加覆盖。
+     *
+     * 永远不覆盖：id、status、publishStatus、editStatus、createBy、updateBy、
+     * createTime、updateTime —— 这些字段以主表为准。
+     *
+     * 不读取：discriminations、words —— 列表页不返回子表。
+     *
+     * @throws BadRequestException 草稿数据缺失或解析失败
+     */
+    private void applyDraftOverlay(CharCharacterDto dto, String draftJson) {
+        if (draftJson == null) {
+            throw new BadRequestException("草稿内容不存在");
+        }
+        CharCharacterDto draft;
+        try {
+            draft = JsonUtils.fromJson(draftJson, CharCharacterDto.class);
+        } catch (Exception e) {
+            throw new BadRequestException("草稿数据解析失败");
+        }
+        if (draft == null) {
+            throw new BadRequestException("草稿内容不存在");
+        }
+        if (draft.getSequenceNo() != null)       dto.setSequenceNo(draft.getSequenceNo());
+        if (draft.getCharacter() != null)        dto.setCharacter(draft.getCharacter());
+        if (draft.getLevel() != null)            dto.setLevel(draft.getLevel());
+        if (draft.getPinyin() != null)           dto.setPinyin(draft.getPinyin());
+        if (draft.getAudioId() != null)          dto.setAudioId(draft.getAudioId());
+        if (draft.getTraditional() != null)      dto.setTraditional(draft.getTraditional());
+        if (draft.getRadical() != null)          dto.setRadical(draft.getRadical());
+        if (draft.getStroke() != null)           dto.setStroke(draft.getStroke());
+        if (draft.getCharDesc() != null)         dto.setCharDesc(draft.getCharDesc());
+        if (draft.getDescTranslations() != null) dto.setDescTranslations(draft.getDescTranslations());
     }
 
     @Override

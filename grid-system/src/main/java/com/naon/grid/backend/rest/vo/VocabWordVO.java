@@ -12,7 +12,7 @@ import java.util.List;
 @Setter
 public class VocabWordVO implements Serializable {
 
-    @ApiModelProperty(value = "词汇唯一ID")
+    @ApiModelProperty(value = "词汇ID")
     private Integer id;
 
     @ApiModelProperty(value = "词汇", required = true)
@@ -21,23 +21,14 @@ public class VocabWordVO implements Serializable {
     @ApiModelProperty(value = "繁体词汇")
     private String wordTraditional;
 
-    @ApiModelProperty(value = "标准拼音（含声调）", required = true)
+    @ApiModelProperty(value = "词汇拼音")
     private String pinyin;
 
-    @ApiModelProperty(value = "词汇读音音频资源ID")
+    @ApiModelProperty(value = "词汇音频资源ID")
     private Long audioId;
 
     @ApiModelProperty(value = "HSK等级，值为数字字符串\"1\"-\"9\"")
     private String hskLevel;
-
-    @ApiModelProperty(value = "发布状态: unpublished=未发布, published=已发布")
-    private String publishStatus;
-
-    @ApiModelProperty(value = "编辑状态: draft=草稿, reviewed=已审核")
-    private String editStatus;
-
-    @ApiModelProperty(value = "是否有草稿")
-    private Boolean hasDraft;
 
     @ApiModelProperty(value = "义项列表")
     private List<VocabSenseVO> senses;
@@ -51,6 +42,12 @@ public class VocabWordVO implements Serializable {
     @ApiModelProperty(value = "修改人")
     private String updateBy;
 
+    @ApiModelProperty(value = "发布状态: unpublished=未发布, published=已发布")
+    private String publishStatus;
+
+    @ApiModelProperty(value = "编辑状态: draft=草稿, reviewed=已审核")
+    private String editStatus;
+
     @ApiModelProperty(value = "创建时间: yyyy-MM-dd HH:mm:ss", required = true)
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     private Timestamp createTime;
@@ -62,7 +59,8 @@ public class VocabWordVO implements Serializable {
     @Getter
     @Setter
     public static class VocabSenseVO implements Serializable {
-        @ApiModelProperty(value = "自增ID, 义项ID")
+        
+        @ApiModelProperty(value = "词汇义项ID")
         private Integer id;
 
         @ApiModelProperty(value = "所属词汇ID", required = true)
@@ -98,17 +96,11 @@ public class VocabWordVO implements Serializable {
         @ApiModelProperty(value = "其他关联词汇")
         private List<String> relatedOther;
 
-        @ApiModelProperty(value = "义项排序权重，值大的排前面", required = true)
-        private Integer senseOrder;
-
         @ApiModelProperty(value = "搭配列表")
         private List<VocabStructureVO> structures;
 
-        @ApiModelProperty(value = "创建人")
-        private String createBy;
-
-        @ApiModelProperty(value = "修改人")
-        private String updateBy;
+        @ApiModelProperty(value = "义项排序权重，值大的排前面", required = true)
+        private Integer order;
 
         @ApiModelProperty(value = "创建时间: yyyy-MM-dd HH:mm:ss", required = true)
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
@@ -122,7 +114,7 @@ public class VocabWordVO implements Serializable {
     @Getter
     @Setter
     public static class VocabStructureVO implements Serializable {
-        @ApiModelProperty(value = "自增ID, 结构搭配ID")
+        @ApiModelProperty(value = "结构搭配ID")
         private Integer id;
 
         @ApiModelProperty(value = "所属词汇ID", required = true)
@@ -140,17 +132,11 @@ public class VocabWordVO implements Serializable {
         @ApiModelProperty(value = "结构搭配释义外文翻译列表")
         private List<TextTranslationVO> patternDefTranslations;
 
-        @ApiModelProperty(value = "搭配排序权重，值大的排前面", required = true)
-        private Integer structureOrder;
-
         @ApiModelProperty(value = "例句列表")
         private List<VocabExampleVO> examples;
 
-        @ApiModelProperty(value = "创建人")
-        private String createBy;
-
-        @ApiModelProperty(value = "修改人")
-        private String updateBy;
+        @ApiModelProperty(value = "搭配排序权重(值大的排前面)", required = true)
+        private Integer order;
 
         @ApiModelProperty(value = "创建时间: yyyy-MM-dd HH:mm:ss", required = true)
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
@@ -203,7 +189,7 @@ public class VocabWordVO implements Serializable {
     @Getter
     @Setter
     public static class VocabExampleVO implements Serializable {
-        @ApiModelProperty(value = "例句唯一ID")
+        @ApiModelProperty(value = "例句ID")
         private Integer id;
 
         @ApiModelProperty(value = "所属词汇ID", required = true)
@@ -231,13 +217,7 @@ public class VocabWordVO implements Serializable {
         private Long image;
 
         @ApiModelProperty(value = "例句排序权重，值大的排前面", required = true)
-        private Integer exampleOrder;
-
-        @ApiModelProperty(value = "创建人")
-        private String createBy;
-
-        @ApiModelProperty(value = "修改人")
-        private String updateBy;
+        private Integer order;
 
         @ApiModelProperty(value = "创建时间: yyyy-MM-dd HH:mm:ss", required = true)
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")

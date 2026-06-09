@@ -10,7 +10,8 @@ public enum HskLevelEnum {
     HSK4("4", "HSK4"),
     HSK5("5", "HSK5"),
     HSK6("6", "HSK6"),
-    HSK789("789", "HSK7-9")
+    HSK789("789", "HSK7-9"),
+    HSK1000("1000", "超纲")
     ;
 
     private final String code;

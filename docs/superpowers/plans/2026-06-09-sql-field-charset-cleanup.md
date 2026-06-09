@@ -109,7 +109,7 @@ sql/character.sql: 0
 
 Run:
 ```bash
-git diff -- sql/vocabulary.sql sql/character.sql
+git diff -- sql/biz_vocabulary.sql sql/biz_character.sql
 ```
 
 Expected: the diff only removes `CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci` from column definitions. It must not remove table-level charset/collation declarations and must not change column types, comments, defaults, indexes, or table options.
@@ -118,7 +118,7 @@ Expected: the diff only removes `CHARACTER SET utf8mb4 COLLATE utf8mb4_general_c
 
 Only commit if the user asks for a commit. If requested, run:
 ```bash
-git add sql/vocabulary.sql sql/character.sql docs/superpowers/plans/2026-06-09-sql-field-charset-cleanup.md
+git add sql/biz_vocabulary.sql sql/biz_character.sql docs/superpowers/plans/2026-06-09-sql-field-charset-cleanup.md
 git commit -m "chore(sql): simplify field charset declarations
 
 Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>"

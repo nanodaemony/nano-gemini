@@ -3,59 +3,62 @@
 -- 词汇表
 -- 注：一个词汇对应一条数据，注意对于 “啊” 这种词可能有多个读音，每个读音都是一个词汇，一个词汇对应一条数据。
 CREATE TABLE `vocab_word`  (
-  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '词汇唯一ID',
-  `word` varchar(50)  NOT NULL COMMENT '词汇（如：啊）',
-  `word_traditional` varchar(50) NULL DEFAULT NULL COMMENT '繁体词汇',
-  `pinyin` varchar(100) NULL DEFAULT NULL COMMENT '标准拼音（含声调）',
-  `audio_id` bigint NULL DEFAULT NULL COMMENT '词汇读音音频资源ID',
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '词汇ID',
+  `word` varchar(50)  NOT NULL COMMENT '词汇词头（如：啊）',
+  `word_traditional` varchar(50) NULL DEFAULT NULL COMMENT '词汇繁体',
+  `pinyin` varchar(100) NULL DEFAULT NULL COMMENT '词汇拼音',
+  `audio_id` bigint NULL DEFAULT NULL COMMENT '词汇音频资源ID',
   `hsk_level` varchar(20) NULL DEFAULT NULL COMMENT 'HSK等级',
   `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
-  `publish_status` varchar(20) NULL DEFAULT 'unpublished' COMMENT '发布状态: unpublished=未发布, published=已发布',
-  `edit_status` varchar(20) NULL DEFAULT 'draft' COMMENT '编辑状态: draft=草稿, reviewed=已审核',
-  `draft_content` text NULL COMMENT '草稿内容JSON',
   `create_by` varchar(255) NULL DEFAULT NULL COMMENT '创建人',
   `update_by` varchar(255) NULL DEFAULT NULL COMMENT '更新人',
+  `draft_content` text NULL COMMENT '草稿内容JSON',
+  `edit_status` varchar(20) NULL DEFAULT 'draft' COMMENT '编辑状态: draft=草稿, reviewed=已审核',
+  `publish_status` varchar(20) NULL DEFAULT 'unpublished' COMMENT '发布状态: unpublished=未发布, published=已发布',
   `status` tinyint NOT NULL DEFAULT 1 COMMENT '有效状态, 1:有效 0:无效',
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `idx_word`(`word` ASC) USING BTREE,
-  INDEX `idx_vocab_publish_status`(`publish_status` ASC) USING BTREE,
-  INDEX `idx_vocab_edit_status`(`edit_status` ASC) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '词汇表' ROW_FORMAT = COMPACT;
+  INDEX `idx_publish_status`(`publish_status` ASC) USING BTREE,
+  INDEX `idx_edit_status`(`edit_status` ASC) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '词汇表';
 
 
 -- 词汇义项表
 -- 注：一个词汇可能有多个词汇义项，一个词义项对应一条数据。
 CREATE TABLE `vocab_sense`  (
-  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '自增ID, 义项ID',
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '义项ID',
   `word_id` bigint NOT NULL COMMENT '所属词汇ID',
-  `part_of_speech` varchar(50) DEFAULT NULL COMMENT '词性（名词、动词、形容词等）',
+  `part_of_speech` varchar(50) DEFAULT NULL COMMENT '词性（名词、动词、形容词等）,参考枚举：PartOfSpeechEnum',
   `chinese_def` varchar(512) DEFAULT NULL COMMENT '中文释义',
+  `def_translations` text NULL COMMENT '释义翻译列表',
   `def_audio_id` bigint NULL DEFAULT NULL COMMENT '中文释义音频资源ID',
   `def_image_id` bigint NULL DEFAULT NULL COMMENT '中文释义图片(ID)',
-  `translations` text NULL COMMENT '外文翻译列表（语种+翻译）',
+
+
   `synonyms` varchar(512) DEFAULT NULL COMMENT '近义词列表（展示用）, JSON列表格式',
   `antonyms` varchar(512) DEFAULT NULL COMMENT '反义词列表（展示用）, JSON列表格式',
   `related_forward` varchar(512) DEFAULT NULL COMMENT '正序关联词汇, JSON列表格式',
   `related_backward` varchar(512) DEFAULT NULL COMMENT '逆序关联词汇, JSON列表格式',
   `related_other` varchar(512) DEFAULT NULL COMMENT '其他关联词汇(乱序), JSON列表格式',
+
   `order` int NOT NULL DEFAULT 0 COMMENT '义项排序权重（大在前）',
   `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
   `status` tinyint NOT NULL DEFAULT 1 COMMENT '有效状态, 1:有效 0:无效',
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `idx_word_id`(`word_id` ASC) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '词汇义项表' ROW_FORMAT = COMPACT;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '词汇义项表';
 
--- 词汇结构搭配表
--- 注：一个词汇义项可能有多个结构搭配，一个结构搭配对应一条数据。
+-- 词汇结构表
+-- 注：一个词汇义项可能有多个结构，一个结构对应一条数据。
 CREATE TABLE `vocab_structure`  (
-  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '自增ID, 结构搭配ID',
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '结构ID',
   `word_id` bigint NOT NULL COMMENT '所属词汇ID',
   `sense_id` bigint NOT NULL COMMENT '所属义项ID',
-  `pattern` varchar(255) NOT NULL COMMENT '结构搭配文案',
-  `pattern_def` varchar(512) NULL DEFAULT NULL COMMENT '结构搭配释义(可空)',
-  `pattern_def_translations` varchar(1024) NULL DEFAULT NULL COMMENT '结构搭配释义外文翻译,\r\n  JSON列表格式(List<TextTranslation>)',
+  `pattern` varchar(255) NOT NULL COMMENT '结构文案',
+  `pattern_def` varchar(512) NULL DEFAULT NULL COMMENT '结构释义(可空)',
+  `pattern_def_translations` text NULL DEFAULT NULL COMMENT '结构释义外文翻译,JSON列表格式(List<TextTranslation>)',
   `order` int NOT NULL DEFAULT 0 COMMENT '搭配排序权重（大在前）',
   `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
@@ -63,34 +66,13 @@ CREATE TABLE `vocab_structure`  (
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `idx_sense_id`(`sense_id` ASC) USING BTREE,
   INDEX `idx_word_id`(`word_id` ASC) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '词汇结构搭配表' ROW_FORMAT = COMPACT;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '词汇结构表';
 
--- 词汇搭配例句表
--- 注：一个词汇结构搭配可能有多个例句，一个例句对应一条数据。注意例句里面可能有图片，这块可以存成富文本的字符串。
-CREATE TABLE `vocab_example`  (
-  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '例句唯一ID',
-  `word_id` bigint NOT NULL COMMENT '所属词汇ID',
-  `sense_id` bigint NOT NULL COMMENT '所属义项ID',
-  `structure_id` bigint NOT NULL COMMENT '所属结构搭配ID',
-  `sentence` varchar(512) DEFAULT NULL COMMENT '例句中文文案',
-  `audio_id` bigint NULL DEFAULT NULL COMMENT '例句音频资源ID',
-  `pinyin` varchar(500) NULL DEFAULT NULL COMMENT '例句拼音',
-  `translations` text NULL COMMENT '例句外文翻译列表',
-  `image_id` bigint NULL DEFAULT NULL COMMENT '例句图片(ID)',
-  `order` int NOT NULL DEFAULT 0 COMMENT '例句排序权重（大在前）',
-  `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-  `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
-  `status` tinyint NOT NULL DEFAULT 1 COMMENT '有效状态, 1:有效 0:无效',
-  PRIMARY KEY (`id`) USING BTREE,
-  INDEX `idx_structure_id`(`structure_id` ASC) USING BTREE,
-  INDEX `idx_sense_id`(`sense_id` ASC) USING BTREE,
-  INDEX `idx_word_id`(`word_id` ASC) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '词汇搭配例句表' ROW_FORMAT = COMPACT;
 
 -- 词汇练习表
 -- 注：一个词汇可能有多个练习题目，一个练习题目对应一条数据。
 CREATE TABLE `vocab_exercise`  (
-  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '练习题目唯一ID',
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '练习题目ID',
   `word_id` bigint NOT NULL COMMENT '所属词汇ID',
   `question_type` varchar(20) NOT NULL COMMENT '题目类型（选择/填空等）',
   `question_text` varchar(512) DEFAULT NULL COMMENT '练习题干描述',
@@ -102,7 +84,7 @@ CREATE TABLE `vocab_exercise`  (
   `status` tinyint NOT NULL DEFAULT 1 COMMENT '有效状态, 1:有效 0:无效',
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `idx_word_id`(`word_id` ASC) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 5 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '词汇练习表' ROW_FORMAT = COMPACT;
+) ENGINE = InnoDB AUTO_INCREMENT = 5 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '词汇练习表';
 
 -- 纲外词记录表
 CREATE TABLE `vocab_outline_record` (

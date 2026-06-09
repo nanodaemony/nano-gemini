@@ -86,7 +86,7 @@ new_string:
 - [ ] **Step 2：提交**
 
 ```bash
-git add sql/vocabulary.sql
+git add sql/biz_vocabulary.sql
 git commit -m "fix(sql): make vocab_structure.pattern_def and pattern_def_translations nullable
 
 Comment said 可空 but DDL was NOT NULL. Align DDL with intent.

@@ -34,12 +34,12 @@ CREATE TABLE `char_character`  (
 
 -- 汉字辨析表
 -- 注：一个汉字可能有多个辨析字。
-CREATE TABLE `char_discrimination`  (
+CREATE TABLE `char_comparison`  (
   `id` bigint NOT NULL AUTO_INCREMENT COMMENT '辨析记录ID',
   `char_id` bigint NOT NULL COMMENT '所属汉字ID',
-  `discrim_char` varchar(10) NOT NULL COMMENT '辨析汉字',
-  `discrim_pinyin` varchar(100) NULL DEFAULT NULL COMMENT '辨析字拼音',
-  `discrim_char_translations` text NULL COMMENT '辨析字外文翻译',
+  `comparison_char` varchar(10) NOT NULL COMMENT '辨析汉字',
+  `comparison_pinyin` varchar(100) NULL DEFAULT NULL COMMENT '辨析字拼音',
+  `comparison_char_translations` text NULL COMMENT '辨析字外文翻译',
   `comparison_translations` text NULL COMMENT '对比辨析外文翻译',
   `order` int NULL DEFAULT 0 COMMENT '辨析排序(值大的排前面)',
   `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
@@ -73,6 +73,7 @@ CREATE TABLE `char_word`  (
 CREATE TABLE `char_radical` (
     `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '部首ID',
     `radical` VARCHAR(10) NOT NULL COMMENT '部首名称',
+    `stroke_num` int(11) NOT NULL COMMENT '笔画数',
     `evolution_desc` VARCHAR(2048) DEFAULT NULL COMMENT '演化解说',
     `evolution_desc_translations` TEXT DEFAULT NULL COMMENT '演化解说外文翻译（JSON多语言）',
     `evolution_image_id` VARCHAR(255) DEFAULT NULL COMMENT '演化解说图片（路径或资源ID）',

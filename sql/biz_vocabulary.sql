@@ -86,6 +86,29 @@ CREATE TABLE `vocab_exercise`  (
   INDEX `idx_word_id`(`word_id` ASC) USING BTREE
 ) ENGINE = InnoDB AUTO_INCREMENT = 5 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '词汇练习表';
 
+
+-- 关联词汇表
+-- 记录词汇与词汇之间的关联关系
+-- 关联义项ID暂时不需要
+CREATE TABLE `vocab_structure`  (
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '关联词汇ID',
+  `word_id` bigint NOT NULL COMMENT '词汇ID',
+  `sense_id` bigint NOT NULL COMMENT '义项ID',
+  `word` varchar(32) NOT NULL COMMENT '当前词汇',
+  `relation_type` varchar(32) NULL DEFAULT NULL COMMENT '关联类型，参考枚举：VocabRelationTypeEnum（近义词、反义词、正序词、逆序词、乱序词等）',
+  `relation_word_id` bigint NOT NULL COMMENT '关联词汇ID',
+  `relation_sense_id` bigint NOT NULL COMMENT '关联义项ID',
+  `relation_word` varchar(32) NOT NULL COMMENT '关联词汇',
+  `order` int NOT NULL DEFAULT 0 COMMENT '关联词汇权重（大在前）',
+  `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  `status` tinyint NOT NULL DEFAULT 1 COMMENT '有效状态, 1:有效 0:无效',
+  PRIMARY KEY (`id`) USING BTREE,
+  INDEX `idx_sense_id`(`sense_id` ASC) USING BTREE,
+  INDEX `idx_word_id`(`word_id` ASC) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '关联词汇表';
+
+
 -- 纲外词记录表
 CREATE TABLE `vocab_outline_record` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '主键ID',

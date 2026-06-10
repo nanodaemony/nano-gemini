@@ -14,13 +14,10 @@ import java.util.List;
 public class CharCharacterVO implements Serializable {
 
     @ApiModelProperty(value = "汉字ID")
-    private Integer id;
+    private Long id;
 
-    @ApiModelProperty(value = "汉字", required = true)
+    @ApiModelProperty(value = "汉字")
     private String character;
-
-    @ApiModelProperty(value = "繁体字")
-    private String traditional;
 
     @ApiModelProperty(value = "HSK等级")
     private String level;
@@ -28,26 +25,32 @@ public class CharCharacterVO implements Serializable {
     @ApiModelProperty(value = "拼音")
     private String pinyin;
 
-    @ApiModelProperty(value = "读音音频资源ID")
-    private Long audioId;
+    @ApiModelProperty(value = "繁体字")
+    private String traditional;
+
+    @ApiModelProperty(value = "读音音频ID")
+    private long audioId;
+
+    @ApiModelProperty(value = "部首ID")
+    private long radicalId;
 
     @ApiModelProperty(value = "部首")
     private String radical;
 
-    @ApiModelProperty(value = "部首ID")
-    private Long radicalId;
-
-    @ApiModelProperty(value = "笔画")
-    private String stroke;
+    @ApiModelProperty(value = "部件组合")
+    private String componentCombination;
 
     @ApiModelProperty(value = "汉字说明")
     private String charDesc;
 
     @ApiModelProperty(value = "汉字说明翻译")
-    private List<TextTranslationVO> descTranslations;
+    private List<TextTranslationVO> charDescTranslations;
+
+    @ApiModelProperty(value = "笔画")
+    private String stroke;
 
     @ApiModelProperty(value = "辨析列表")
-    private List<CharDiscriminationVO> discriminations;
+    private List<CharComparisonVO> comparisons;
 
     @ApiModelProperty(value = "组词列表")
     private List<CharWordVO> words;
@@ -74,25 +77,22 @@ public class CharCharacterVO implements Serializable {
 
     @Getter
     @Setter
-    public static class CharDiscriminationVO implements Serializable {
+    public static class CharComparisonVO implements Serializable {
 
         @ApiModelProperty(value = "辨析ID")
-        private Integer id;
+        private Long charComparisonId;
 
-        @ApiModelProperty(value = "汉字ID", required = true)
-        private Integer charId;
-
-        @ApiModelProperty(value = "辨析汉字", required = true)
-        private String discrimChar;
+        @ApiModelProperty(value = "辨析汉字")
+        private String comparisonChar;
 
         @ApiModelProperty(value = "辨析拼音")
-        private String discrimPinyin;
+        private String comparisonPinyin;
 
         @ApiModelProperty(value = "辨析汉字翻译")
-        private List<TextTranslationVO> discrimCharTranslations;
+        private List<TextTranslationVO> comparisonCharTranslations;
 
-        @ApiModelProperty(value = "对比翻译")
-        private List<TextTranslationVO> comparisonTranslations;
+        @ApiModelProperty(value = "对比辨析说明外文翻译")
+        private List<TextTranslationVO> comparisonDescTranslations;
 
         @ApiModelProperty(value = "辨析排序权重（值大的排前面）")
         private Integer order;

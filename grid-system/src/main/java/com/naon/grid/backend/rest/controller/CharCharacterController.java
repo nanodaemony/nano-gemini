@@ -59,7 +59,7 @@ public class CharCharacterController {
     @Log("修改汉字内容")
     @ApiOperation("修改汉字内容")
     @AnonymousPutMapping("/{id}")
-    public ResponseEntity<Object> update(@PathVariable Integer id, @Valid @RequestBody CharCharacterCreateRequest request) {
+    public ResponseEntity<Void> update(@PathVariable Integer id, @Valid @RequestBody CharCharacterCreateRequest request) {
         charCharacterService.update(id, CharCharacterWrapper.toDto(request));
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
@@ -67,7 +67,7 @@ public class CharCharacterController {
     @Log("汉字草稿审核通过")
     @ApiOperation("汉字草稿审核通过（草稿→已审核）")
     @AnonymousPutMapping("/{id}/review")
-    public ResponseEntity<Object> reviewDraft(@PathVariable Integer id) {
+    public ResponseEntity<Void> reviewDraft(@PathVariable Integer id) {
         charCharacterService.reviewDraft(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
@@ -75,7 +75,7 @@ public class CharCharacterController {
     @Log("发布汉字")
     @ApiOperation("发布汉字（已审核→已发布）")
     @AnonymousPutMapping("/{id}/publish")
-    public ResponseEntity<Object> publishDraft(@PathVariable Integer id) {
+    public ResponseEntity<Void> publishWord(@PathVariable Integer id) {
         charCharacterService.publishDraft(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
@@ -98,7 +98,7 @@ public class CharCharacterController {
     @Log("删除汉字")
     @ApiOperation("删除汉字")
     @AnonymousDeleteMapping("/{id}")
-    public ResponseEntity<Object> delete(@PathVariable Integer id) {
+    public ResponseEntity<Void> delete(@PathVariable Integer id) {
         charCharacterService.delete(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
@@ -106,7 +106,7 @@ public class CharCharacterController {
     @Log("下线汉字")
     @ApiOperation("下线汉字")
     @AnonymousPutMapping("/{id}/offline")
-    public ResponseEntity<Object> offline(@PathVariable Integer id) {
+    public ResponseEntity<Void> offline(@PathVariable Integer id) {
         charCharacterService.offline(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }

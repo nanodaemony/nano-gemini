@@ -40,7 +40,7 @@ CREATE TABLE `char_comparison`  (
   `comparison_char` varchar(10) NOT NULL COMMENT '辨析汉字',
   `comparison_pinyin` varchar(100) NULL DEFAULT NULL COMMENT '辨析字拼音',
   `comparison_char_translations` text NULL COMMENT '辨析字外文翻译',
-  `comparison_translations` text NULL COMMENT '对比辨析外文翻译',
+  `comparison_desc_translations` text NULL COMMENT '对比辨析说明外文翻译',
   `order` int NULL DEFAULT 0 COMMENT '辨析排序(值大的排前面)',
   `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',

@@ -10,6 +10,7 @@ import java.io.Serializable;
 @Setter
 public class CharCharacterCreateVO implements Serializable {
 
-    @ApiModelProperty(value = "汉字唯一ID")
+    @ApiModelProperty(value = "汉字ID")
     private Integer id;
+
 }

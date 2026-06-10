@@ -71,7 +71,7 @@ public class VocabWordController {
     @Log("更新词汇内容")
     @ApiOperation("更新词汇内容")
     @AnonymousPutMapping("/{id}")
-    public ResponseEntity<Object> update(@PathVariable Integer id, @Valid @RequestBody VocabWordCreateRequest request) {
+    public ResponseEntity<Void> update(@PathVariable Integer id, @Valid @RequestBody VocabWordCreateRequest request) {
         vocabWordService.update(id, VocabWordWrapper.toDto(request));
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
@@ -79,7 +79,7 @@ public class VocabWordController {
     @Log("词汇草稿通过")
     @ApiOperation("词汇草稿通过（草稿→已审核）")
     @AnonymousPutMapping("/{id}/review")
-    public ResponseEntity<Object> reviewDraft(@PathVariable Integer id) {
+    public ResponseEntity<Void> reviewDraft(@PathVariable Integer id) {
         vocabWordService.reviewDraft(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
@@ -87,7 +87,7 @@ public class VocabWordController {
     @Log("发布词汇")
     @ApiOperation("发布词汇（已审核→已发布）")
     @AnonymousPutMapping("/{id}/publish")
-    public ResponseEntity<Object> publishDraft(@PathVariable Integer id) {
+    public ResponseEntity<Void> publishDraft(@PathVariable Integer id) {
         vocabWordService.publishDraft(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
@@ -110,7 +110,7 @@ public class VocabWordController {
     @Log("删除词汇")
     @ApiOperation("删除词汇")
     @AnonymousDeleteMapping("/{id}")
-    public ResponseEntity<Object> delete(@PathVariable Integer id) {
+    public ResponseEntity<Void> delete(@PathVariable Integer id) {
         vocabWordService.delete(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
@@ -118,7 +118,7 @@ public class VocabWordController {
     @Log("下线词汇")
     @ApiOperation("下线词汇")
     @AnonymousPutMapping("/{id}/offline")
-    public ResponseEntity<Object> offline(@PathVariable Integer id) {
+    public ResponseEntity<Void> offline(@PathVariable Integer id) {
         vocabWordService.offline(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
@@ -148,7 +148,7 @@ public class VocabWordController {
     @Log("标记纲外词已处理")
     @ApiOperation("标记纲外词为已处理")
     @AnonymousPutMapping("/outline/{id}/complete")
-    public ResponseEntity<Object> completeOutline(@PathVariable Integer id) {
+    public ResponseEntity<Void> completeOutline(@PathVariable Integer id) {
         vocabOutlineRecordService.markAsCompleted(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }

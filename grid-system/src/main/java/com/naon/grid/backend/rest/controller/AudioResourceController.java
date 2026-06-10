@@ -61,7 +61,7 @@ public class AudioResourceController {
     @Log("删除音频资源")
     @ApiOperation("删除音频资源（软删除）")
     @AnonymousDeleteMapping("/{id}")
-    public ResponseEntity<Object> delete(@PathVariable Long id) {
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
         audioResourceService.delete(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }

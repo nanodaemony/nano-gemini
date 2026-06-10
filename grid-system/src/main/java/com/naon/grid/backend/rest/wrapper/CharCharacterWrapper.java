@@ -35,7 +35,6 @@ public class CharCharacterWrapper {
 
     public static  CharCharacterDto toDto(CharCharacterCreateRequest request) {
         CharCharacterDto dto = new CharCharacterDto();
-        dto.setSequenceNo(request.getSequenceNo());
         dto.setCharacter(request.getCharacter());
         dto.setLevel(request.getLevel());
         dto.setPinyin(request.getPinyin());
@@ -44,27 +43,26 @@ public class CharCharacterWrapper {
         dto.setRadical(request.getRadical());
         dto.setStroke(request.getStroke());
         dto.setCharDesc(request.getCharDesc());
-        dto.setDescTranslations(toTextTranslationList(request.getDescTranslations()));
-        dto.setDiscriminations(toDiscriminationDtoList(request.getDiscriminations()));
+        dto.setDescTranslations(toTextTranslationList(request.getCharDescTranslations()));
+        dto.setDiscriminations(toDiscriminationDtoList(request.getComparisons()));
         dto.setWords(toWordDtoList(request.getWords()));
         return dto;
     }
 
-    private static List<CharDiscriminationDto> toDiscriminationDtoList(List<CharCharacterCreateRequest.CharDiscriminationRequest> requests) {
+    private static List<CharDiscriminationDto> toDiscriminationDtoList(List<CharCharacterCreateRequest.CharComparisonRequest> requests) {
         if (requests == null) {
             return Collections.emptyList();
         }
         return requests.stream().map(CharCharacterWrapper::toDiscriminationDto).collect(Collectors.toList());
     }
 
-    private static CharDiscriminationDto toDiscriminationDto(CharCharacterCreateRequest.CharDiscriminationRequest request) {
+    private static CharDiscriminationDto toDiscriminationDto(CharCharacterCreateRequest.CharComparisonRequest request) {
         CharDiscriminationDto dto = new CharDiscriminationDto();
-        dto.setId(request.getId());
-        dto.setDiscrimChar(request.getDiscrimChar());
-        dto.setDiscrimPinyin(request.getDiscrimPinyin());
-        dto.setDiscrimCharTranslations(toTextTranslationList(request.getDiscrimCharTranslations()));
-        dto.setComparisonTranslations(toTextTranslationList(request.getComparisonTranslations()));
-        dto.setDiscriminationOrder(request.getDiscriminationOrder() != null ? request.getDiscriminationOrder() : 0);
+        dto.setDiscrimChar(request.getComparisonChar());
+        dto.setDiscrimPinyin(request.getComparisonPinyin());
+        dto.setDiscrimCharTranslations(toTextTranslationList(request.getComparisonCharTranslations()));
+        dto.setComparisonTranslations(toTextTranslationList(request.getComparisonDescTranslations()));
+        dto.setDiscriminationOrder(request.getOrder());
         return dto;
     }
 
@@ -87,7 +85,7 @@ public class CharCharacterWrapper {
         dto.setExamplePinyin(request.getExamplePinyin());
         dto.setExampleTranslations(toTextTranslationList(request.getExampleTranslations()));
         dto.setExampleImage(request.getExampleImage());
-        dto.setWordOrder(request.getWordOrder() != null ? request.getWordOrder() : 0);
+        dto.setWordOrder(request.getOrder() != null ? request.getOrder() : 0);
         return dto;
     }
 
@@ -128,10 +126,10 @@ public class CharCharacterWrapper {
         vo.setRadical(dto.getRadical());
         vo.setStroke(dto.getStroke());
         vo.setCharDesc(dto.getCharDesc());
-        vo.setDescTranslations(toTextTranslationVOList(dto.getDescTranslations()));
+        vo.setCharDescTranslations(toTextTranslationVOList(dto.getDescTranslations()));
         vo.setPublishStatus(dto.getPublishStatus());
         vo.setEditStatus(dto.getEditStatus());
-        vo.setDiscriminations(toDiscriminationVOList(dto.getDiscriminations()));
+        vo.setComparisons(toDiscriminationVOList(dto.getDiscriminations()));
         vo.setWords(toWordVOList(dto.getWords()));
         vo.setCreateBy(dto.getCreateBy());
         vo.setUpdateBy(dto.getUpdateBy());
@@ -140,21 +138,21 @@ public class CharCharacterWrapper {
         return vo;
     }
 
-    private static List<CharCharacterVO.CharDiscriminationVO> toDiscriminationVOList(List<CharDiscriminationDto> resources) {
+    private static List<CharCharacterVO.CharComparisonVO> toDiscriminationVOList(List<CharDiscriminationDto> resources) {
         if (resources == null) {
             return Collections.emptyList();
         }
         return resources.stream().map(CharCharacterWrapper::toDiscriminationVO).collect(Collectors.toList());
     }
 
-    private static CharCharacterVO.CharDiscriminationVO toDiscriminationVO(CharDiscriminationDto dto) {
-        CharCharacterVO.CharDiscriminationVO vo = new CharCharacterVO.CharDiscriminationVO();
-        vo.setId(dto.getId());
+    private static CharCharacterVO.CharComparisonVO toDiscriminationVO(CharDiscriminationDto dto) {
+        CharCharacterVO.CharComparisonVO vo = new CharCharacterVO.CharComparisonVO();
+        vo.setCharComparisonId(dto.getId());
         vo.setCharId(dto.getCharId());
-        vo.setDiscrimChar(dto.getDiscrimChar());
-        vo.setDiscrimPinyin(dto.getDiscrimPinyin());
-        vo.setDiscrimCharTranslations(toTextTranslationVOList(dto.getDiscrimCharTranslations()));
-        vo.setComparisonTranslations(toTextTranslationVOList(dto.getComparisonTranslations()));
+        vo.setComparisonChar(dto.getDiscrimChar());
+        vo.setComparisonPinyin(dto.getDiscrimPinyin());
+        vo.setComparisonCharTranslations(toTextTranslationVOList(dto.getDiscrimCharTranslations()));
+        vo.setComparisonDescTranslations(toTextTranslationVOList(dto.getComparisonTranslations()));
         vo.setOrder(dto.getDiscriminationOrder());
         vo.setCreateTime(dto.getCreateTime());
         vo.setUpdateTime(dto.getUpdateTime());

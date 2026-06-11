@@ -2,8 +2,6 @@ package com.naon.grid.backend.rest.request;
 
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
 
 import java.io.Serializable;
 import java.util.List;
@@ -12,7 +10,7 @@ import java.util.List;
  * 例句内容请求
  */
 @Data
-public class SentenceContentRequest implements Serializable {
+public class ExampleSentenceRequest implements Serializable {
 
     @ApiModelProperty(value = "例句中文文案")
     private String sentence;

@@ -14,7 +14,7 @@ import java.util.List;
 public class CharCharacterVO implements Serializable {
 
     @ApiModelProperty(value = "汉字ID")
-    private Long id;
+    private Integer id;
 
     @ApiModelProperty(value = "汉字")
     private String character;
@@ -80,7 +80,7 @@ public class CharCharacterVO implements Serializable {
     public static class CharComparisonVO implements Serializable {
 
         @ApiModelProperty(value = "辨析ID")
-        private Long charComparisonId;
+        private int id;
 
         @ApiModelProperty(value = "辨析汉字")
         private String comparisonChar;
@@ -131,17 +131,8 @@ public class CharCharacterVO implements Serializable {
         @ApiModelProperty(value = "组词翻译")
         private List<TextTranslationVO> wordItemTranslations;
 
-        @ApiModelProperty(value = "例句")
-        private String exampleSentence;
-
-        @ApiModelProperty(value = "例句拼音")
-        private String examplePinyin;
-
-        @ApiModelProperty(value = "例句翻译")
-        private List<TextTranslationVO> exampleTranslations;
-
-        @ApiModelProperty(value = "例句图片")
-        private String exampleImage;
+        @ApiModelProperty(value = "组词例句")
+        private ExampleSentenceVO wordItemSentence;
 
         @ApiModelProperty(value = "组词排序权重（值大的排前面）")
         private Integer order;

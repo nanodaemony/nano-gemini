@@ -5,7 +5,7 @@
 CREATE TABLE `char_character`  (
   `id` bigint NOT NULL AUTO_INCREMENT COMMENT '汉字ID',
   `character` varchar(16) NOT NULL COMMENT '汉字',
-  `level` varchar(20) NULL DEFAULT NULL COMMENT 'HSK等级',
+  `hsk_level` varchar(20) NULL DEFAULT NULL COMMENT 'HSK等级',
   `pinyin` varchar(32) NULL DEFAULT NULL COMMENT '拼音',
   `traditional` varchar(16) NULL DEFAULT NULL COMMENT '繁体字',
   `audio_id` bigint NULL DEFAULT NULL COMMENT '音频资源ID',
@@ -31,7 +31,6 @@ CREATE TABLE `char_character`  (
   INDEX `idx_char_edit_status`(`edit_status`)
 ) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '汉字主表';
 
-
 -- 汉字辨析表
 -- 注：一个汉字可能有多个辨析字。
 CREATE TABLE `char_comparison`  (
@@ -55,7 +54,7 @@ CREATE TABLE `char_word`  (
   `id` bigint NOT NULL AUTO_INCREMENT COMMENT '组词记录ID',
   `char_id` bigint NOT NULL COMMENT '所属汉字ID',
   `word_item` varchar(50) NOT NULL COMMENT '组词',
-  `level` varchar(20) NULL DEFAULT NULL COMMENT 'HSK等级',
+  `hsk_level` varchar(20) NULL DEFAULT NULL COMMENT 'HSK等级',
   `pinyin` varchar(100) NULL DEFAULT NULL COMMENT '组词拼音',
   `part_of_speech` varchar(50) NULL DEFAULT NULL COMMENT '组词词性',
   `word_item_translations` text NULL COMMENT '组词的外文翻译',

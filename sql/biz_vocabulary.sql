@@ -26,21 +26,15 @@ CREATE TABLE `vocab_word`  (
 
 -- 词汇义项表
 -- 注：一个词汇可能有多个词汇义项，一个词义项对应一条数据。
+-- 义项的近义词、反义词、正序词、逆序词、乱序词等都存储在关联词汇表中。
 CREATE TABLE `vocab_sense`  (
   `id` bigint NOT NULL AUTO_INCREMENT COMMENT '义项ID',
   `word_id` bigint NOT NULL COMMENT '所属词汇ID',
-  `part_of_speech` varchar(50) DEFAULT NULL COMMENT '词性（名词、动词、形容词等）,参考枚举：PartOfSpeechEnum',
+  `part_of_speech` varchar(50) DEFAULT NULL COMMENT '词性（名词、动词、形容词等）, 参考枚举：PartOfSpeechEnum',
   `chinese_def` varchar(512) DEFAULT NULL COMMENT '中文释义',
   `def_translations` text NULL COMMENT '释义翻译列表',
   `def_audio_id` bigint NULL DEFAULT NULL COMMENT '中文释义音频资源ID',
   `def_image_id` bigint NULL DEFAULT NULL COMMENT '中文释义图片(ID)',
-
-
-  `synonyms` varchar(512) DEFAULT NULL COMMENT '近义词列表（展示用）, JSON列表格式',
-  `antonyms` varchar(512) DEFAULT NULL COMMENT '反义词列表（展示用）, JSON列表格式',
-  `related_forward` varchar(512) DEFAULT NULL COMMENT '正序关联词汇, JSON列表格式',
-  `related_backward` varchar(512) DEFAULT NULL COMMENT '逆序关联词汇, JSON列表格式',
-  `related_other` varchar(512) DEFAULT NULL COMMENT '其他关联词汇(乱序), JSON列表格式',
 
   `order` int NOT NULL DEFAULT 0 COMMENT '义项排序权重（大在前）',
   `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
@@ -90,7 +84,7 @@ CREATE TABLE `vocab_exercise`  (
 -- 关联词汇表
 -- 记录词汇与词汇之间的关联关系
 -- 关联义项ID暂时不需要
-CREATE TABLE `vocab_structure`  (
+CREATE TABLE `vocab_relation`  (
   `id` bigint NOT NULL AUTO_INCREMENT COMMENT '关联词汇ID',
   `word_id` bigint NOT NULL COMMENT '词汇ID',
   `sense_id` bigint NOT NULL COMMENT '义项ID',

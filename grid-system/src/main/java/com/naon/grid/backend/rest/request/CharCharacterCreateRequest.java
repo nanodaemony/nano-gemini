@@ -18,7 +18,7 @@ public class CharCharacterCreateRequest implements Serializable {
     private String character;
 
     @ApiModelProperty(value = "HSK等级，参考枚举：HskLevelEnum")
-    private String level;
+    private String hskLevel;
 
     @ApiModelProperty(value = "拼音", required = true)
     private String pinyin;
@@ -63,7 +63,7 @@ public class CharCharacterCreateRequest implements Serializable {
     public static class CharComparisonRequest implements Serializable {
 
         @ApiModelProperty(value = "辨析ID, 新增时不传, 更新时传")
-        private Long charComparisonId;
+        private Integer id;
 
         @NotBlank
         @ApiModelProperty(value = "辨析汉字", required = true)
@@ -88,14 +88,14 @@ public class CharCharacterCreateRequest implements Serializable {
 
         @NotBlank
         @ApiModelProperty(value = "组词ID, 新增时不传 更新时传", required = true)
-        private Long charWordId;
+        private Integer id;
 
         @NotBlank
         @ApiModelProperty(value = "组词", required = true)
         private String wordItem;
 
         @ApiModelProperty(value = "HSK等级")
-        private String level;
+        private String hskLevel;
 
         @ApiModelProperty(value = "组词拼音")
         private String pinyin;
@@ -107,7 +107,7 @@ public class CharCharacterCreateRequest implements Serializable {
         private List<TextTranslationRequest> wordItemTranslations;
 
         @ApiModelProperty(value = "组词例句列表")
-        private List<SentenceContentRequest> sentenceContents;
+        private List<ExampleSentenceRequest> sentenceContents;
 
         @ApiModelProperty(value = "组词排序权重（值大的排前面，不传默认 0）")
         private Integer order;

@@ -36,7 +36,7 @@ public class CharCharacterWrapper {
     public static  CharCharacterDto toDto(CharCharacterCreateRequest request) {
         CharCharacterDto dto = new CharCharacterDto();
         dto.setCharacter(request.getCharacter());
-        dto.setLevel(request.getLevel());
+        dto.setLevel(request.getHskLevel());
         dto.setPinyin(request.getPinyin());
         dto.setAudioId(request.getAudioId());
         dto.setTraditional(request.getTraditional());
@@ -77,14 +77,10 @@ public class CharCharacterWrapper {
         CharWordDto dto = new CharWordDto();
         dto.setId(request.getId());
         dto.setWordItem(request.getWordItem());
-        dto.setLevel(request.getLevel());
+        dto.setLevel(request.getHskLevel());
         dto.setPinyin(request.getPinyin());
         dto.setPartOfSpeech(request.getPartOfSpeech());
         dto.setWordItemTranslations(toTextTranslationList(request.getWordItemTranslations()));
-        dto.setExampleSentence(request.getExampleSentence());
-        dto.setExamplePinyin(request.getExamplePinyin());
-        dto.setExampleTranslations(toTextTranslationList(request.getExampleTranslations()));
-        dto.setExampleImage(request.getExampleImage());
         dto.setWordOrder(request.getOrder() != null ? request.getOrder() : 0);
         return dto;
     }
@@ -147,8 +143,7 @@ public class CharCharacterWrapper {
 
     private static CharCharacterVO.CharComparisonVO toDiscriminationVO(CharDiscriminationDto dto) {
         CharCharacterVO.CharComparisonVO vo = new CharCharacterVO.CharComparisonVO();
-        vo.setCharComparisonId(dto.getId());
-        vo.setCharId(dto.getCharId());
+        vo.setId(dto.getId());
         vo.setComparisonChar(dto.getDiscrimChar());
         vo.setComparisonPinyin(dto.getDiscrimPinyin());
         vo.setComparisonCharTranslations(toTextTranslationVOList(dto.getDiscrimCharTranslations()));

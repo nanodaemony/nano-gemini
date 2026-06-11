@@ -56,7 +56,9 @@ import java.util.stream.Collectors;
 public class VocabWordController {
 
     private final VocabWordService vocabWordService;
+
     private final VocabOutlineRecordService vocabOutlineRecordService;
+
     private final VocabOutlineRecordMapper vocabOutlineRecordMapper;
 
     @Log("新增词汇")
@@ -87,7 +89,7 @@ public class VocabWordController {
     @Log("发布词汇")
     @ApiOperation("发布词汇（已审核→已发布）")
     @AnonymousPutMapping("/{id}/publish")
-    public ResponseEntity<Void> publishDraft(@PathVariable Integer id) {
+    public ResponseEntity<Void> publishVocab(@PathVariable Integer id) {
         vocabWordService.publishDraft(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }

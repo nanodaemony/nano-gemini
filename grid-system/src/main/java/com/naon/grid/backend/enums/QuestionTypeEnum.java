@@ -2,22 +2,26 @@ package com.naon.grid.backend.enums;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
+import lombok.Getter;
 
 /**
  * 练习题目类型枚举
  */
+@Getter
 public enum QuestionTypeEnum {
 
-    SINGLE_CHOOSE(1, "SINGLE_CHOOSE", "单选题"),
-
-    MULTI_CHOOSE(2, "MULTI_CHOOSE", "多选题"),
-
-    ;
+    SINGLE_CHOICE(1, "SINGLE_CHOICE", "单选题"),
+    MULTI_CHOICE(2, "MULTI_CHOICE", "多选题"),
+    TRUE_FALSE(3, "TRUE_FALSE", "判断题"),
+    FILL_IN_BLANK(4, "FILL_IN_BLANK", "填空题"),
+    WORD_SORT(5, "WORD_SORT", "词语排序题"),
+    SHORT_ANSWER(6, "SHORT_ANSWER", "简答题"),
+    REWRITE_SENTENCE(7, "REWRITE_SENTENCE", "改写句子题"),
+    LISTENING(8, "LISTENING", "听力理解题"),
+    PICTURE_DESCRIPTION(9, "PICTURE_DESCRIPTION", "看图写话题");
 
     private final Integer id;
-
     private final String code;
-
     private final String description;
 
     QuestionTypeEnum(Integer id, String code, String description) {
@@ -33,7 +37,7 @@ public enum QuestionTypeEnum {
                 return type;
             }
         }
-        throw new IllegalArgumentException("Unknown audio source type: " + code);
+        throw new IllegalArgumentException("Unknown question type: " + code);
     }
 
     @JsonValue
@@ -41,11 +45,4 @@ public enum QuestionTypeEnum {
         return code;
     }
 
-    public Integer getId() {
-        return id;
-    }
-
-    public String getDescription() {
-        return description;
-    }
 }

@@ -1,6 +1,5 @@
 package com.naon.grid.backend.rest.wrapper;
 
-import com.naon.grid.backend.rest.request.ExerciseOptionRequest;
 import com.naon.grid.backend.rest.request.TextTranslationRequest;
 import com.naon.grid.backend.rest.request.VocabWordCreateRequest;
 import com.naon.grid.backend.rest.request.VocabWordQueryRequest;
@@ -41,7 +40,6 @@ public class VocabWordWrapper {
         dto.setAudioId(request.getAudioId());
         dto.setHskLevel(request.getHskLevel());
         dto.setSenses(toSenseDtoList(request.getSenses()));
-        dto.setExercises(toExerciseDtoList(request.getExercises()));
         return dto;
     }
 
@@ -58,14 +56,9 @@ public class VocabWordWrapper {
         dto.setPartOfSpeech(request.getPartOfSpeech());
         dto.setChineseDef(request.getChineseDef());
         dto.setDefAudioId(request.getDefAudioId());
-        dto.setDefImage(request.getDefImage());
-        dto.setTranslations(toTextTranslationList(request.getTranslations()));
-        dto.setSynonyms(request.getSynonyms());
-        dto.setAntonyms(request.getAntonyms());
-        dto.setRelatedForward(request.getRelatedForward());
-        dto.setRelatedBackward(request.getRelatedBackward());
-        dto.setRelatedOther(request.getRelatedOther());
-        dto.setSenseOrder(request.getSenseOrder() != null ? request.getSenseOrder() : 0);
+        dto.setDefImage(request.getDefImageId());
+        dto.setTranslations(toTextTranslationList(request.getDefTranslations()));
+        dto.setSenseOrder(request.getOrder() != null ? request.getOrder() : 0);
         dto.setStructures(toStructureDtoList(request.getStructures()));
         return dto;
     }
@@ -83,62 +76,7 @@ public class VocabWordWrapper {
         dto.setPattern(request.getPattern());
         dto.setPatternDef(request.getPatternDef());
         dto.setPatternDefTranslations(toTextTranslationList(request.getPatternDefTranslations()));
-        dto.setStructureOrder(request.getStructureOrder() != null ? request.getStructureOrder() : 0);
-        dto.setExamples(toExampleDtoList(request.getExamples()));
-        return dto;
-    }
-
-    private static List<VocabExerciseDto> toExerciseDtoList(List<VocabWordCreateRequest.VocabExerciseRequest> requests) {
-        if (requests == null) {
-            return Collections.emptyList();
-        }
-        return requests.stream().map(VocabWordWrapper::toExerciseDto).collect(Collectors.toList());
-    }
-
-    private static VocabExerciseDto toExerciseDto(VocabWordCreateRequest.VocabExerciseRequest request) {
-        VocabExerciseDto dto = new VocabExerciseDto();
-        dto.setId(request.getId());
-        dto.setQuestionType(request.getQuestionType());
-        dto.setQuestionText(request.getQuestionText());
-        dto.setOptions(toExerciseOptionList(request.getOptions()));
-        dto.setAnswers(request.getAnswers());
-        dto.setExerciseOrder(request.getExerciseOrder() != null ? request.getExerciseOrder() : 0);
-        return dto;
-    }
-
-    private static List<ExerciseOption> toExerciseOptionList(List<ExerciseOptionRequest> requests) {
-        if (requests == null) {
-            return Collections.emptyList();
-        }
-        return requests.stream().map(VocabWordWrapper::toExerciseOption).collect(Collectors.toList());
-    }
-
-    private static ExerciseOption toExerciseOption(ExerciseOptionRequest request) {
-        if (request == null) {
-            return null;
-        }
-        ExerciseOption option = new ExerciseOption();
-        option.setOption(request.getOption());
-        option.setText(request.getText());
-        return option;
-    }
-
-    private static List<VocabExampleDto> toExampleDtoList(List<VocabWordCreateRequest.VocabExampleRequest> requests) {
-        if (requests == null) {
-            return Collections.emptyList();
-        }
-        return requests.stream().map(VocabWordWrapper::toExampleDto).collect(Collectors.toList());
-    }
-
-    private static VocabExampleDto toExampleDto(VocabWordCreateRequest.VocabExampleRequest request) {
-        VocabExampleDto dto = new VocabExampleDto();
-        dto.setId(request.getId());
-        dto.setSentence(request.getSentence());
-        dto.setAudioId(request.getAudioId());
-        dto.setPinyin(request.getPinyin());
-        dto.setTranslations(toTextTranslationList(request.getTranslations()));
-        dto.setImage(request.getImage());
-        dto.setExampleOrder(request.getExampleOrder() != null ? request.getExampleOrder() : 0);
+        dto.setStructureOrder(request.getOrder() != null ? request.getOrder() : 0);
         return dto;
     }
 
@@ -174,7 +112,6 @@ public class VocabWordWrapper {
         vo.setPublishStatus(dto.getPublishStatus());
         vo.setEditStatus(dto.getEditStatus());
         vo.setSenses(toSenseVOList(dto.getSenses()));
-        vo.setExercises(toExerciseVOList(dto.getExercises()));
         vo.setCreateBy(dto.getCreateBy());
         vo.setUpdateBy(dto.getUpdateBy());
         vo.setCreateTime(dto.getCreateTime());
@@ -192,17 +129,11 @@ public class VocabWordWrapper {
     private static VocabWordVO.VocabSenseVO toSenseVO(VocabSenseDto dto) {
         VocabWordVO.VocabSenseVO vo = new VocabWordVO.VocabSenseVO();
         vo.setId(dto.getId());
-        vo.setWordId(dto.getWordId());
         vo.setPartOfSpeech(dto.getPartOfSpeech());
         vo.setChineseDef(dto.getChineseDef());
         vo.setDefAudioId(dto.getDefAudioId());
-        vo.setDefImage(dto.getDefImage());
-        vo.setTranslations(toTextTranslationVOList(dto.getTranslations()));
-        vo.setSynonyms(dto.getSynonyms());
-        vo.setAntonyms(dto.getAntonyms());
-        vo.setRelatedForward(dto.getRelatedForward());
-        vo.setRelatedBackward(dto.getRelatedBackward());
-        vo.setRelatedOther(dto.getRelatedOther());
+        vo.setDefImageId(dto.getDefImage());
+        vo.setDefTranslations(toTextTranslationVOList(dto.getTranslations()));
         vo.setOrder(dto.getSenseOrder());
         vo.setStructures(toStructureVOList(dto.getStructures()));
         vo.setCreateTime(dto.getCreateTime());
@@ -226,71 +157,6 @@ public class VocabWordWrapper {
         vo.setPatternDef(dto.getPatternDef());
         vo.setPatternDefTranslations(toTextTranslationVOList(dto.getPatternDefTranslations()));
         vo.setOrder(dto.getStructureOrder());
-        vo.setExamples(toExampleVOList(dto.getExamples()));
-        vo.setCreateTime(dto.getCreateTime());
-        vo.setUpdateTime(dto.getUpdateTime());
-        return vo;
-    }
-
-    private static List<VocabWordVO.VocabExerciseVO> toExerciseVOList(List<VocabExerciseDto> resources) {
-        if (resources == null) {
-            return Collections.emptyList();
-        }
-        return resources.stream().map(VocabWordWrapper::toExerciseVO).collect(Collectors.toList());
-    }
-
-    private static VocabWordVO.VocabExerciseVO toExerciseVO(VocabExerciseDto dto) {
-        VocabWordVO.VocabExerciseVO vo = new VocabWordVO.VocabExerciseVO();
-        vo.setId(dto.getId());
-        vo.setWordId(dto.getWordId());
-        vo.setQuestionType(dto.getQuestionType());
-        vo.setQuestionText(dto.getQuestionText());
-        vo.setOptions(toExerciseOptionVOList(dto.getOptions()));
-        vo.setAnswers(dto.getAnswers());
-        vo.setExerciseOrder(dto.getExerciseOrder());
-        vo.setCreateBy(dto.getCreateBy());
-        vo.setUpdateBy(dto.getUpdateBy());
-        vo.setCreateTime(dto.getCreateTime());
-        vo.setUpdateTime(dto.getUpdateTime());
-        return vo;
-    }
-
-    private static List<ExerciseOptionVO> toExerciseOptionVOList(List<ExerciseOption> options) {
-        if (options == null) {
-            return Collections.emptyList();
-        }
-        return options.stream().map(VocabWordWrapper::toExerciseOptionVO).collect(Collectors.toList());
-    }
-
-    private static ExerciseOptionVO toExerciseOptionVO(ExerciseOption option) {
-        if (option == null) {
-            return null;
-        }
-        ExerciseOptionVO vo = new ExerciseOptionVO();
-        vo.setOption(option.getOption());
-        vo.setText(option.getText());
-        return vo;
-    }
-
-    private static List<VocabWordVO.VocabExampleVO> toExampleVOList(List<VocabExampleDto> resources) {
-        if (resources == null) {
-            return Collections.emptyList();
-        }
-        return resources.stream().map(VocabWordWrapper::toExampleVO).collect(Collectors.toList());
-    }
-
-    private static VocabWordVO.VocabExampleVO toExampleVO(VocabExampleDto dto) {
-        VocabWordVO.VocabExampleVO vo = new VocabWordVO.VocabExampleVO();
-        vo.setId(dto.getId());
-        vo.setWordId(dto.getWordId());
-        vo.setSenseId(dto.getSenseId());
-        vo.setStructureId(dto.getStructureId());
-        vo.setSentence(dto.getSentence());
-        vo.setAudioId(dto.getAudioId());
-        vo.setPinyin(dto.getPinyin());
-        vo.setTranslations(toTextTranslationVOList(dto.getTranslations()));
-        vo.setImage(dto.getImage());
-        vo.setOrder(dto.getExampleOrder());
         vo.setCreateTime(dto.getCreateTime());
         vo.setUpdateTime(dto.getUpdateTime());
         return vo;

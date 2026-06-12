@@ -2,14 +2,17 @@ package com.naon.grid.backend.rest.wrapper;
 
 import com.naon.grid.backend.rest.request.CharCharacterCreateRequest;
 import com.naon.grid.backend.rest.request.CharCharacterQueryRequest;
+import com.naon.grid.backend.rest.request.ExampleSentenceRequest;
 import com.naon.grid.backend.rest.request.TextTranslationRequest;
 import com.naon.grid.backend.rest.vo.CharCharacterBaseVO;
 import com.naon.grid.backend.rest.vo.CharCharacterVO;
+import com.naon.grid.backend.rest.vo.ExampleSentenceVO;
 import com.naon.grid.backend.rest.vo.TextTranslationVO;
 import com.naon.grid.backend.service.character.dto.CharCharacterDto;
 import com.naon.grid.backend.service.character.dto.CharCharacterQueryCriteria;
-import com.naon.grid.backend.service.character.dto.CharDiscriminationDto;
+import com.naon.grid.backend.service.character.dto.CharComparisonDto;
 import com.naon.grid.backend.service.character.dto.CharWordDto;
+import com.naon.grid.backend.service.common.dto.ExampleSentenceDto;
 import com.naon.grid.domain.common.TextTranslation;
 
 import java.util.Collections;
@@ -33,36 +36,39 @@ public class CharCharacterWrapper {
         return criteria;
     }
 
-    public static  CharCharacterDto toDto(CharCharacterCreateRequest request) {
+    public static CharCharacterDto toDto(CharCharacterCreateRequest request) {
         CharCharacterDto dto = new CharCharacterDto();
         dto.setCharacter(request.getCharacter());
         dto.setLevel(request.getHskLevel());
         dto.setPinyin(request.getPinyin());
         dto.setAudioId(request.getAudioId());
         dto.setTraditional(request.getTraditional());
+        dto.setRadicalId(request.getRadicalId());
         dto.setRadical(request.getRadical());
+        dto.setComponentCombination(request.getComponentCombination());
         dto.setStroke(request.getStroke());
         dto.setCharDesc(request.getCharDesc());
         dto.setDescTranslations(toTextTranslationList(request.getCharDescTranslations()));
-        dto.setDiscriminations(toDiscriminationDtoList(request.getComparisons()));
+        dto.setComparisons(toComparisonDtoList(request.getComparisons()));
         dto.setWords(toWordDtoList(request.getWords()));
         return dto;
     }
 
-    private static List<CharDiscriminationDto> toDiscriminationDtoList(List<CharCharacterCreateRequest.CharComparisonRequest> requests) {
+    private static List<CharComparisonDto> toComparisonDtoList(List<CharCharacterCreateRequest.CharComparisonRequest> requests) {
         if (requests == null) {
             return Collections.emptyList();
         }
-        return requests.stream().map(CharCharacterWrapper::toDiscriminationDto).collect(Collectors.toList());
+        return requests.stream().map(CharCharacterWrapper::toComparisonDto).collect(Collectors.toList());
     }
 
-    private static CharDiscriminationDto toDiscriminationDto(CharCharacterCreateRequest.CharComparisonRequest request) {
-        CharDiscriminationDto dto = new CharDiscriminationDto();
-        dto.setDiscrimChar(request.getComparisonChar());
-        dto.setDiscrimPinyin(request.getComparisonPinyin());
-        dto.setDiscrimCharTranslations(toTextTranslationList(request.getComparisonCharTranslations()));
-        dto.setComparisonTranslations(toTextTranslationList(request.getComparisonDescTranslations()));
-        dto.setDiscriminationOrder(request.getOrder());
+    private static CharComparisonDto toComparisonDto(CharCharacterCreateRequest.CharComparisonRequest request) {
+        CharComparisonDto dto = new CharComparisonDto();
+        dto.setId(request.getId());
+        dto.setComparisonChar(request.getComparisonChar());
+        dto.setComparisonPinyin(request.getComparisonPinyin());
+        dto.setComparisonCharTranslations(toTextTranslationList(request.getComparisonCharTranslations()));
+        dto.setComparisonDescTranslations(toTextTranslationList(request.getComparisonDescTranslations()));
+        dto.setOrder(request.getOrder());
         return dto;
     }
 
@@ -81,7 +87,23 @@ public class CharCharacterWrapper {
         dto.setPinyin(request.getPinyin());
         dto.setPartOfSpeech(request.getPartOfSpeech());
         dto.setWordItemTranslations(toTextTranslationList(request.getWordItemTranslations()));
+        dto.setWordItemSentence(toExampleSentenceDto(request.getSentenceContent()));
         dto.setWordOrder(request.getOrder() != null ? request.getOrder() : 0);
+        return dto;
+    }
+
+    private static ExampleSentenceDto toExampleSentenceDto(ExampleSentenceRequest request) {
+        if (request == null) {
+            return null;
+        }
+        ExampleSentenceDto dto = new ExampleSentenceDto();
+        dto.setId(request.getId());
+        dto.setSentence(request.getSentence());
+        dto.setPinyin(request.getPinyin());
+        dto.setAudioId(request.getAudioId());
+        dto.setTranslations(toTextTranslationList(request.getTranslations()));
+        dto.setImageId(request.getImageId());
+        dto.setOrder(request.getOrder());
         return dto;
     }
 
@@ -92,13 +114,14 @@ public class CharCharacterWrapper {
     private static CharCharacterBaseVO toBaseVO(CharCharacterDto dto) {
         CharCharacterBaseVO vo = new CharCharacterBaseVO();
         vo.setId(dto.getId());
-        vo.setSequenceNo(dto.getSequenceNo());
         vo.setCharacter(dto.getCharacter());
         vo.setLevel(dto.getLevel());
         vo.setPinyin(dto.getPinyin());
         vo.setAudioId(dto.getAudioId());
         vo.setTraditional(dto.getTraditional());
+        vo.setRadicalId(dto.getRadicalId());
         vo.setRadical(dto.getRadical());
+        vo.setComponentCombination(dto.getComponentCombination());
         vo.setStroke(dto.getStroke());
         vo.setCharDesc(dto.getCharDesc());
         vo.setDescTranslations(toTextTranslationVOList(dto.getDescTranslations()));
@@ -119,13 +142,15 @@ public class CharCharacterWrapper {
         vo.setPinyin(dto.getPinyin());
         vo.setAudioId(dto.getAudioId());
         vo.setTraditional(dto.getTraditional());
+        vo.setRadicalId(dto.getRadicalId());
         vo.setRadical(dto.getRadical());
+        vo.setComponentCombination(dto.getComponentCombination());
         vo.setStroke(dto.getStroke());
         vo.setCharDesc(dto.getCharDesc());
         vo.setCharDescTranslations(toTextTranslationVOList(dto.getDescTranslations()));
         vo.setPublishStatus(dto.getPublishStatus());
         vo.setEditStatus(dto.getEditStatus());
-        vo.setComparisons(toDiscriminationVOList(dto.getDiscriminations()));
+        vo.setComparisons(toComparisonVOList(dto.getComparisons()));
         vo.setWords(toWordVOList(dto.getWords()));
         vo.setCreateBy(dto.getCreateBy());
         vo.setUpdateBy(dto.getUpdateBy());
@@ -134,21 +159,21 @@ public class CharCharacterWrapper {
         return vo;
     }
 
-    private static List<CharCharacterVO.CharComparisonVO> toDiscriminationVOList(List<CharDiscriminationDto> resources) {
+    private static List<CharCharacterVO.CharComparisonVO> toComparisonVOList(List<CharComparisonDto> resources) {
         if (resources == null) {
             return Collections.emptyList();
         }
-        return resources.stream().map(CharCharacterWrapper::toDiscriminationVO).collect(Collectors.toList());
+        return resources.stream().map(CharCharacterWrapper::toComparisonVO).collect(Collectors.toList());
     }
 
-    private static CharCharacterVO.CharComparisonVO toDiscriminationVO(CharDiscriminationDto dto) {
+    private static CharCharacterVO.CharComparisonVO toComparisonVO(CharComparisonDto dto) {
         CharCharacterVO.CharComparisonVO vo = new CharCharacterVO.CharComparisonVO();
         vo.setId(dto.getId());
-        vo.setComparisonChar(dto.getDiscrimChar());
-        vo.setComparisonPinyin(dto.getDiscrimPinyin());
-        vo.setComparisonCharTranslations(toTextTranslationVOList(dto.getDiscrimCharTranslations()));
-        vo.setComparisonDescTranslations(toTextTranslationVOList(dto.getComparisonTranslations()));
-        vo.setOrder(dto.getDiscriminationOrder());
+        vo.setComparisonChar(dto.getComparisonChar());
+        vo.setComparisonPinyin(dto.getComparisonPinyin());
+        vo.setComparisonCharTranslations(toTextTranslationVOList(dto.getComparisonCharTranslations()));
+        vo.setComparisonDescTranslations(toTextTranslationVOList(dto.getComparisonDescTranslations()));
+        vo.setOrder(dto.getOrder());
         vo.setCreateTime(dto.getCreateTime());
         vo.setUpdateTime(dto.getUpdateTime());
         return vo;
@@ -170,11 +195,25 @@ public class CharCharacterWrapper {
         vo.setPinyin(dto.getPinyin());
         vo.setPartOfSpeech(dto.getPartOfSpeech());
         vo.setWordItemTranslations(toTextTranslationVOList(dto.getWordItemTranslations()));
-        vo.setExampleSentence(dto.getExampleSentence());
-        vo.setExamplePinyin(dto.getExamplePinyin());
-        vo.setExampleTranslations(toTextTranslationVOList(dto.getExampleTranslations()));
-        vo.setExampleImage(dto.getExampleImage());
+        vo.setWordItemSentence(toExampleSentenceVO(dto.getWordItemSentence()));
         vo.setOrder(dto.getWordOrder());
+        vo.setCreateTime(dto.getCreateTime());
+        vo.setUpdateTime(dto.getUpdateTime());
+        return vo;
+    }
+
+    private static ExampleSentenceVO toExampleSentenceVO(ExampleSentenceDto dto) {
+        if (dto == null) {
+            return null;
+        }
+        ExampleSentenceVO vo = new ExampleSentenceVO();
+        vo.setId(dto.getId());
+        vo.setSentence(dto.getSentence());
+        vo.setPinyin(dto.getPinyin());
+        vo.setAudioId(dto.getAudioId());
+        vo.setTranslations(toTextTranslationVOList(dto.getTranslations()));
+        vo.setImageId(dto.getImageId());
+        vo.setOrder(dto.getOrder());
         vo.setCreateTime(dto.getCreateTime());
         vo.setUpdateTime(dto.getUpdateTime());
         return vo;

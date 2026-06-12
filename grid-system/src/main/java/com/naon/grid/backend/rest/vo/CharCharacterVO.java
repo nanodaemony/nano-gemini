@@ -29,10 +29,10 @@ public class CharCharacterVO implements Serializable {
     private String traditional;
 
     @ApiModelProperty(value = "读音音频ID")
-    private long audioId;
+    private Long audioId;
 
     @ApiModelProperty(value = "部首ID")
-    private long radicalId;
+    private Long radicalId;
 
     @ApiModelProperty(value = "部首")
     private String radical;
@@ -80,7 +80,7 @@ public class CharCharacterVO implements Serializable {
     public static class CharComparisonVO implements Serializable {
 
         @ApiModelProperty(value = "辨析ID")
-        private int id;
+        private Integer id;
 
         @ApiModelProperty(value = "辨析汉字")
         private String comparisonChar;
@@ -133,18 +133,6 @@ public class CharCharacterVO implements Serializable {
 
         @ApiModelProperty(value = "组词例句")
         private ExampleSentenceVO wordItemSentence;
-
-        @ApiModelProperty(value = "例句")
-        private String exampleSentence;
-
-        @ApiModelProperty(value = "例句拼音")
-        private String examplePinyin;
-
-        @ApiModelProperty(value = "例句翻译")
-        private List<TextTranslationVO> exampleTranslations;
-
-        @ApiModelProperty(value = "例句图片")
-        private String exampleImage;
 
         @ApiModelProperty(value = "组词排序权重（值大的排前面）")
         private Integer order;

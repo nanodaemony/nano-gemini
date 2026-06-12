@@ -5,6 +5,7 @@ import com.naon.grid.backend.rest.request.ExampleSentenceRequest;
 import com.naon.grid.backend.rest.request.TextTranslationRequest;
 import com.naon.grid.backend.rest.vo.CharCharacterVO;
 import com.naon.grid.backend.service.character.dto.CharCharacterDto;
+import com.naon.grid.backend.service.character.dto.CharComparisonDto;
 import com.naon.grid.backend.service.character.dto.CharWordDto;
 import com.naon.grid.backend.service.common.dto.ExampleSentenceDto;
 import org.junit.jupiter.api.Test;
@@ -112,5 +113,20 @@ class CharCharacterWrapperTest {
         assertNotNull(vo.getWords().get(0).getWordItemSentence());
         assertEquals(Long.valueOf(88L), vo.getWords().get(0).getWordItemSentence().getId());
         assertEquals("你好，我叫小明。", vo.getWords().get(0).getWordItemSentence().getSentence());
+    }
+
+    @Test
+    void toVoPreservesNullComparisonIdForDraftComparison() {
+        CharCharacterDto dto = new CharCharacterDto();
+        CharComparisonDto comparisonDto = new CharComparisonDto();
+        comparisonDto.setId(null);
+        comparisonDto.setComparisonChar("您");
+        dto.setComparisons(Collections.singletonList(comparisonDto));
+
+        CharCharacterVO vo = CharCharacterWrapper.toVO(dto);
+
+        assertEquals(1, vo.getComparisons().size());
+        assertEquals(null, vo.getComparisons().get(0).getId());
+        assertEquals("您", vo.getComparisons().get(0).getComparisonChar());
     }
 }

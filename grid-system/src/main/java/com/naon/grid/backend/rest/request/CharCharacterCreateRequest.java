@@ -86,8 +86,7 @@ public class CharCharacterCreateRequest implements Serializable {
     @Setter
     public static class CharWordRequest implements Serializable {
 
-        @NotBlank
-        @ApiModelProperty(value = "组词ID, 新增时不传 更新时传", required = true)
+        @ApiModelProperty(value = "组词ID, 新增时不传 更新时传")
         private Integer id;
 
         @NotBlank

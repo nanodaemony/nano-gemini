@@ -23,7 +23,7 @@ public class CharWordDto implements Serializable {
     @ApiModelProperty(value = "组词")
     private String wordItem;
 
-    @ApiModelProperty(value = "HSK等级，值为数字字符串\"1\"-\"9\"")
+    @ApiModelProperty(value = "HSK等级")
     private String level;
 
     @ApiModelProperty(value = "拼音")
@@ -34,18 +34,6 @@ public class CharWordDto implements Serializable {
 
     @ApiModelProperty(value = "组词翻译")
     private List<TextTranslation> wordItemTranslations;
-
-    @ApiModelProperty(value = "例句")
-    private String exampleSentence;
-
-    @ApiModelProperty(value = "例句拼音")
-    private String examplePinyin;
-
-    @ApiModelProperty(value = "例句翻译")
-    private List<TextTranslation> exampleTranslations;
-
-    @ApiModelProperty(value = "例句图片")
-    private String exampleImage;
 
     @ApiModelProperty(value = "组词例句")
     private ExampleSentenceDto wordItemSentence;

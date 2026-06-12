@@ -16,7 +16,6 @@ import com.naon.grid.backend.rest.wrapper.CharCharacterWrapper;
 import com.naon.grid.backend.service.character.CharCharacterService;
 import com.naon.grid.backend.service.character.dto.CharCharacterDto;
 import com.naon.grid.backend.service.character.dto.CharCharacterQueryCriteria;
-import com.naon.grid.backend.service.character.dto.CharDiscriminationDto;
 import com.naon.grid.backend.service.character.dto.CharWordDto;
 import com.naon.grid.domain.common.TextTranslation;
 import com.naon.grid.utils.PageResult;

@@ -104,7 +104,7 @@ public class CharCharacterServiceImpl implements CharCharacterService {
             throw new BadRequestException("草稿内容不存在");
         }
         if (draft.getCharacter() != null)             dto.setCharacter(draft.getCharacter());
-        if (draft.getLevel() != null)                 dto.setLevel(draft.getLevel());
+        if (draft.getHskLevel() != null)                 dto.setHskLevel(draft.getHskLevel());
         if (draft.getPinyin() != null)                dto.setPinyin(draft.getPinyin());
         if (draft.getAudioId() != null)               dto.setAudioId(draft.getAudioId());
         if (draft.getTraditional() != null)           dto.setTraditional(draft.getTraditional());
@@ -414,7 +414,7 @@ public class CharCharacterServiceImpl implements CharCharacterService {
         dto.setId(word.getId());
         dto.setCharId(word.getCharId());
         dto.setWordItem(word.getWordItem());
-        dto.setLevel(word.getLevel());
+        dto.setHskLevel(word.getLevel());
         dto.setPinyin(word.getPinyin());
         dto.setPartOfSpeech(word.getPartOfSpeech());
         dto.setWordItemTranslations(JsonUtils.parseTranslationList(word.getWordItemTranslations()));
@@ -435,7 +435,7 @@ public class CharCharacterServiceImpl implements CharCharacterService {
 
     private void updateWord(CharWord entity, CharWordDto dto) {
         entity.setWordItem(dto.getWordItem());
-        entity.setLevel(dto.getLevel());
+        entity.setLevel(dto.getHskLevel());
         entity.setPinyin(dto.getPinyin());
         entity.setPartOfSpeech(dto.getPartOfSpeech());
         entity.setWordItemTranslations(JsonUtils.toTranslationJson(dto.getWordItemTranslations()));
@@ -458,7 +458,7 @@ public class CharCharacterServiceImpl implements CharCharacterService {
         CharWord entity = new CharWord();
         entity.setCharId(charId);
         entity.setWordItem(dto.getWordItem());
-        entity.setLevel(dto.getLevel());
+        entity.setLevel(dto.getHskLevel());
         entity.setPinyin(dto.getPinyin());
         entity.setPartOfSpeech(dto.getPartOfSpeech());
         entity.setWordItemTranslations(JsonUtils.toTranslationJson(dto.getWordItemTranslations()));
@@ -533,7 +533,7 @@ public class CharCharacterServiceImpl implements CharCharacterService {
         CharCharacterDto draftDto = JsonUtils.fromJson(charCharacter.getDraftContent(), CharCharacterDto.class);
 
         // Update main table fields (character字段不更新)
-        charCharacter.setLevel(draftDto.getLevel());
+        charCharacter.setLevel(draftDto.getHskLevel());
         charCharacter.setPinyin(draftDto.getPinyin());
         charCharacter.setAudioId(draftDto.getAudioId());
         charCharacter.setTraditional(draftDto.getTraditional());

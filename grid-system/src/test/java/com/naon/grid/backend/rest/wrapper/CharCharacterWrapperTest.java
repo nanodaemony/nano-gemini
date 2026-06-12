@@ -59,7 +59,7 @@ class CharCharacterWrapperTest {
         CharCharacterDto dto = CharCharacterWrapper.toDto(request);
 
         assertEquals("你", dto.getCharacter());
-        assertEquals("1", dto.getLevel());
+        assertEquals("1", dto.getHskLevel());
         assertEquals("nǐ", dto.getPinyin());
         assertEquals(Long.valueOf(12L), dto.getAudioId());
         assertEquals(Long.valueOf(3L), dto.getRadicalId());
@@ -72,7 +72,7 @@ class CharCharacterWrapperTest {
         CharWordDto wordDto = dto.getWords().get(0);
         assertEquals(Integer.valueOf(9), wordDto.getId());
         assertEquals("你好", wordDto.getWordItem());
-        assertEquals("1", wordDto.getLevel());
+        assertEquals("1", wordDto.getHskLevel());
         assertEquals(Integer.valueOf(7), wordDto.getWordOrder());
         assertNotNull(wordDto.getWordItemSentence());
         assertEquals(Long.valueOf(88L), wordDto.getWordItemSentence().getId());
@@ -84,7 +84,7 @@ class CharCharacterWrapperTest {
         CharCharacterDto dto = new CharCharacterDto();
         dto.setId(1);
         dto.setCharacter("你");
-        dto.setLevel("1");
+        dto.setHskLevel("1");
         dto.setRadicalId(3L);
         dto.setComponentCombination("亻 + 尔");
 
@@ -92,7 +92,7 @@ class CharCharacterWrapperTest {
         wordDto.setId(9);
         wordDto.setCharId(1);
         wordDto.setWordItem("你好");
-        wordDto.setLevel("1");
+        wordDto.setHskLevel("1");
         wordDto.setWordOrder(7);
 
         ExampleSentenceDto sentenceDto = new ExampleSentenceDto();

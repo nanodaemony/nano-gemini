@@ -39,7 +39,7 @@ public class CharCharacterWrapper {
     public static CharCharacterDto toDto(CharCharacterCreateRequest request) {
         CharCharacterDto dto = new CharCharacterDto();
         dto.setCharacter(request.getCharacter());
-        dto.setLevel(request.getHskLevel());
+        dto.setHskLevel(request.getHskLevel());
         dto.setPinyin(request.getPinyin());
         dto.setAudioId(request.getAudioId());
         dto.setTraditional(request.getTraditional());
@@ -83,7 +83,7 @@ public class CharCharacterWrapper {
         CharWordDto dto = new CharWordDto();
         dto.setId(request.getId());
         dto.setWordItem(request.getWordItem());
-        dto.setLevel(request.getHskLevel());
+        dto.setHskLevel(request.getHskLevel());
         dto.setPinyin(request.getPinyin());
         dto.setPartOfSpeech(request.getPartOfSpeech());
         dto.setWordItemTranslations(toTextTranslationList(request.getWordItemTranslations()));
@@ -115,7 +115,7 @@ public class CharCharacterWrapper {
         CharCharacterBaseVO vo = new CharCharacterBaseVO();
         vo.setId(dto.getId());
         vo.setCharacter(dto.getCharacter());
-        vo.setLevel(dto.getLevel());
+        vo.setLevel(dto.getHskLevel());
         vo.setPinyin(dto.getPinyin());
         vo.setAudioId(dto.getAudioId());
         vo.setTraditional(dto.getTraditional());
@@ -138,7 +138,7 @@ public class CharCharacterWrapper {
         CharCharacterVO vo = new CharCharacterVO();
         vo.setId(dto.getId());
         vo.setCharacter(dto.getCharacter());
-        vo.setLevel(dto.getLevel());
+        vo.setHskLevel(dto.getHskLevel());
         vo.setPinyin(dto.getPinyin());
         vo.setAudioId(dto.getAudioId());
         vo.setTraditional(dto.getTraditional());
@@ -191,7 +191,7 @@ public class CharCharacterWrapper {
         vo.setId(dto.getId());
         vo.setCharId(dto.getCharId());
         vo.setWordItem(dto.getWordItem());
-        vo.setLevel(dto.getLevel());
+        vo.setHskLevel(dto.getHskLevel());
         vo.setPinyin(dto.getPinyin());
         vo.setPartOfSpeech(dto.getPartOfSpeech());
         vo.setWordItemTranslations(toTextTranslationVOList(dto.getWordItemTranslations()));

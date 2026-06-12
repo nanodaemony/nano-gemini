@@ -65,7 +65,7 @@ public class AppCharCharacterController {
         AppCharCharacterBaseVO vo = new AppCharCharacterBaseVO();
         vo.setId(dto.getId());
         vo.setCharacter(dto.getCharacter());
-        vo.setLevel(dto.getLevel());
+        vo.setLevel(dto.getHskLevel());
         vo.setPinyin(dto.getPinyin());
         return vo;
     }
@@ -74,7 +74,7 @@ public class AppCharCharacterController {
         AppCharCharacterDetailVO vo = new AppCharCharacterDetailVO();
         vo.setId(dto.getId());
         vo.setCharacter(dto.getCharacter());
-        vo.setLevel(dto.getLevel());
+        vo.setLevel(dto.getHskLevel());
         vo.setPinyin(dto.getPinyin());
         if (dto.getAudioId() != null) {
             AudioResourceDto audioDto = audioResourceService.findById(dto.getAudioId());
@@ -121,7 +121,7 @@ public class AppCharCharacterController {
     private AppCharCharacterDetailVO.CharWordVO toWordVO(CharWordDto dto) {
         AppCharCharacterDetailVO.CharWordVO vo = new AppCharCharacterDetailVO.CharWordVO();
         vo.setWordItem(dto.getWordItem());
-        vo.setLevel(dto.getLevel());
+        vo.setLevel(dto.getHskLevel());
         vo.setPinyin(dto.getPinyin());
         vo.setPartOfSpeech(dto.getPartOfSpeech());
         vo.setWordItemTranslations(toTextTranslationVOList(dto.getWordItemTranslations()));

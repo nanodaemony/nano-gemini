@@ -20,7 +20,7 @@ public class CharCharacterDto extends BaseDTO implements Serializable {
     private String character;
 
     @ApiModelProperty(value = "HSK等级")
-    private String level;
+    private String hskLevel;
 
     @ApiModelProperty(value = "拼音")
     private String pinyin;

@@ -34,8 +34,8 @@ public class CharWord implements Serializable {
     @Column(name = "word_item", nullable = false, length = 50)
     private String wordItem;
 
-    @Column(name = "level", length = 20)
-    @ApiModelProperty(value = "HSK等级，值为数字字符串\"1\"-\"9\"")
+    @Column(name = "hsk_level", length = 20)
+    @ApiModelProperty(value = "HSK等级")
     private String level;
 
     @Column(name = "pinyin", length = 100)
@@ -47,20 +47,8 @@ public class CharWord implements Serializable {
     @Column(name = "word_item_translations", columnDefinition = "text")
     private String wordItemTranslations;
 
-    @Column(name = "example_sentence", columnDefinition = "text")
-    private String exampleSentence;
-
-    @Column(name = "example_pinyin", length = 500)
-    private String examplePinyin;
-
-    @Column(name = "example_translations", columnDefinition = "text")
-    private String exampleTranslations;
-
-    @Column(name = "example_image", length = 255)
-    private String exampleImage;
-
     @NotNull
-    @Column(name = "word_order", nullable = false)
+    @Column(name = "`order`", nullable = false)
     @ApiModelProperty(value = "组词排序权重（值大的排前面）")
     private Integer wordOrder = 0;
 

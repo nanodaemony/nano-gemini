@@ -1,14 +1,19 @@
 package com.naon.grid.backend.domain.character;
 
-import com.naon.grid.enums.StatusEnum;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.naon.grid.enums.StatusEnum;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
@@ -17,13 +22,13 @@ import java.sql.Timestamp;
 @Entity
 @Getter
 @Setter
-@Table(name = "char_discrimination")
-public class CharDiscrimination implements Serializable {
+@Table(name = "char_comparison")
+public class CharComparison implements Serializable {
 
     @Id
     @Column(name = "id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @ApiModelProperty(value = "辨析唯一ID", hidden = true)
+    @ApiModelProperty(value = "辨析记录ID", hidden = true)
     private Integer id;
 
     @NotNull
@@ -31,22 +36,22 @@ public class CharDiscrimination implements Serializable {
     private Integer charId;
 
     @NotBlank
-    @Column(name = "discrim_char", nullable = false, length = 10)
-    private String discrimChar;
+    @Column(name = "comparison_char", nullable = false, length = 10)
+    private String comparisonChar;
 
-    @Column(name = "discrim_pinyin", length = 100)
-    private String discrimPinyin;
+    @Column(name = "comparison_pinyin", length = 100)
+    private String comparisonPinyin;
 
-    @Column(name = "discrim_char_translations", columnDefinition = "text")
-    private String discrimCharTranslations;
+    @Column(name = "comparison_char_translations", columnDefinition = "text")
+    private String comparisonCharTranslations;
 
-    @Column(name = "comparison_translations", columnDefinition = "text")
-    private String comparisonTranslations;
+    @Column(name = "comparison_desc_translations", columnDefinition = "text")
+    private String comparisonDescTranslations;
 
     @NotNull
-    @Column(name = "discrimination_order", nullable = false)
+    @Column(name = "`order`", nullable = false)
     @ApiModelProperty(value = "辨析排序权重（值大的排前面）")
-    private Integer discriminationOrder = 0;
+    private Integer comparisonOrder = 0;
 
     @CreationTimestamp
     @Column(name = "create_time", updatable = false)

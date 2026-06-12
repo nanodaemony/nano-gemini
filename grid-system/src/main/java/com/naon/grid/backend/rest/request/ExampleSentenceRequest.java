@@ -12,6 +12,9 @@ import java.util.List;
 @Data
 public class ExampleSentenceRequest implements Serializable {
 
+    @ApiModelProperty("例句ID, 新增时不传, 更新时传")
+    private long id;
+
     @ApiModelProperty(value = "例句中文文案")
     private String sentence;
 

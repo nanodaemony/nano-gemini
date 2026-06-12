@@ -107,7 +107,7 @@ public class CharCharacterCreateRequest implements Serializable {
         private List<TextTranslationRequest> wordItemTranslations;
 
         @ApiModelProperty(value = "组词例句列表")
-        private List<ExampleSentenceRequest> sentenceContents;
+        private ExampleSentenceRequest sentenceContent;
 
         @ApiModelProperty(value = "组词排序权重（值大的排前面，不传默认 0）")
         private Integer order;

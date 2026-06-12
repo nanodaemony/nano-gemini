@@ -16,9 +16,6 @@ public class CharCharacterBaseVO implements Serializable {
     @ApiModelProperty(value = "汉字唯一ID")
     private Integer id;
 
-    @ApiModelProperty(value = "Excel中的序号")
-    private Integer sequenceNo;
-
     @ApiModelProperty(value = "汉字", required = true)
     private String character;
 
@@ -34,8 +31,14 @@ public class CharCharacterBaseVO implements Serializable {
     @ApiModelProperty(value = "繁体字")
     private String traditional;
 
+    @ApiModelProperty(value = "部首ID")
+    private Long radicalId;
+
     @ApiModelProperty(value = "部首")
     private String radical;
+
+    @ApiModelProperty(value = "部件组合")
+    private String componentCombination;
 
     @ApiModelProperty(value = "笔顺")
     private String stroke;

@@ -27,10 +27,10 @@ public class CharCharacterCreateRequest implements Serializable {
     private String traditional;
 
     @ApiModelProperty(value = "音频资源ID")
-    private long audioId;
+    private Long audioId;
 
     @ApiModelProperty(value = "部首ID")
-    private String radicalId;
+    private Long radicalId;
 
     @ApiModelProperty(value = "部首")
     private String radical;
@@ -86,8 +86,7 @@ public class CharCharacterCreateRequest implements Serializable {
     @Setter
     public static class CharWordRequest implements Serializable {
 
-        @NotBlank
-        @ApiModelProperty(value = "组词ID, 新增时不传 更新时传", required = true)
+        @ApiModelProperty(value = "组词ID, 新增时不传 更新时传")
         private Integer id;
 
         @NotBlank
@@ -106,7 +105,7 @@ public class CharCharacterCreateRequest implements Serializable {
         @ApiModelProperty(value = "组词的翻译")
         private List<TextTranslationRequest> wordItemTranslations;
 
-        @ApiModelProperty(value = "组词例句列表")
+        @ApiModelProperty(value = "组词例句")
         private ExampleSentenceRequest sentenceContent;
 
         @ApiModelProperty(value = "组词排序权重（值大的排前面，不传默认 0）")

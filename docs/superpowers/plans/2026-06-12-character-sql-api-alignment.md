@@ -23,19 +23,19 @@
 
 ### Create
 
-- `grid-system/src/main/java/com/naon/grid/backend/domain/common/ExampleSentence.java`  
+- `grid-system/src/main/java/com/naon/grid/backend/domain/common/ExampleSentence.java`
   JPA entity for `example_sentence`.
-- `grid-system/src/main/java/com/naon/grid/backend/repo/common/ExampleSentenceRepository.java`  
+- `grid-system/src/main/java/com/naon/grid/backend/repo/common/ExampleSentenceRepository.java`
   Repository queries by `bizType`, `bizId`, and `status`.
-- `grid-system/src/main/java/com/naon/grid/backend/service/common/dto/ExampleSentenceDto.java`  
+- `grid-system/src/main/java/com/naon/grid/backend/service/common/dto/ExampleSentenceDto.java`
   Service DTO for example sentence records.
-- `grid-system/src/main/java/com/naon/grid/backend/service/common/ExampleSentenceService.java`  
+- `grid-system/src/main/java/com/naon/grid/backend/service/common/ExampleSentenceService.java`
   Reusable service boundary.
-- `grid-system/src/main/java/com/naon/grid/backend/service/common/impl/ExampleSentenceServiceImpl.java`  
+- `grid-system/src/main/java/com/naon/grid/backend/service/common/impl/ExampleSentenceServiceImpl.java`
   Implements one-active-sentence synchronization.
-- `grid-system/src/test/java/com/naon/grid/backend/service/common/impl/ExampleSentenceServiceImplTest.java`  
+- `grid-system/src/test/java/com/naon/grid/backend/service/common/impl/ExampleSentenceServiceImplTest.java`
   Unit tests for reusable example sentence behavior.
-- `grid-system/src/test/java/com/naon/grid/backend/rest/wrapper/CharCharacterWrapperTest.java`  
+- `grid-system/src/test/java/com/naon/grid/backend/rest/wrapper/CharCharacterWrapperTest.java`
   Unit tests for new character request/response mapping.
 
 ### Rename / Replace
@@ -46,29 +46,29 @@
 
 ### Modify
 
-- `grid-system/src/main/java/com/naon/grid/backend/domain/character/CharCharacter.java`  
+- `grid-system/src/main/java/com/naon/grid/backend/domain/character/CharCharacter.java`
   Align column names and add `radicalId`, `componentCombination`.
-- `grid-system/src/main/java/com/naon/grid/backend/domain/character/CharWord.java`  
+- `grid-system/src/main/java/com/naon/grid/backend/domain/character/CharWord.java`
   Align `hsk_level`, ``order`` and remove old inline sentence columns.
-- `grid-system/src/main/java/com/naon/grid/backend/rest/request/ExampleSentenceRequest.java`  
+- `grid-system/src/main/java/com/naon/grid/backend/rest/request/ExampleSentenceRequest.java`
   Change `id` from `long` to `Long`.
-- `grid-system/src/main/java/com/naon/grid/backend/rest/request/CharCharacterCreateRequest.java`  
+- `grid-system/src/main/java/com/naon/grid/backend/rest/request/CharCharacterCreateRequest.java`
   Fix `CharWordRequest.id` validation and ensure `sentenceContent` is singular.
-- `grid-system/src/main/java/com/naon/grid/backend/rest/vo/ExampleSentenceVO.java`  
+- `grid-system/src/main/java/com/naon/grid/backend/rest/vo/ExampleSentenceVO.java`
   Prefer `Long id` and `List<TextTranslationVO>` for response semantics.
-- `grid-system/src/main/java/com/naon/grid/backend/rest/vo/CharCharacterVO.java`  
+- `grid-system/src/main/java/com/naon/grid/backend/rest/vo/CharCharacterVO.java`
   Keep `wordItemSentence` singular and map new main fields.
-- `grid-system/src/main/java/com/naon/grid/backend/rest/vo/CharCharacterBaseVO.java`  
+- `grid-system/src/main/java/com/naon/grid/backend/rest/vo/CharCharacterBaseVO.java`
   Add list-visible new main fields.
-- `grid-system/src/main/java/com/naon/grid/backend/service/character/dto/CharCharacterDto.java`  
+- `grid-system/src/main/java/com/naon/grid/backend/service/character/dto/CharCharacterDto.java`
   Add `radicalId`, `componentCombination`, and use comparison DTO list.
-- `grid-system/src/main/java/com/naon/grid/backend/service/character/dto/CharWordDto.java`  
+- `grid-system/src/main/java/com/naon/grid/backend/service/character/dto/CharWordDto.java`
   Remove old inline example fields and add `ExampleSentenceDto wordItemSentence`.
-- `grid-system/src/main/java/com/naon/grid/backend/rest/wrapper/CharCharacterWrapper.java`  
+- `grid-system/src/main/java/com/naon/grid/backend/rest/wrapper/CharCharacterWrapper.java`
   Map request/DTO/VO fields, including singular example sentence.
-- `grid-system/src/main/java/com/naon/grid/backend/service/character/impl/CharCharacterServiceImpl.java`  
+- `grid-system/src/main/java/com/naon/grid/backend/service/character/impl/CharCharacterServiceImpl.java`
   Synchronize new schema, comparison records, word records, and example sentences.
-- `grid-system/src/main/java/com/naon/grid/backend/service/character/mapstruct/CharCharacterMapper.java`  
+- `grid-system/src/main/java/com/naon/grid/backend/service/character/mapstruct/CharCharacterMapper.java`
   Keep translation helpers compatible with renamed columns.
 
 ---

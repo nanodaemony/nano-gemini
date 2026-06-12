@@ -24,38 +24,40 @@ public class CharCharacter extends BaseEntity implements Serializable {
     @ApiModelProperty(value = "汉字唯一ID", hidden = true)
     private Integer id;
 
-    @Column(name = "sequence_no")
-    @ApiModelProperty(value = "Excel中的序号")
-    private Integer sequenceNo;
-
     @NotBlank
-    @Column(name = "`character`", nullable = false, length = 10)
+    @Column(name = "`character`", nullable = false, length = 16)
     private String character;
 
-    @Column(name = "level", length = 20)
-    @ApiModelProperty(value = "HSK等级，值为数字字符串\"1\"-\"9\"")
+    @Column(name = "hsk_level", length = 20)
+    @ApiModelProperty(value = "HSK等级")
     private String level;
 
-    @Column(name = "pinyin", length = 100)
+    @Column(name = "pinyin", length = 32)
     private String pinyin;
+
+    @Column(name = "traditional", length = 16)
+    private String traditional;
 
     @Column(name = "audio_id")
     private Long audioId;
 
-    @Column(name = "traditional", length = 10)
-    private String traditional;
-
-    @Column(name = "radical", length = 10)
+    @Column(name = "radical", length = 16)
     private String radical;
 
-    @Column(name = "stroke", length = 4096)
-    private String stroke;
+    @Column(name = "radical_id")
+    private Long radicalId;
+
+    @Column(name = "component_combination", length = 64)
+    private String componentCombination;
 
     @Column(name = "char_desc", length = 1024)
     private String charDesc;
 
-    @Column(name = "desc_translations", columnDefinition = "text")
+    @Column(name = "char_desc_translations", columnDefinition = "text")
     private String descTranslations;
+
+    @Column(name = "stroke", length = 4096)
+    private String stroke;
 
     @Column(name = "status")
     @ApiModelProperty(value = "状态: 1=可用, 0=不可用")
@@ -69,7 +71,7 @@ public class CharCharacter extends BaseEntity implements Serializable {
     @ApiModelProperty(value = "编辑状态: draft=草稿, reviewed=已审核")
     private String editStatus = EditStatusEnum.DRAFT.getCode();
 
-    @Column(name = "draft_content", columnDefinition = "json")
+    @Column(name = "draft_content", columnDefinition = "text")
     @ApiModelProperty(value = "草稿内容JSON（包含主表和子表）")
     private String draftContent;
 }

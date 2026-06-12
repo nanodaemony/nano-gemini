@@ -1,5 +1,6 @@
-package com.naon.grid.backend.rest.vo;
+package com.naon.grid.backend.service.common.dto;
 
+import com.naon.grid.domain.common.TextTranslation;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.Setter;
@@ -8,15 +9,18 @@ import java.io.Serializable;
 import java.sql.Timestamp;
 import java.util.List;
 
-/**
- * 例句信息VO
- */
 @Getter
 @Setter
-public class ExampleSentenceVO implements Serializable {
+public class ExampleSentenceDto implements Serializable {
 
     @ApiModelProperty(value = "例句ID")
     private Long id;
+
+    @ApiModelProperty(value = "业务类型")
+    private String bizType;
+
+    @ApiModelProperty(value = "业务ID")
+    private Long bizId;
 
     @ApiModelProperty(value = "例句中文文案")
     private String sentence;
@@ -28,7 +32,7 @@ public class ExampleSentenceVO implements Serializable {
     private Long audioId;
 
     @ApiModelProperty(value = "例句外文翻译")
-    private List<TextTranslationVO> translations;
+    private List<TextTranslation> translations;
 
     @ApiModelProperty(value = "例句图片ID")
     private Long imageId;
@@ -41,4 +45,7 @@ public class ExampleSentenceVO implements Serializable {
 
     @ApiModelProperty(value = "更新时间")
     private Timestamp updateTime;
+
+    @ApiModelProperty(value = "有效状态")
+    private Integer status;
 }

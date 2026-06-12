@@ -29,10 +29,10 @@ public class CharCharacterVO implements Serializable {
     private String traditional;
 
     @ApiModelProperty(value = "读音音频ID")
-    private long audioId;
+    private Long audioId;
 
     @ApiModelProperty(value = "部首ID")
-    private long radicalId;
+    private Long radicalId;
 
     @ApiModelProperty(value = "部首")
     private String radical;
@@ -80,7 +80,7 @@ public class CharCharacterVO implements Serializable {
     public static class CharComparisonVO implements Serializable {
 
         @ApiModelProperty(value = "辨析ID")
-        private int id;
+        private Integer id;
 
         @ApiModelProperty(value = "辨析汉字")
         private String comparisonChar;

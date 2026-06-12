@@ -12,8 +12,8 @@ import java.util.List;
 @Data
 public class ExampleSentenceRequest implements Serializable {
 
-    @ApiModelProperty("例句ID, 新增时不传, 更新时传")
-    private long id;
+    @ApiModelProperty(value = "例句ID, 新增时不传, 更新时传")
+    private Long id;
 
     @ApiModelProperty(value = "例句中文文案")
     private String sentence;
@@ -22,15 +22,15 @@ public class ExampleSentenceRequest implements Serializable {
     private String pinyin;
 
     @ApiModelProperty(value = "例句音频资源ID")
-    private long audioId;
+    private Long audioId;
 
     @ApiModelProperty(value = "例句外文翻译")
     private List<TextTranslationRequest> translations;
 
     @ApiModelProperty(value = "例句图片ID")
-    private long imageId;
+    private Long imageId;
 
     @ApiModelProperty(value = "排序权重")
-    private int order;
+    private Integer order;
 
 }

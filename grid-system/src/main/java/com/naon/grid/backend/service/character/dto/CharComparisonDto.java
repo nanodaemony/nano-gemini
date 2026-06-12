@@ -11,25 +11,25 @@ import java.util.List;
 
 @Getter
 @Setter
-public class CharDiscriminationDto implements Serializable {
+public class CharComparisonDto implements Serializable {
 
-    @ApiModelProperty(value = "辨析唯一ID")
+    @ApiModelProperty(value = "辨析ID")
     private Integer id;
 
     @ApiModelProperty(value = "汉字ID")
     private Integer charId;
 
     @ApiModelProperty(value = "辨析汉字")
-    private String discrimChar;
+    private String comparisonChar;
 
     @ApiModelProperty(value = "辨析拼音")
-    private String discrimPinyin;
+    private String comparisonPinyin;
 
     @ApiModelProperty(value = "辨析汉字翻译")
-    private List<TextTranslation> discrimCharTranslations;
+    private List<TextTranslation> comparisonCharTranslations;
 
-    @ApiModelProperty(value = "对比翻译")
-    private List<TextTranslation> comparisonTranslations;
+    @ApiModelProperty(value = "对比辨析说明外文翻译")
+    private List<TextTranslation> comparisonDescTranslations;
 
     @ApiModelProperty(value = "创建时间")
     private Timestamp createTime;
@@ -38,7 +38,7 @@ public class CharDiscriminationDto implements Serializable {
     private Timestamp updateTime;
 
     @ApiModelProperty(value = "辨析排序权重（值大的排前面）")
-    private Integer discriminationOrder;
+    private Integer order;
 
     @ApiModelProperty(value = "状态: 1=可用, 0=不可用")
     private Integer status;

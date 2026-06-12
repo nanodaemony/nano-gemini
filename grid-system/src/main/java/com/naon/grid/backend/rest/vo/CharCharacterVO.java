@@ -134,6 +134,18 @@ public class CharCharacterVO implements Serializable {
         @ApiModelProperty(value = "组词例句")
         private ExampleSentenceVO wordItemSentence;
 
+        @ApiModelProperty(value = "例句")
+        private String exampleSentence;
+
+        @ApiModelProperty(value = "例句拼音")
+        private String examplePinyin;
+
+        @ApiModelProperty(value = "例句翻译")
+        private List<TextTranslationVO> exampleTranslations;
+
+        @ApiModelProperty(value = "例句图片")
+        private String exampleImage;
+
         @ApiModelProperty(value = "组词排序权重（值大的排前面）")
         private Integer order;
 

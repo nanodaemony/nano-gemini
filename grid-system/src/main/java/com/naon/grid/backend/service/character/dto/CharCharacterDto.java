@@ -34,8 +34,14 @@ public class CharCharacterDto extends BaseDTO implements Serializable {
     @ApiModelProperty(value = "繁体字")
     private String traditional;
 
+    @ApiModelProperty(value = "部首ID")
+    private Long radicalId;
+
     @ApiModelProperty(value = "部首")
     private String radical;
+
+    @ApiModelProperty(value = "部件组合")
+    private String componentCombination;
 
     @ApiModelProperty(value = "笔画")
     private String stroke;

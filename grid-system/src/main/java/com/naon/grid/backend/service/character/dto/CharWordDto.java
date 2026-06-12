@@ -1,5 +1,6 @@
 package com.naon.grid.backend.service.character.dto;
 
+import com.naon.grid.backend.service.common.dto.ExampleSentenceDto;
 import com.naon.grid.domain.common.TextTranslation;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
@@ -45,6 +46,9 @@ public class CharWordDto implements Serializable {
 
     @ApiModelProperty(value = "例句图片")
     private String exampleImage;
+
+    @ApiModelProperty(value = "组词例句")
+    private ExampleSentenceDto wordItemSentence;
 
     @ApiModelProperty(value = "创建时间")
     private Timestamp createTime;

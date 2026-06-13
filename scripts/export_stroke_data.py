@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 将 hanzi-writer-data 的 JSON 笔顺文件导出为 SQL 语句。
-支持重复运行（REPLACE INTO），自动创建输出目录。
+自动创建输出目录。
 用法: python scripts/export_stroke_data.py
 """
 
@@ -32,7 +32,7 @@ def main():
             continue
         # 转义单引号
         stroke_escaped = stroke_data.replace("'", "''")
-        lines.append(f"REPLACE INTO `char_stroke` (`character`, `stroke`, `status`) VALUES ('{char_name}', '{stroke_escaped}', 1);")
+        lines.append(f"INSERT INTO `char_stroke` (`character`, `stroke`, `status`) VALUES ('{char_name}', '{stroke_escaped}', 1);")
 
     sql = "\n".join(lines) + "\n"
 

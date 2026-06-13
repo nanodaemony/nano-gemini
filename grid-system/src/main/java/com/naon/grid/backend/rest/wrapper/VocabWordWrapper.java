@@ -88,8 +88,6 @@ public class VocabWordWrapper {
         VocabWordBaseVO vo = new VocabWordBaseVO();
         vo.setId(dto.getId());
         vo.setWord(dto.getWord());
-        vo.setWordTraditional(dto.getWordTraditional());
-        vo.setPinyin(dto.getPinyin());
         vo.setAudioId(dto.getAudioId());
         vo.setHskLevel(dto.getHskLevel());
         vo.setPublishStatus(dto.getPublishStatus());

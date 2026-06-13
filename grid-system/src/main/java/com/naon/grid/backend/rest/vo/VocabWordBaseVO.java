@@ -17,17 +17,29 @@ public class VocabWordBaseVO implements Serializable {
     @ApiModelProperty(value = "词汇", required = true)
     private String word;
 
-    @ApiModelProperty(value = "繁体词汇")
-    private String wordTraditional;
-
-    @ApiModelProperty(value = "标准拼音（含声调）", required = true)
-    private String pinyin;
-
     @ApiModelProperty(value = "词汇读音音频资源ID")
     private Long audioId;
 
-    @ApiModelProperty(value = "HSK等级，值为数字字符串\"1\"-\"9\"")
+    @ApiModelProperty(value = "HSK等级")
     private String hskLevel;
+
+    @ApiModelProperty(value = "义项数量")
+    private int senseCount;
+
+    @ApiModelProperty(value = "结构数量")
+    private int structureCount;
+
+    @ApiModelProperty(value = "翻译状态: generated=已生成, not_generated=未生成")
+    private String translationStatus;
+
+    @ApiModelProperty(value = "拼音状态: generated=已生成, not_generated=未生成")
+    private String pinyinStatus;
+
+    @ApiModelProperty(value = "音频状态: generated=已生成, not_generated=未生成")
+    private String audioStatus;
+
+    @ApiModelProperty(value = "配图状态: generated=已生成, not_generated=未生成")
+    private String imageStatus;
 
     @ApiModelProperty(value = "发布状态: unpublished=未发布, published=已发布")
     private String publishStatus;

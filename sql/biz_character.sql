@@ -45,7 +45,7 @@ CREATE TABLE `char_comparison`  (
   `status` tinyint NOT NULL DEFAULT 1 COMMENT '有效状态, 1:有效 0:无效',
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `idx_char_id`(`char_id` ASC) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 14 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '汉字辨析表';
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '汉字辨析表';
 
 -- 汉字组词表
 -- 注：一个汉字可能有多个组词。组成的例句存放在例句表。
@@ -65,7 +65,7 @@ CREATE TABLE `char_word`  (
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `idx_char_id`(`char_id` ASC) USING BTREE,
   INDEX `idx_word_item`(`word_item` ASC) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 24 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '汉字组词表';
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '汉字组词表';
 
 -- 汉字部首表
 CREATE TABLE `char_radical` (

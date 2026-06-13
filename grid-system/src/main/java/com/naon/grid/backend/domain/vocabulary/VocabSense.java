@@ -42,36 +42,16 @@ public class VocabSense implements Serializable {
     @ApiModelProperty(value = "中文释义音频资源ID")
     private Long defAudioId;
 
-    @Column(name = "def_image")
+    @Column(name = "def_image_id")
     @ApiModelProperty(value = "中文释义图片资源ID")
-    private Long defImage;
+    private Long defImageId;
 
-    @Column(name = "translations", columnDefinition = "json")
+    @Column(name = "def_translations", columnDefinition = "json")
     @ApiModelProperty(value = "外文翻译列表")
-    private String translations;
-
-    @Column(name = "synonyms", columnDefinition = "text")
-    @ApiModelProperty(value = "近义词列表")
-    private String synonyms;
-
-    @Column(name = "antonyms", columnDefinition = "text")
-    @ApiModelProperty(value = "反义词列表")
-    private String antonyms;
-
-    @Column(name = "related_forward", columnDefinition = "text")
-    @ApiModelProperty(value = "正序关联词汇")
-    private String relatedForward;
-
-    @Column(name = "related_backward", columnDefinition = "text")
-    @ApiModelProperty(value = "逆序关联词汇")
-    private String relatedBackward;
-
-    @Column(name = "related_other", columnDefinition = "text")
-    @ApiModelProperty(value = "其他关联词汇")
-    private String relatedOther;
+    private String defTranslations;
 
     @NotNull
-    @Column(name = "sense_order", nullable = false)
+    @Column(name = "`order`", nullable = false)
     @ApiModelProperty(value = "义项排序权重")
     private Integer senseOrder = 0;
 

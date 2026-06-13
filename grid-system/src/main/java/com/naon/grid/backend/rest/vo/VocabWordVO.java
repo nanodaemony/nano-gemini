@@ -90,7 +90,7 @@ public class VocabWordVO implements Serializable {
         @ApiModelProperty(value = "逆序关联词汇")
         private List<VocabRelationVO> reverseSequentialWords;
 
-        @ApiModelProperty(value = "逆序关联词汇")
+        @ApiModelProperty(value = "乱序关联词汇")
         private List<VocabRelationVO> jumbledWords;
 
         @ApiModelProperty(value = "搭配列表")

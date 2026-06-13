@@ -671,4 +671,41 @@ public class VocabWordServiceImpl implements VocabWordService {
         vocabWord.setPublishStatus(PublishStatusEnum.UNPUBLISHED.getCode());
         vocabWordRepository.save(vocabWord);
     }
+
+    @Override
+    public List<VocabWordDto> searchByWord(String word) {
+        // 1. 精确查询（findByWordAndStatus 通过方法名自动实现 word=? AND status=?）
+        List<VocabWord> words = vocabWordRepository.findByWordAndStatus(word, StatusEnum.ENABLED.getCode());
+
+        // 2. 过滤已发布的词汇
+        List<VocabWordDto> result = new ArrayList<>();
+        for (VocabWord vocabWord : words) {
+            if (!PublishStatusEnum.PUBLISHED.getCode().equals(vocabWord.getPublishStatus())) {
+                continue;
+            }
+
+            VocabWordDto dto = new VocabWordDto();
+            dto.setId(vocabWord.getId());
+            dto.setWord(vocabWord.getWord());
+
+            // 3. 查询义项（已发布词汇的义项已写回 vocab_sense 表）
+            List<VocabSense> senses = vocabSenseRepository.findByWordIdAndStatus(
+                    vocabWord.getId(), StatusEnum.ENABLED.getCode());
+
+            List<VocabSenseDto> senseDtos = new ArrayList<>();
+            for (VocabSense sense : senses) {
+                VocabSenseDto senseDto = new VocabSenseDto();
+                senseDto.setId(sense.getId());
+                senseDto.setPartOfSpeech(sense.getPartOfSpeech());
+                senseDto.setChineseDef(sense.getChineseDef());
+                senseDto.setDefTranslations(JsonUtils.parseTranslationList(sense.getDefTranslations()));
+                senseDtos.add(senseDto);
+            }
+            dto.setSenses(senseDtos);
+
+            result.add(dto);
+        }
+
+        return result;
+    }
 }

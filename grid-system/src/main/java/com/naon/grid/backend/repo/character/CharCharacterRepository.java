@@ -30,4 +30,22 @@ public interface CharCharacterRepository extends JpaRepository<CharCharacter, In
      */
     @Query("SELECT c FROM CharCharacter c WHERE c.character LIKE %:blurry% AND c.status = :status AND c.publishStatus = :publishStatus")
     List<CharCharacter> findByCharacterContainingAndStatusAndPublishStatus(@Param("blurry") String blurry, @Param("status") Integer status, @Param("publishStatus") String publishStatus);
+
+    /**
+     * 根据 HSK 等级查询已发布的汉字
+     *
+     * @param level         HSK等级（对应实体字段 level，数据库列 hsk_level）
+     * @param status        有效状态
+     * @param publishStatus 发布状态
+     * @return 匹配的汉字列表
+     */
+    List<CharCharacter> findByLevelAndStatusAndPublishStatus(String level, Integer status, String publishStatus);
+
+    /**
+     * 根据 ID 列表批量查询汉字（结果不保证顺序，需调用方自行排序）
+     *
+     * @param ids 汉字ID列表
+     * @return 匹配的汉字列表
+     */
+    List<CharCharacter> findByIdIn(List<Integer> ids);
 }

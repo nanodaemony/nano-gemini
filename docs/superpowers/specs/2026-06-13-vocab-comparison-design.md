@@ -53,7 +53,7 @@
 | group_id | bigint FK | 所属辨析组 ID |
 | role | varchar(20) | `teacher`=老师 / `student`=学生 |
 | content | varchar(1024) | 中文对话内容 |
-| example_sentence_id | bigint | 关联 `example_sentence` 表，存储翻译/拼音/音频等富媒体内容 |
+| example_sentence_id | bigint (nullable) | 关联 `example_sentence` 表，存储翻译/拼音/音频等富媒体内容（发布时回填） |
 | order | int | 组内排序权重 |
 | status | tinyint | `1`=有效 / `0`=无效 |
 | create_time / update_time | datetime | — |

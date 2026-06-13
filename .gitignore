@@ -86,3 +86,5 @@ app/android/.idea/
 
 # Compiled docs
 docs/_build/
+# Generated data import SQL
+sql/*_data.sql

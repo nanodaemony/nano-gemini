@@ -91,5 +91,6 @@ CREATE TABLE `char_stroke` (
     `update_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     `status` TINYINT NOT NULL DEFAULT 1 COMMENT '有效状态：1-有效，0-无效',
     PRIMARY KEY (`id`),
-    INDEX `idx_character` (`character`)
+    INDEX `idx_character` (`character`),
+    UNIQUE KEY `uk_character` (`character`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='汉字笔顺表';

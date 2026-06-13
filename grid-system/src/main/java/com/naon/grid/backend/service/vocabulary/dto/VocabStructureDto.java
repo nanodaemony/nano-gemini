@@ -1,10 +1,11 @@
 package com.naon.grid.backend.service.vocabulary.dto;
 
+import com.naon.grid.backend.service.common.dto.ExampleSentenceDto;
+import com.naon.grid.domain.common.TextTranslation;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.Setter;
 import com.naon.grid.base.BaseDTO;
-import com.naon.grid.domain.common.TextTranslation;
 import java.io.Serializable;
 import java.util.List;
 
@@ -33,8 +34,8 @@ public class VocabStructureDto extends BaseDTO implements Serializable {
     @ApiModelProperty(value = "搭配排序权重")
     private Integer structureOrder;
 
-    @ApiModelProperty(value = "例句列表")
-    private List<VocabExampleDto> examples;
+    @ApiModelProperty(value = "结构例句列表（通过通用例句表存储）")
+    private List<ExampleSentenceDto> structureSentences;
 
     @ApiModelProperty(value = "状态: 1=可用, 0=不可用")
     private Integer status;

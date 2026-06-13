@@ -93,3 +93,21 @@ CREATE TABLE `char_stroke` (
     INDEX `idx_character` (`character`),
     UNIQUE KEY `uk_character` (`character`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='汉字笔顺表';
+
+-- 汉字书表
+-- 注：一本书对应一条数据，汉字来源通过 hsk_level 或 word_ids 两种方式。
+CREATE TABLE `char_book` (
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '汉字书ID',
+  `type` varchar(32) NOT NULL COMMENT '汉字书类型, 参考枚举：CharBookTypeEnum',
+  `name` varchar(32) NOT NULL COMMENT '汉字书名称',
+  `sub_name` varchar(32) NOT NULL COMMENT '汉字书子名称',
+  `cover_image` varchar(512) NOT NULL COMMENT '汉字书封面图',
+  `desc` varchar(1024) DEFAULT NULL COMMENT '汉字书描述',
+  `hsk_level` varchar(32) DEFAULT NULL COMMENT 'HSK等级(如果有等级则按照等级去检索汉字)',
+  `word_ids` text DEFAULT NULL COMMENT '汉字ID列表(可能为空，此时使用hsk_level查询)',
+  `order` int DEFAULT 0 COMMENT '排序(值大的排前面)',
+  `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  `status` tinyint NOT NULL DEFAULT 1 COMMENT '有效状态, 1:有效 0:无效',
+  PRIMARY KEY (`id`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '汉字书表';

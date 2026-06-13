@@ -8,6 +8,7 @@ import com.naon.grid.backend.rest.request.VocabWordQueryRequest;
 import com.naon.grid.backend.rest.vo.ExampleSentenceVO;
 import com.naon.grid.backend.rest.vo.TextTranslationVO;
 import com.naon.grid.backend.rest.vo.VocabRelationVO;
+import com.naon.grid.backend.rest.vo.VocabWordBaseSearchVO;
 import com.naon.grid.backend.rest.vo.VocabWordBaseVO;
 import com.naon.grid.backend.rest.vo.VocabWordVO;
 import com.naon.grid.backend.service.common.dto.ExampleSentenceDto;
@@ -139,6 +140,35 @@ public class VocabWordWrapper {
         vo.setUpdateBy(dto.getUpdateBy());
         vo.setCreateTime(dto.getCreateTime());
         vo.setUpdateTime(dto.getUpdateTime());
+        return vo;
+    }
+
+    public static List<VocabWordBaseSearchVO> toSearchVOList(List<VocabWordDto> dtos) {
+        if (dtos == null) return Collections.emptyList();
+        return dtos.stream().map(VocabWordWrapper::toSearchVO).collect(Collectors.toList());
+    }
+
+    public static VocabWordBaseSearchVO toSearchVO(VocabWordDto dto) {
+        VocabWordBaseSearchVO vo = new VocabWordBaseSearchVO();
+        vo.setId(dto.getId());
+        vo.setWord(dto.getWord());
+        vo.setSenses(toSenseSearchItemVOList(dto.getSenses()));
+        return vo;
+    }
+
+    private static List<VocabWordBaseSearchVO.VocabSenseSearchItemVO> toSenseSearchItemVOList(
+            List<VocabSenseDto> dtos) {
+        if (dtos == null) return Collections.emptyList();
+        return dtos.stream().map(VocabWordWrapper::toSenseSearchItemVO).collect(Collectors.toList());
+    }
+
+    private static VocabWordBaseSearchVO.VocabSenseSearchItemVO toSenseSearchItemVO(VocabSenseDto dto) {
+        VocabWordBaseSearchVO.VocabSenseSearchItemVO vo =
+                new VocabWordBaseSearchVO.VocabSenseSearchItemVO();
+        vo.setId(dto.getId());
+        vo.setPartOfSpeech(dto.getPartOfSpeech());
+        vo.setChineseDef(dto.getChineseDef());
+        vo.setDefTranslations(toTextTranslationVOList(dto.getDefTranslations()));
         return vo;
     }
 

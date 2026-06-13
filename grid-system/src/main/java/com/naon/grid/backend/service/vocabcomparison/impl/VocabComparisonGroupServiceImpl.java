@@ -102,7 +102,15 @@ public class VocabComparisonGroupServiceImpl implements VocabComparisonGroupServ
         // Draft or reviewed: deserialize draftContent JSON, overlay entity fields
         if (EditStatusEnum.DRAFT.getCode().equals(entity.getEditStatus())
                 || EditStatusEnum.REVIEWED.getCode().equals(entity.getEditStatus())) {
-            VocabComparisonGroupDto dto = JsonUtils.fromJson(entity.getDraftContent(), VocabComparisonGroupDto.class);
+            if (entity.getDraftContent() == null) {
+                throw new BadRequestException("草稿内容不存在");
+            }
+            VocabComparisonGroupDto dto;
+            try {
+                dto = JsonUtils.fromJson(entity.getDraftContent(), VocabComparisonGroupDto.class);
+            } catch (Exception e) {
+                throw new BadRequestException("草稿数据解析失败");
+            }
             if (dto == null) {
                 throw new BadRequestException("草稿内容不存在");
             }
@@ -160,10 +168,8 @@ public class VocabComparisonGroupServiceImpl implements VocabComparisonGroupServ
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void delete(Long id) {
-        VocabComparisonGroup entity = groupRepository.findById(id).orElse(null);
-        if (entity == null || entity.getId() == null) {
-            throw new EntityNotFoundException(VocabComparisonGroup.class, "id", String.valueOf(id));
-        }
+        VocabComparisonGroup entity = groupRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException(VocabComparisonGroup.class, "id", String.valueOf(id)));
         entity.setStatus(StatusEnum.DISABLED.getCode());
         groupRepository.save(entity);
     }
@@ -202,9 +208,14 @@ public class VocabComparisonGroupServiceImpl implements VocabComparisonGroupServ
         }
 
         // Parse draft content JSON
-        VocabComparisonGroupDto draftDto = JsonUtils.fromJson(entity.getDraftContent(), VocabComparisonGroupDto.class);
+        VocabComparisonGroupDto draftDto;
+        try {
+            draftDto = JsonUtils.fromJson(entity.getDraftContent(), VocabComparisonGroupDto.class);
+        } catch (Exception e) {
+            throw new BadRequestException("草稿数据解析失败");
+        }
         if (draftDto == null) {
-            throw new BadRequestException("草稿内容不存在");
+            throw new BadRequestException("草稿数据解析失败");
         }
 
         // Update group main table fields
@@ -415,9 +426,11 @@ public class VocabComparisonGroupServiceImpl implements VocabComparisonGroupServ
         // Soft delete old items
         List<VocabComparisonItem> existing = itemRepository.findByGroupIdAndStatus(
                 groupId, StatusEnum.ENABLED.getCode());
-        for (VocabComparisonItem item : existing) {
-            item.setStatus(StatusEnum.DISABLED.getCode());
-            itemRepository.save(item);
+        if (!existing.isEmpty()) {
+            for (VocabComparisonItem item : existing) {
+                item.setStatus(StatusEnum.DISABLED.getCode());
+            }
+            itemRepository.saveAll(existing);
         }
 
         // Create new items
@@ -457,9 +470,11 @@ public class VocabComparisonGroupServiceImpl implements VocabComparisonGroupServ
         List<VocabComparisonChat> existing = chatRepository.findByGroupIdAndStatus(
                 groupId, StatusEnum.ENABLED.getCode());
         List<Long> oldChatIds = existing.stream().map(VocabComparisonChat::getId).collect(Collectors.toList());
-        for (VocabComparisonChat chat : existing) {
-            chat.setStatus(StatusEnum.DISABLED.getCode());
-            chatRepository.save(chat);
+        if (!existing.isEmpty()) {
+            for (VocabComparisonChat chat : existing) {
+                chat.setStatus(StatusEnum.DISABLED.getCode());
+            }
+            chatRepository.saveAll(existing);
         }
         // Disable example_sentences for old chats
         if (!oldChatIds.isEmpty()) {

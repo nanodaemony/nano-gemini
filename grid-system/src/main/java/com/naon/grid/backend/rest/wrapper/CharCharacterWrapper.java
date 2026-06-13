@@ -123,6 +123,11 @@ public class CharCharacterWrapper {
         vo.setComponentCombination(dto.getComponentCombination());
         vo.setCharDesc(dto.getCharDesc());
         vo.setDescTranslations(toTextTranslationVOList(dto.getDescTranslations()));
+        vo.setComparisonCount(dto.getComparisonCount());
+        vo.setWordCount(dto.getWordCount());
+        vo.setTranslationStatus(dto.getTranslationStatus());
+        vo.setPinyinStatus(dto.getPinyinStatus());
+        vo.setAudioStatus(dto.getAudioStatus());
         vo.setPublishStatus(dto.getPublishStatus());
         vo.setEditStatus(dto.getEditStatus());
         vo.setCreateBy(dto.getCreateBy());

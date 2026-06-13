@@ -13,6 +13,7 @@ CREATE TABLE `grammar_point` (
     `publish_status` VARCHAR(20) NOT NULL DEFAULT 'unpublished' COMMENT '发布状态：unpublished-未发布 published-已发布',
     `create_by` VARCHAR(255) DEFAULT NULL COMMENT '创建人',
     `update_by` VARCHAR(255) DEFAULT NULL COMMENT '更新人',
+    `audit_by` varchar(255) NULL DEFAULT NULL COMMENT '审核人',
     `create_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `update_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     `status` TINYINT NOT NULL DEFAULT 1 COMMENT '有效状态：1-有效，0-无效',

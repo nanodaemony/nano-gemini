@@ -18,6 +18,7 @@ CREATE TABLE `char_character`  (
   `draft_content` text NULL COMMENT '草稿内容JSON',
   `create_by` varchar(255) NULL DEFAULT NULL COMMENT '创建人',
   `update_by` varchar(255) NULL DEFAULT NULL COMMENT '更新人',
+  `audit_by` varchar(255) NULL DEFAULT NULL COMMENT '审核人',
   `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
   `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `edit_status` varchar(20) NULL DEFAULT 'draft' COMMENT '编辑状态: draft=草稿, reviewed=已审核',
@@ -82,7 +83,6 @@ CREATE TABLE `char_radical` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='汉字部首表';
 
 -- 汉字笔顺表
--- 注：存储 hanzi-writer 笔顺动画数据（JSON 格式），由脚本导入，为静态只读数据。
 CREATE TABLE `char_stroke` (
     `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '汉字笔顺ID',
     `character` VARCHAR(32) NOT NULL COMMENT '汉字',

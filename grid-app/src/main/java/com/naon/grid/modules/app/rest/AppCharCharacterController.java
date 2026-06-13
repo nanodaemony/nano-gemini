@@ -86,7 +86,6 @@ public class AppCharCharacterController {
         }
         vo.setTraditional(dto.getTraditional());
         vo.setRadical(dto.getRadical());
-        vo.setStroke(dto.getStroke());
         vo.setCharDesc(dto.getCharDesc());
         vo.setDescTranslations(toTextTranslationVOList(dto.getDescTranslations()));
         vo.setDiscriminations(toDiscriminationVOList(dto.getComparisons()));

@@ -61,7 +61,51 @@ public class CharCharacterServiceImpl implements CharCharacterService {
             Predicate statusPredicate = criteriaBuilder.equal(root.get("status"), StatusEnum.ENABLED.getCode());
             return criteriaBuilder.and(basePredicate, statusPredicate);
         }, pageable);
-        return PageUtil.toPage(page.map(this::toDtoWithDraftOverlay));
+        PageResult<CharCharacterDto> pageResult = PageUtil.toPage(page.map(this::toDtoWithDraftOverlay));
+        populateCharListStats(pageResult.getContent());
+        return pageResult;
+    }
+
+    /**
+     * 批量填充列表统计数据和状态：辨析数、组词数、翻译/拼音/音频状态
+     */
+    private void populateCharListStats(List<CharCharacterDto> dtos) {
+        if (dtos == null || dtos.isEmpty()) return;
+
+        List<Integer> ids = dtos.stream().map(CharCharacterDto::getId).collect(Collectors.toList());
+
+        Map<Integer, Long> comparisonCountMap = charComparisonRepository
+                .countByCharIdInGroupByCharId(ids, StatusEnum.ENABLED.getCode())
+                .stream()
+                .collect(Collectors.toMap(
+                        row -> (Integer) row[0],
+                        row -> (Long) row[1]
+                ));
+
+        Map<Integer, Long> wordCountMap = charWordRepository
+                .countByCharIdInGroupByCharId(ids, StatusEnum.ENABLED.getCode())
+                .stream()
+                .collect(Collectors.toMap(
+                        row -> (Integer) row[0],
+                        row -> (Long) row[1]
+                ));
+
+        for (CharCharacterDto dto : dtos) {
+            dto.setComparisonCount(comparisonCountMap.getOrDefault(dto.getId(), 0L).intValue());
+            dto.setWordCount(wordCountMap.getOrDefault(dto.getId(), 0L).intValue());
+            dto.setTranslationStatus(
+                dto.getDescTranslations() != null && !dto.getDescTranslations().isEmpty()
+                    ? "generated" : "not_generated"
+            );
+            dto.setPinyinStatus(
+                dto.getPinyin() != null && !dto.getPinyin().isEmpty()
+                    ? "generated" : "not_generated"
+            );
+            dto.setAudioStatus(
+                dto.getAudioId() != null
+                    ? "generated" : "not_generated"
+            );
+        }
     }
 
     /**

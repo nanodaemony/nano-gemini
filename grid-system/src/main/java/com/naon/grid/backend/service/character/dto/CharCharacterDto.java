@@ -63,4 +63,19 @@ public class CharCharacterDto extends BaseDTO implements Serializable {
 
     @ApiModelProperty(value = "草稿内容JSON")
     private String draftContent;
+
+    @ApiModelProperty(value = "辨析个数")
+    private Integer comparisonCount;
+
+    @ApiModelProperty(value = "组词个数")
+    private Integer wordCount;
+
+    @ApiModelProperty(value = "翻译状态: generated=已生成, not_generated=未生成")
+    private String translationStatus;
+
+    @ApiModelProperty(value = "拼音状态: generated=已生成, not_generated=未生成")
+    private String pinyinStatus;
+
+    @ApiModelProperty(value = "音频状态: generated=已生成, not_generated=未生成")
+    private String audioStatus;
 }

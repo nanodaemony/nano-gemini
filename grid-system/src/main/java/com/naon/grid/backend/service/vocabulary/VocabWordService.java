@@ -5,6 +5,8 @@ import com.naon.grid.backend.service.vocabulary.dto.VocabWordQueryCriteria;
 import com.naon.grid.utils.PageResult;
 import org.springframework.data.domain.Pageable;
 
+import java.util.List;
+
 public interface VocabWordService {
 
     PageResult<VocabWordDto> queryAll(VocabWordQueryCriteria criteria, Pageable pageable);
@@ -36,4 +38,11 @@ public interface VocabWordService {
      * @param id 词汇ID
      */
     void offline(Integer id);
+
+    /**
+     * 根据词汇文本精确搜索已发布的词汇及其义项
+     * @param word 词汇文本（精确匹配）
+     * @return 匹配的已发布词汇列表，无匹配返回空列表
+     */
+    List<VocabWordDto> searchByWord(String word);
 }

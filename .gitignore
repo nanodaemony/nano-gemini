@@ -88,3 +88,6 @@ app/android/.idea/
 docs/_build/
 # Generated data import SQL
 sql/*_data.sql
+
+# 运行时PID文件
+application.pid

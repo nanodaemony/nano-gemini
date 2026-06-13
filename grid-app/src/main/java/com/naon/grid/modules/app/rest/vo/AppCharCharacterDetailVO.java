@@ -15,17 +15,14 @@ import java.util.List;
 @Setter
 public class AppCharCharacterDetailVO implements Serializable {
 
-    @ApiModelProperty(value = "汉字唯一ID")
+    @ApiModelProperty(value = "汉字ID")
     private Integer id;
-
-    @ApiModelProperty(value = "Excel中的序号")
-    private Integer sequenceNo;
 
     @ApiModelProperty(value = "汉字")
     private String character;
 
-    @ApiModelProperty(value = "HSK等级，值为数字字符串\"1\"-\"9\"")
-    private String level;
+    @ApiModelProperty(value = "HSK等级")
+    private String hskLevel;
 
     @ApiModelProperty(value = "拼音")
     private String pinyin;
@@ -39,14 +36,14 @@ public class AppCharCharacterDetailVO implements Serializable {
     @ApiModelProperty(value = "部首")
     private String radical;
 
-    @ApiModelProperty(value = "笔顺")
-    private String stroke;
-
     @ApiModelProperty(value = "汉字说明")
     private String charDesc;
 
-    @ApiModelProperty(value = "汉字说明的多语种翻译")
-    private List<TextTranslationVO> descTranslations;
+    @ApiModelProperty(value = "部件组合")
+    private String componentCombination;
+
+    @ApiModelProperty(value = "汉字说明翻译")
+    private TextTranslationVO descTranslation;
 
     @ApiModelProperty(value = "辨析列表")
     private List<CharDiscriminationVO> discriminations;
@@ -58,20 +55,20 @@ public class AppCharCharacterDetailVO implements Serializable {
     @Setter
     public static class CharDiscriminationVO implements Serializable {
 
-        @ApiModelProperty(value = "辨析唯一ID")
-        private Integer id;
-
         @ApiModelProperty(value = "辨析汉字")
-        private String discrimChar;
+        private String comparisonChar;
 
         @ApiModelProperty(value = "辨析拼音")
-        private String discrimPinyin;
+        private String comparisonPinyin;
 
         @ApiModelProperty(value = "辨析汉字翻译")
-        private List<TextTranslationVO> discrimCharTranslations;
+        private TextTranslationVO comparisonCharTranslation;
 
-        @ApiModelProperty(value = "对比翻译")
-        private List<TextTranslationVO> comparisonTranslations;
+        @ApiModelProperty(value = "对比辨析说明翻译")
+        private TextTranslationVO comparisonDescTranslation;
+
+        @ApiModelProperty(value = "辨析排序权重（值大的排前面）")
+        private Integer order;
     }
 
     @Getter
@@ -98,7 +95,7 @@ public class AppCharCharacterDetailVO implements Serializable {
         private String wordItem;
 
         @ApiModelProperty(value = "HSK等级，值为数字字符串\"1\"-\"9\"")
-        private String level;
+        private String hskLevel;
 
         @ApiModelProperty(value = "拼音")
         private String pinyin;
@@ -107,7 +104,7 @@ public class AppCharCharacterDetailVO implements Serializable {
         private String partOfSpeech;
 
         @ApiModelProperty(value = "组词翻译")
-        private List<TextTranslationVO> wordItemTranslations;
+        private TextTranslationVO wordItemTranslation;
 
         @ApiModelProperty(value = "例句")
         private String exampleSentence;
@@ -116,7 +113,7 @@ public class AppCharCharacterDetailVO implements Serializable {
         private String examplePinyin;
 
         @ApiModelProperty(value = "例句翻译")
-        private List<TextTranslationVO> exampleTranslations;
+        private TextTranslationVO exampleTranslation;
 
         @ApiModelProperty(value = "例句图片")
         private ImageVO exampleImage;

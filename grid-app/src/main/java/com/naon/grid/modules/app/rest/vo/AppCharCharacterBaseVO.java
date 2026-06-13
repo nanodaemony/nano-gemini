@@ -18,14 +18,11 @@ public class AppCharCharacterBaseVO implements Serializable {
     @ApiModelProperty(value = "汉字唯一ID")
     private Integer id;
 
-    @ApiModelProperty(value = "Excel中的序号")
-    private Integer sequenceNo;
-
     @ApiModelProperty(value = "汉字")
     private String character;
 
-    @ApiModelProperty(value = "HSK等级，值为数字字符串\"1\"-\"9\"")
-    private String level;
+    @ApiModelProperty(value = "HSK等级")
+    private String hskLevel;
 
     @ApiModelProperty(value = "拼音")
     private String pinyin;

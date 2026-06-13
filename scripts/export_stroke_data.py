@@ -17,8 +17,8 @@ def main():
     json_files = sorted(glob.glob(os.path.join(INPUT_DIR, "*.json")))
     print(f"找到 {len(json_files)} 个 JSON 文件")
 
-    values = []
     errors = 0
+    lines = []
     for filepath in json_files:
         char_name = os.path.splitext(os.path.basename(filepath))[0]
         try:
@@ -32,17 +32,15 @@ def main():
             continue
         # 转义单引号
         stroke_escaped = stroke_data.replace("'", "''")
-        values.append(f"('{char_name}', '{stroke_escaped}', 1)")
+        lines.append(f"REPLACE INTO `char_stroke` (`character`, `stroke`, `status`) VALUES ('{char_name}', '{stroke_escaped}', 1);")
 
-    # 使用 REPLACE INTO 支持重复运行
-    sql = f"REPLACE INTO `char_stroke` (`character`, `stroke`, `status`) VALUES\n"
-    sql += ",\n".join(values) + ";\n"
+    sql = "\n".join(lines) + "\n"
 
     os.makedirs(os.path.dirname(OUTPUT_FILE), exist_ok=True)
     with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
         f.write(sql)
 
-    print(f"已导出 {len(values)} 条记录到 {OUTPUT_FILE}")
+    print(f"已导出 {len(lines)} 条记录到 {OUTPUT_FILE}")
     if errors:
         print(f"跳过 {errors} 个文件（详见上述警告）")
 

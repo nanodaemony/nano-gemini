@@ -50,7 +50,7 @@ public class VocabStructure implements Serializable {
     private String patternDefTranslations;
 
     @NotNull
-    @Column(name = "structure_order", nullable = false)
+    @Column(name = "`order`", nullable = false)
     @ApiModelProperty(value = "搭配排序权重")
     private Integer structureOrder = 0;
 

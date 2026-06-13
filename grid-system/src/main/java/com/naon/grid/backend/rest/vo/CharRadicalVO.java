@@ -1,5 +1,6 @@
 package com.naon.grid.backend.rest.vo;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
@@ -39,9 +40,11 @@ public class CharRadicalVO {
     @ApiModelProperty(value = "更新人")
     private String updateBy;
 
-    @ApiModelProperty(value = "创建时间")
+    @ApiModelProperty(value = "创建时间: yyyy-MM-dd HH:mm:ss", required = true)
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     private Timestamp createTime;
 
-    @ApiModelProperty(value = "更新时间")
+    @ApiModelProperty(value = "更新时间: yyyy-MM-dd HH:mm:ss", required = true)
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     private Timestamp updateTime;
 }

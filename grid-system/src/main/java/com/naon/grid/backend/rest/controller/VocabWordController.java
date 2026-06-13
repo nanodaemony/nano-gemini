@@ -10,6 +10,7 @@ import com.naon.grid.backend.rest.request.VocabWordQueryRequest;
 import com.naon.grid.backend.rest.vo.VocabOutlineRecordVO;
 import com.naon.grid.backend.rest.vo.VocabWordBaseVO;
 import com.naon.grid.backend.rest.vo.VocabWordCreateVO;
+import com.naon.grid.backend.rest.vo.VocabWordBaseSearchVO;
 import com.naon.grid.backend.rest.vo.VocabWordVO;
 import com.naon.grid.backend.rest.wrapper.VocabWordWrapper;
 import com.naon.grid.backend.service.vocabulary.VocabOutlineRecordService;
@@ -34,6 +35,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
@@ -146,6 +148,14 @@ public class VocabWordController {
     public ResponseEntity<Void> completeOutline(@PathVariable Integer id) {
         vocabOutlineRecordService.markAsCompleted(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    @Log("搜索已发布词汇")
+    @ApiOperation("根据词汇文本精确搜索已发布词汇（用于关联词选择）")
+    @AnonymousGetMapping("/search")
+    public ResponseEntity<List<VocabWordBaseSearchVO>> search(@RequestParam String word) {
+        List<VocabWordDto> dtos = vocabWordService.searchByWord(word);
+        return new ResponseEntity<>(VocabWordWrapper.toSearchVOList(dtos), HttpStatus.OK);
     }
 
 }

@@ -8,6 +8,7 @@
 import json
 import os
 import glob
+from datetime import datetime
 
 INPUT_DIR = r"C:/Users/nano/Desktop/hanzi-writer-data/data"
 OUTPUT_FILE = r"C:/Users/nano/Desktop/nano-gemini/sql/char_stroke_data.sql"
@@ -38,6 +39,13 @@ def main():
 
     os.makedirs(os.path.dirname(OUTPUT_FILE), exist_ok=True)
     with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
+        f.write(f"-- 汉字笔顺数据导入脚本\n")
+        f.write(f"-- 生成时间: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
+        f.write(f"-- 数据来源: hanzi-writer-data ({len(lines)} 个汉字)\n")
+        f.write(f"-- 导入方式: mysql -u <user> -p <db> < {OUTPUT_FILE}\n")
+        f.write(f"-- 或登录后: source {OUTPUT_FILE}\n")
+        f.write(f"-- 说明: char_stroke 表有 UNIQUE KEY (uk_character)，重复导入会报冲突，请自行处理\n")
+        f.write(f"--\n\n")
         f.write(sql)
 
     print(f"已导出 {len(lines)} 条记录到 {OUTPUT_FILE}")

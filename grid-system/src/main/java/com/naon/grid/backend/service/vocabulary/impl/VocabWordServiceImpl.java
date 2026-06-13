@@ -78,7 +78,7 @@ public class VocabWordServiceImpl implements VocabWordService {
      * 永远不覆盖：id、status、publishStatus、editStatus、createBy、updateBy、
      * createTime、updateTime —— 这些字段以主表为准。
      *
-     * 不读取：senses、exercises —— 列表页不返回子表。
+     * 不读取：senses —— 列表页不返回子表。
      *
      * @throws BadRequestException 草稿数据缺失或解析失败
      */

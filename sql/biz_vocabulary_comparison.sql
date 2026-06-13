@@ -45,7 +45,7 @@ CREATE TABLE `vocab_comparison_chat` (
   `group_id` bigint NOT NULL COMMENT '所属词汇辨析组ID',
   `role` varchar(20) NOT NULL COMMENT '角色: teacher=老师, student=学生',
   `content` varchar(1024) NOT NULL COMMENT '中文对话内容',
-  `example_sentence_id` bigint(20) NOT NULL COMMENT '对话例句内容(文案、翻译、音频等，对应表example_sentence)',
+  `example_sentence_id` bigint(20) DEFAULT NULL COMMENT '对话例句内容(文案、翻译、音频等，对应表example_sentence)',
   `order` int NOT NULL DEFAULT '0' COMMENT '组内排序权重（大在前）',
   `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',

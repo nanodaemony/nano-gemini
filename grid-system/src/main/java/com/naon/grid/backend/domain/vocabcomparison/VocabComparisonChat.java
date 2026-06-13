@@ -40,7 +40,7 @@ public class VocabComparisonChat implements Serializable {
     @ApiModelProperty(value = "中文对话内容")
     private String content;
 
-    @Column(name = "example_sentence_id", nullable = false)
+    @Column(name = "example_sentence_id")
     @ApiModelProperty(value = "对话例句内容（文案、翻译、音频等，对应表example_sentence）")
     private Long exampleSentenceId;
 

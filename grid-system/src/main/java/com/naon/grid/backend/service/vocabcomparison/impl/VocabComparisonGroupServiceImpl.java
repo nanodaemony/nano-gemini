@@ -540,6 +540,7 @@ public class VocabComparisonGroupServiceImpl implements VocabComparisonGroupServ
             }
             VocabComparisonGroupDto dto = toBaseDto(group);
             dto.setItems(loadItems(group.getId()));
+            dto.setChats(loadChats(group.getId()));
             result.add(dto);
         }
         return result;

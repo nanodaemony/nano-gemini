@@ -41,8 +41,9 @@ public class CharRadicalServiceImpl implements CharRadicalService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public CharRadicalDto findById(Long id) {
-        CharRadical entity = charRadicalRepository.findById(id).orElse(null);
-        if (entity == null || StatusEnum.DISABLED.getCode().equals(entity.getStatus())) {
+        CharRadical entity = charRadicalRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException(CharRadical.class, "id", String.valueOf(id)));
+        if (StatusEnum.DISABLED.getCode().equals(entity.getStatus())) {
             throw new EntityNotFoundException(CharRadical.class, "id", String.valueOf(id));
         }
 
@@ -144,6 +145,14 @@ public class CharRadicalServiceImpl implements CharRadicalService {
             throw new BadRequestException("草稿数据解析失败");
         }
 
+        // 校验必填字段
+        if (draftDto.getRadical() == null || draftDto.getRadical().trim().isEmpty()) {
+            throw new BadRequestException("部首名称不能为空");
+        }
+        if (draftDto.getStrokeNum() == null) {
+            throw new BadRequestException("笔画数不能为空");
+        }
+
         // 回写主表字段
         entity.setRadical(draftDto.getRadical());
         entity.setStrokeNum(draftDto.getStrokeNum());
@@ -202,7 +211,7 @@ public class CharRadicalServiceImpl implements CharRadicalService {
 
     private void applyDraftOverlay(CharRadicalDto dto, String draftJson) {
         if (draftJson == null) {
-            throw new BadRequestException("草稿内容不存在");
+            return;
         }
         CharRadicalDto draft;
         try {

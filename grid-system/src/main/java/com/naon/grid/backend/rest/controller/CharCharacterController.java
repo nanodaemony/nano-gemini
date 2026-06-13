@@ -11,9 +11,12 @@ import com.naon.grid.backend.rest.request.TextTranslationRequest;
 import com.naon.grid.backend.rest.vo.CharCharacterBaseVO;
 import com.naon.grid.backend.rest.vo.CharCharacterCreateVO;
 import com.naon.grid.backend.rest.vo.CharCharacterVO;
+import com.naon.grid.backend.rest.vo.CharStrokeVO;
 import com.naon.grid.backend.rest.vo.TextTranslationVO;
 import com.naon.grid.backend.rest.wrapper.CharCharacterWrapper;
+import com.naon.grid.backend.rest.wrapper.CharStrokeWrapper;
 import com.naon.grid.backend.service.character.CharCharacterService;
+import com.naon.grid.backend.service.character.CharStrokeService;
 import com.naon.grid.backend.service.character.dto.CharCharacterDto;
 import com.naon.grid.backend.service.character.dto.CharCharacterQueryCriteria;
 import com.naon.grid.backend.service.character.dto.CharWordDto;
@@ -45,6 +48,7 @@ import static com.naon.grid.backend.rest.wrapper.CharCharacterWrapper.toBaseVOLi
 public class CharCharacterController {
 
     private final CharCharacterService charCharacterService;
+    private final CharStrokeService charStrokeService;
 
     @Log("新增汉字")
     @ApiOperation("新增汉字")
@@ -108,6 +112,15 @@ public class CharCharacterController {
     public ResponseEntity<Void> offline(@PathVariable Integer id) {
         charCharacterService.offline(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    @Log("查询汉字笔顺")
+    @ApiOperation("根据汉字查询笔顺数据（SVG路径、坐标参考线）")
+    @AnonymousGetMapping("/stroke/{character}")
+    public ResponseEntity<CharStrokeVO> findStrokeByCharacter(@PathVariable String character) {
+        String strokeJson = charStrokeService.findByCharacter(character);
+        CharStrokeVO vo = CharStrokeWrapper.toStrokeVO(character, strokeJson);
+        return new ResponseEntity<>(vo, HttpStatus.OK);
     }
 
 }

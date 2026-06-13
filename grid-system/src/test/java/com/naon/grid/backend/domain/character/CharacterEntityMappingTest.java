@@ -1,5 +1,6 @@
 package com.naon.grid.backend.domain.character;
 
+import com.naon.grid.backend.domain.character.CharStroke;
 import com.naon.grid.backend.repo.character.CharComparisonRepository;
 import org.junit.jupiter.api.Test;
 
@@ -52,6 +53,13 @@ class CharacterEntityMappingTest {
         assertColumn(CharComparison.class, "comparisonDescTranslations", "comparison_desc_translations", 255, "text");
         assertColumn(CharComparison.class, "comparisonOrder", "`order`", 255, null);
         assertRepositoryDomain(CharComparisonRepository.class, CharComparison.class);
+    }
+
+    @Test
+    void charStrokeUsesSqlColumnNamesAndLengths() throws Exception {
+        assertColumn(CharStroke.class, "character", "`character`", 32, null);
+        assertColumn(CharStroke.class, "stroke", "stroke", 255, "text");
+        assertColumn(CharStroke.class, "status", "status", 255, null);
     }
 
     private static void assertColumn(Class<?> entityClass, String fieldName, String columnName, int length, String columnDefinition) throws Exception {

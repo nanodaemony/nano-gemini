@@ -70,10 +70,10 @@ public class VocabWordVO implements Serializable {
         private List<TextTranslationVO> defTranslations;
 
         @ApiModelProperty(value = "中文释义音频ID")
-        private long defAudioId;
+        private Long defAudioId;
 
         @ApiModelProperty(value = "中文释义图片ID")
-        private long defImageId;
+        private Long defImageId;
 
         @ApiModelProperty(value = "中文释义图片例句信息(可能没有)")
         private ExampleSentenceVO defImageSentence;

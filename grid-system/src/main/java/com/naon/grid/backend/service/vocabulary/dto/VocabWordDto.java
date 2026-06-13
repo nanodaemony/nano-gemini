@@ -32,9 +32,6 @@ public class VocabWordDto extends BaseDTO implements Serializable {
     @ApiModelProperty(value = "义项列表")
     private List<VocabSenseDto> senses;
 
-    @ApiModelProperty(value = "练习题列表")
-    private List<VocabExerciseDto> exercises;
-
     @ApiModelProperty(value = "状态: 1=可用, 0=不可用")
     private Integer status;
 

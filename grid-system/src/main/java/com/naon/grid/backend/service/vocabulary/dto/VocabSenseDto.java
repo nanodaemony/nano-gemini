@@ -1,10 +1,11 @@
 package com.naon.grid.backend.service.vocabulary.dto;
 
+import com.naon.grid.backend.service.common.dto.ExampleSentenceDto;
+import com.naon.grid.domain.common.TextTranslation;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.Setter;
 import com.naon.grid.base.BaseDTO;
-import com.naon.grid.domain.common.TextTranslation;
 import java.io.Serializable;
 import java.util.List;
 
@@ -28,25 +29,28 @@ public class VocabSenseDto extends BaseDTO implements Serializable {
     private Long defAudioId;
 
     @ApiModelProperty(value = "中文释义图片资源ID")
-    private Long defImage;
+    private Long defImageId;
 
-    @ApiModelProperty(value = "外文翻译列表")
-    private List<TextTranslation> translations;
+    @ApiModelProperty(value = "中文释义外文翻译")
+    private List<TextTranslation> defTranslations;
+
+    @ApiModelProperty(value = "中文释义图片例句")
+    private ExampleSentenceDto defImageSentence;
 
     @ApiModelProperty(value = "近义词列表")
-    private List<String> synonyms;
+    private List<VocabRelationDto> synonymWords;
 
     @ApiModelProperty(value = "反义词列表")
-    private List<String> antonyms;
+    private List<VocabRelationDto> antonymWords;
 
     @ApiModelProperty(value = "正序关联词汇")
-    private List<String> relatedForward;
+    private List<VocabRelationDto> sequentialWords;
 
     @ApiModelProperty(value = "逆序关联词汇")
-    private List<String> relatedBackward;
+    private List<VocabRelationDto> reverseSequentialWords;
 
-    @ApiModelProperty(value = "其他关联词汇")
-    private List<String> relatedOther;
+    @ApiModelProperty(value = "乱序关联词汇")
+    private List<VocabRelationDto> jumbledWords;
 
     @ApiModelProperty(value = "义项排序权重")
     private Integer senseOrder;

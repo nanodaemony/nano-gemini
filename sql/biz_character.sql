@@ -104,7 +104,7 @@ CREATE TABLE `char_book` (
   `cover_image` varchar(512) NOT NULL COMMENT '汉字书封面图',
   `desc` varchar(1024) DEFAULT NULL COMMENT '汉字书描述',
   `hsk_level` varchar(32) DEFAULT NULL COMMENT 'HSK等级(如果有等级则按照等级去检索汉字)',
-  `word_ids` text DEFAULT NULL COMMENT '汉字ID列表(可能为空，此时使用hsk_level查询)',
+  `word_ids` text DEFAULT NULL COMMENT '汉字ID列表(如果hsk_level为空则使用此字段)',
   `order` int DEFAULT 0 COMMENT '排序(值大的排前面)',
   `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',

@@ -125,10 +125,14 @@ public class VocabWordWrapper {
         VocabWordBaseVO vo = new VocabWordBaseVO();
         vo.setId(dto.getId());
         vo.setWord(dto.getWord());
-        vo.setWordTraditional(dto.getWordTraditional());
-        vo.setPinyin(dto.getPinyin());
         vo.setAudioId(dto.getAudioId());
         vo.setHskLevel(dto.getHskLevel());
+        vo.setSenseCount(dto.getSenseCount() != null ? dto.getSenseCount() : 0);
+        vo.setStructureCount(dto.getStructureCount() != null ? dto.getStructureCount() : 0);
+        vo.setTranslationStatus(dto.getTranslationStatus());
+        vo.setPinyinStatus(dto.getPinyinStatus());
+        vo.setAudioStatus(dto.getAudioStatus());
+        vo.setImageStatus(dto.getImageStatus());
         vo.setPublishStatus(dto.getPublishStatus());
         vo.setEditStatus(dto.getEditStatus());
         vo.setCreateBy(dto.getCreateBy());

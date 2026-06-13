@@ -53,7 +53,9 @@ public class VocabWordServiceImpl implements VocabWordService {
             Predicate statusPredicate = criteriaBuilder.equal(root.get("status"), StatusEnum.ENABLED.getCode());
             return criteriaBuilder.and(basePredicate, statusPredicate);
         }, pageable);
-        return PageUtil.toPage(page.map(this::toDtoWithDraftOverlay));
+        PageResult<VocabWordDto> pageResult = PageUtil.toPage(page.map(this::toDtoWithDraftOverlay));
+        populateVocabListStats(pageResult.getContent());
+        return pageResult;
     }
 
     /**
@@ -100,6 +102,62 @@ public class VocabWordServiceImpl implements VocabWordService {
         if (draft.getPinyin() != null)          dto.setPinyin(draft.getPinyin());
         if (draft.getAudioId() != null)         dto.setAudioId(draft.getAudioId());
         if (draft.getHskLevel() != null)        dto.setHskLevel(draft.getHskLevel());
+    }
+
+    /**
+     * 批量填充列表统计数据和状态：义项数、结构数、翻译/拼音/音频/配图状态
+     * 参考：{@link com.naon.grid.backend.service.character.impl.CharCharacterServiceImpl#populateCharListStats}
+     */
+    private void populateVocabListStats(List<VocabWordDto> dtos) {
+        if (dtos == null || dtos.isEmpty()) return;
+
+        List<Integer> ids = dtos.stream().map(VocabWordDto::getId).collect(Collectors.toList());
+
+        // 义项数
+        Map<Integer, Long> senseCountMap = vocabSenseRepository
+                .countByWordIdInGroupByWordId(ids, StatusEnum.ENABLED.getCode())
+                .stream()
+                .collect(Collectors.toMap(
+                        row -> (Integer) row[0],
+                        row -> (Long) row[1]
+                ));
+
+        // 结构数
+        Map<Integer, Long> structureCountMap = vocabStructureRepository
+                .countByWordIdInGroupByWordId(ids, StatusEnum.ENABLED.getCode())
+                .stream()
+                .collect(Collectors.toMap(
+                        row -> (Integer) row[0],
+                        row -> (Long) row[1]
+                ));
+
+        // 翻译/配图状态：查询所有义项后判断
+        List<VocabSense> allSenses = vocabSenseRepository.findByWordIdInAndStatus(ids, StatusEnum.ENABLED.getCode());
+        Map<Integer, List<VocabSense>> sensesByWordId = allSenses.stream()
+                .collect(Collectors.groupingBy(VocabSense::getWordId));
+
+        for (VocabWordDto dto : dtos) {
+            dto.setSenseCount(senseCountMap.getOrDefault(dto.getId(), 0L).intValue());
+            dto.setStructureCount(structureCountMap.getOrDefault(dto.getId(), 0L).intValue());
+
+            // 拼音/音频状态：从主表字段判断
+            dto.setPinyinStatus(
+                dto.getPinyin() != null && !dto.getPinyin().isEmpty() ? "generated" : "not_generated"
+            );
+            dto.setAudioStatus(
+                dto.getAudioId() != null ? "generated" : "not_generated"
+            );
+
+            // 翻译/配图状态：从义项表中判断
+            List<VocabSense> wordSenses = sensesByWordId.getOrDefault(dto.getId(), Collections.emptyList());
+            boolean hasTranslation = wordSenses.stream()
+                    .anyMatch(s -> s.getDefTranslations() != null && !s.getDefTranslations().isEmpty());
+            boolean hasImage = wordSenses.stream()
+                    .anyMatch(s -> s.getDefImageId() != null);
+
+            dto.setTranslationStatus(hasTranslation ? "generated" : "not_generated");
+            dto.setImageStatus(hasImage ? "generated" : "not_generated");
+        }
     }
 
     @Override

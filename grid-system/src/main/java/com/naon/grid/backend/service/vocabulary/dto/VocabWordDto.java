@@ -43,4 +43,24 @@ public class VocabWordDto extends BaseDTO implements Serializable {
 
     @ApiModelProperty(value = "草稿内容JSON")
     private String draftContent;
+
+    // === 列表统计字段 ===
+
+    @ApiModelProperty(value = "义项数量")
+    private Integer senseCount;
+
+    @ApiModelProperty(value = "结构数量")
+    private Integer structureCount;
+
+    @ApiModelProperty(value = "翻译状态: generated=已生成, not_generated=未生成")
+    private String translationStatus;
+
+    @ApiModelProperty(value = "拼音状态: generated=已生成, not_generated=未生成")
+    private String pinyinStatus;
+
+    @ApiModelProperty(value = "音频状态: generated=已生成, not_generated=未生成")
+    private String audioStatus;
+
+    @ApiModelProperty(value = "配图状态: generated=已生成, not_generated=未生成")
+    private String imageStatus;
 }

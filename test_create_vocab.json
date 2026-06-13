@@ -1,0 +1,69 @@
+{
+  "word": "学习",
+  "wordTraditional": "學習",
+  "pinyin": "xué xí",
+  "hskLevel": "1",
+  "senses": [
+    {
+      "partOfSpeech": "verb",
+      "chineseDef": "通过阅读、听讲、研究、实践等获得知识或技能",
+      "defTranslations": [
+        {"language": "en", "translation": "to learn; to study"}
+      ],
+      "order": 2,
+      "structures": [
+        {
+          "pattern": "学习 + 宾语",
+          "patternDef": "学习后面接学习的内容",
+          "patternDefTranslations": [
+            {"language": "en", "translation": "learn + object"}
+          ],
+          "order": 2,
+          "structureSentences": [
+            {
+              "sentence": "我在大学学习汉语。",
+              "pinyin": "wo zai da xue xue xi han yu.",
+              "translations": [
+                {"language": "en", "translation": "I study Chinese at university."}
+              ],
+              "order": 2
+            },
+            {
+              "sentence": "孩子们正在学习数学。",
+              "pinyin": "hai zi men zheng zai xue xi shu xue.",
+              "translations": [
+                {"language": "en", "translation": "The children are learning math."}
+              ],
+              "order": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "partOfSpeech": "noun",
+      "chineseDef": "通过阅读、听讲等获得的知识或技能",
+      "defTranslations": [
+        {"language": "en", "translation": "knowledge; learning"}
+      ],
+      "order": 1,
+      "structures": [
+        {
+          "pattern": "学习 + 名词",
+          "patternDef": "学习作为定语修饰名词",
+          "order": 1,
+          "structureSentences": [
+            {
+              "sentence": "学习态度很重要。",
+              "pinyin": "xue xi tai du hen zhong yao.",
+              "translations": [
+                {"language": "en", "translation": "Learning attitude is very important."}
+              ],
+              "order": 1
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

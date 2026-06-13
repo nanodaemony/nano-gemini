@@ -29,7 +29,6 @@ class CharCharacterWrapperTest {
         request.setRadical("亻");
         request.setComponentCombination("亻 + 尔");
         request.setCharDesc("第二人称代词");
-        request.setStroke("stroke-json");
 
         TextTranslationRequest descTranslation = new TextTranslationRequest();
         descTranslation.setLanguage("en");
@@ -65,7 +64,6 @@ class CharCharacterWrapperTest {
         assertEquals(Long.valueOf(3L), dto.getRadicalId());
         assertEquals("亻 + 尔", dto.getComponentCombination());
         assertEquals("第二人称代词", dto.getCharDesc());
-        assertEquals("stroke-json", dto.getStroke());
         assertEquals(1, dto.getDescTranslations().size());
 
         assertEquals(1, dto.getWords().size());

@@ -46,9 +46,6 @@ public class CharCharacterVO implements Serializable {
     @ApiModelProperty(value = "汉字说明翻译")
     private List<TextTranslationVO> charDescTranslations;
 
-    @ApiModelProperty(value = "笔画")
-    private String stroke;
-
     @ApiModelProperty(value = "辨析列表")
     private List<CharComparisonVO> comparisons;
 

@@ -111,7 +111,6 @@ public class CharCharacterServiceImpl implements CharCharacterService {
         if (draft.getRadicalId() != null)             dto.setRadicalId(draft.getRadicalId());
         if (draft.getRadical() != null)               dto.setRadical(draft.getRadical());
         if (draft.getComponentCombination() != null)  dto.setComponentCombination(draft.getComponentCombination());
-        if (draft.getStroke() != null)                dto.setStroke(draft.getStroke());
         if (draft.getCharDesc() != null)              dto.setCharDesc(draft.getCharDesc());
         if (draft.getDescTranslations() != null)      dto.setDescTranslations(draft.getDescTranslations());
     }
@@ -540,7 +539,6 @@ public class CharCharacterServiceImpl implements CharCharacterService {
         charCharacter.setRadicalId(draftDto.getRadicalId());
         charCharacter.setRadical(draftDto.getRadical());
         charCharacter.setComponentCombination(draftDto.getComponentCombination());
-        charCharacter.setStroke(draftDto.getStroke());
         charCharacter.setCharDesc(draftDto.getCharDesc());
         charCharacter.setDescTranslations(JsonUtils.toTranslationJson(draftDto.getDescTranslations()));
 

@@ -44,9 +44,6 @@ public class CharCharacterCreateRequest implements Serializable {
     @ApiModelProperty(value = "说明翻译")
     private List<TextTranslationRequest> charDescTranslations;
 
-    @ApiModelProperty(value = "笔画")
-    private String stroke;
-
     @Valid
     @ApiModelProperty(value = "汉字辨析列表")
     private List<CharComparisonRequest> comparisons;

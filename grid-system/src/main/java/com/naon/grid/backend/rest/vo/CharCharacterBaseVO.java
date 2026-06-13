@@ -40,9 +40,6 @@ public class CharCharacterBaseVO implements Serializable {
     @ApiModelProperty(value = "部件组合")
     private String componentCombination;
 
-    @ApiModelProperty(value = "笔顺")
-    private String stroke;
-
     @ApiModelProperty(value = "部件组合中文说明")
     private String charDesc;
 

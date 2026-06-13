@@ -56,9 +56,6 @@ public class CharCharacter extends BaseEntity implements Serializable {
     @Column(name = "char_desc_translations", columnDefinition = "text")
     private String descTranslations;
 
-    @Column(name = "stroke", length = 4096)
-    private String stroke;
-
     @Column(name = "status")
     @ApiModelProperty(value = "状态: 1=可用, 0=不可用")
     private Integer status = StatusEnum.ENABLED.getCode();

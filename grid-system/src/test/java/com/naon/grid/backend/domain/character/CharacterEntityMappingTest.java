@@ -28,7 +28,6 @@ class CharacterEntityMappingTest {
         assertColumn(CharCharacter.class, "componentCombination", "component_combination", 64, null);
         assertColumn(CharCharacter.class, "charDesc", "char_desc", 1024, null);
         assertColumn(CharCharacter.class, "descTranslations", "char_desc_translations", 255, "text");
-        assertColumn(CharCharacter.class, "stroke", "stroke", 4096, null);
         assertColumn(CharCharacter.class, "draftContent", "draft_content", 255, "text");
     }
 

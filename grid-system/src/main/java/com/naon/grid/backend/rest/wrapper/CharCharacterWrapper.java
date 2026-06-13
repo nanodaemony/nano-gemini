@@ -46,7 +46,6 @@ public class CharCharacterWrapper {
         dto.setRadicalId(request.getRadicalId());
         dto.setRadical(request.getRadical());
         dto.setComponentCombination(request.getComponentCombination());
-        dto.setStroke(request.getStroke());
         dto.setCharDesc(request.getCharDesc());
         dto.setDescTranslations(toTextTranslationList(request.getCharDescTranslations()));
         dto.setComparisons(toComparisonDtoList(request.getComparisons()));
@@ -122,7 +121,6 @@ public class CharCharacterWrapper {
         vo.setRadicalId(dto.getRadicalId());
         vo.setRadical(dto.getRadical());
         vo.setComponentCombination(dto.getComponentCombination());
-        vo.setStroke(dto.getStroke());
         vo.setCharDesc(dto.getCharDesc());
         vo.setDescTranslations(toTextTranslationVOList(dto.getDescTranslations()));
         vo.setPublishStatus(dto.getPublishStatus());
@@ -145,7 +143,6 @@ public class CharCharacterWrapper {
         vo.setRadicalId(dto.getRadicalId());
         vo.setRadical(dto.getRadical());
         vo.setComponentCombination(dto.getComponentCombination());
-        vo.setStroke(dto.getStroke());
         vo.setCharDesc(dto.getCharDesc());
         vo.setCharDescTranslations(toTextTranslationVOList(dto.getDescTranslations()));
         vo.setPublishStatus(dto.getPublishStatus());

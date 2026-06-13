@@ -80,4 +80,5 @@ public class CharCharacterBaseVO implements Serializable {
 
     @ApiModelProperty(value = "音频状态: generated=已生成, not_generated=未生成")
     private String audioStatus;
+
 }

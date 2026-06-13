@@ -13,7 +13,6 @@ CREATE TABLE `vocab_word`  (
   `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
   `create_by` varchar(255) NULL DEFAULT NULL COMMENT '创建人',
   `update_by` varchar(255) NULL DEFAULT NULL COMMENT '更新人',
-  `audit_by` varchar(255) NULL DEFAULT NULL COMMENT '审核人',
   `draft_content` text NULL COMMENT '草稿内容JSON',
   `edit_status` varchar(20) NULL DEFAULT 'draft' COMMENT '编辑状态: draft=草稿, reviewed=已审核',
   `publish_status` varchar(20) NULL DEFAULT 'unpublished' COMMENT '发布状态: unpublished=未发布, published=已发布',

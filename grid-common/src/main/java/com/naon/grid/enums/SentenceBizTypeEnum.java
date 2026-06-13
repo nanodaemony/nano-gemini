@@ -19,6 +19,8 @@ public enum SentenceBizTypeEnum {
     GRAMMAR_STRUCTURE_SENTENCE("GRAMMAR_STRUCTURE_SENTENCE", "语法结构例句, bizId=语法结构ID, 一个语法结构可能有多个例句"),
 
     GRAMMAR_NOTICE_SENTENCE("GRAMMAR_NOTICE_SENTENCE", "语法注意例句, bizId=语法注意ID, 一个语法注意可能有多个例句, 目前仅有例句信息没有其他拼音、音频等资源"),
+
+    VOCAB_COMPARISON_CHAT("VOCAB_COMPARISON_CHAT", "词汇辨析情景对话, bizId=词汇辨析对话ID"),
     ;
 
     private final String code;

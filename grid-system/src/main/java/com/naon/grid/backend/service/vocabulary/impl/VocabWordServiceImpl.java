@@ -113,13 +113,13 @@ public class VocabWordServiceImpl implements VocabWordService {
 
         List<Integer> ids = dtos.stream().map(VocabWordDto::getId).collect(Collectors.toList());
 
-        // 义项数
+        // 义项数（原生查询返回 BigInteger，统一用 Number 转换）
         Map<Integer, Long> senseCountMap = vocabSenseRepository
                 .countByWordIdInGroupByWordId(ids, StatusEnum.ENABLED.getCode())
                 .stream()
                 .collect(Collectors.toMap(
-                        row -> (Integer) row[0],
-                        row -> (Long) row[1]
+                        row -> ((Number) row[0]).intValue(),
+                        row -> ((Number) row[1]).longValue()
                 ));
 
         // 结构数
@@ -127,8 +127,8 @@ public class VocabWordServiceImpl implements VocabWordService {
                 .countByWordIdInGroupByWordId(ids, StatusEnum.ENABLED.getCode())
                 .stream()
                 .collect(Collectors.toMap(
-                        row -> (Integer) row[0],
-                        row -> (Long) row[1]
+                        row -> ((Number) row[0]).intValue(),
+                        row -> ((Number) row[1]).longValue()
                 ));
 
         // 翻译/配图状态：查询所有义项后判断

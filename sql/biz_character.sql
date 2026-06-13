@@ -14,7 +14,6 @@ CREATE TABLE `char_character`  (
   `component_combination` varchar(64) NULL DEFAULT NULL COMMENT '部件组合',
   `char_desc` varchar(1024) NULL DEFAULT NULL COMMENT '汉字中文说明',
   `char_desc_translations` text NULL COMMENT '汉字说明外文翻译',
-  `stroke` varchar(4096) NULL DEFAULT NULL COMMENT '笔顺',
 
   `draft_content` text NULL COMMENT '草稿内容JSON',
   `create_by` varchar(255) NULL DEFAULT NULL COMMENT '创建人',
@@ -81,3 +80,16 @@ CREATE TABLE `char_radical` (
     `status` TINYINT NOT NULL DEFAULT 1 COMMENT '有效状态：1-有效，0-无效',
     PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='汉字部首表';
+
+-- 汉字笔顺表
+-- 注：存储 hanzi-writer 笔顺动画数据（JSON 格式），由脚本导入，为静态只读数据。
+CREATE TABLE `char_stroke` (
+    `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '汉字笔顺ID',
+    `character` VARCHAR(32) NOT NULL COMMENT '汉字',
+    `stroke` TEXT DEFAULT NULL COMMENT '汉字笔顺JSON（hanzi-writer格式，含strokes/medians/radStrokes）',
+    `create_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `update_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    `status` TINYINT NOT NULL DEFAULT 1 COMMENT '有效状态：1-有效，0-无效',
+    PRIMARY KEY (`id`),
+    INDEX `idx_character` (`character`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='汉字笔顺表';

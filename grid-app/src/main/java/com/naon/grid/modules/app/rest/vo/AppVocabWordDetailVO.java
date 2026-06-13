@@ -1,6 +1,5 @@
 package com.naon.grid.modules.app.rest.vo;
 
-import com.naon.grid.backend.rest.vo.ExerciseOptionVO;
 import com.naon.grid.backend.rest.vo.TextTranslationVO;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
@@ -33,9 +32,6 @@ public class AppVocabWordDetailVO implements Serializable {
 
     @ApiModelProperty(value = "义项列表")
     private List<VocabSenseVO> senses;
-
-    @ApiModelProperty(value = "练习题列表")
-    private List<VocabExerciseVO> exercises;
 
     @Getter
     @Setter
@@ -162,25 +158,4 @@ public class AppVocabWordDetailVO implements Serializable {
         private Integer exampleOrder;
     }
 
-    @Getter
-    @Setter
-    public static class VocabExerciseVO implements Serializable {
-        @ApiModelProperty(value = "练习题ID")
-        private Integer id;
-
-        @ApiModelProperty(value = "题目类型")
-        private String questionType;
-
-        @ApiModelProperty(value = "练习题干")
-        private String questionText;
-
-        @ApiModelProperty(value = "选项列表")
-        private List<ExerciseOptionVO> options;
-
-        @ApiModelProperty(value = "答案列表")
-        private List<String> answers;
-
-        @ApiModelProperty(value = "练习题排序")
-        private Integer exerciseOrder;
-    }
 }

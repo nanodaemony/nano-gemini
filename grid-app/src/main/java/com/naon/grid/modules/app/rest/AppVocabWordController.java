@@ -1,12 +1,11 @@
 package com.naon.grid.modules.app.rest;
 
 import com.naon.grid.annotation.rest.AnonymousGetMapping;
-import com.naon.grid.backend.rest.vo.ExerciseOptionVO;
 import com.naon.grid.backend.rest.vo.TextTranslationVO;
+import com.naon.grid.backend.service.common.dto.ExampleSentenceDto;
 import com.naon.grid.backend.service.vocabulary.VocabWordService;
 import com.naon.grid.backend.service.vocabulary.VocabOutlineRecordService;
-import com.naon.grid.backend.service.vocabulary.dto.VocabExampleDto;
-import com.naon.grid.backend.service.vocabulary.dto.VocabExerciseDto;
+import com.naon.grid.backend.service.vocabulary.dto.VocabRelationDto;
 import com.naon.grid.backend.service.vocabulary.dto.VocabSenseDto;
 import com.naon.grid.backend.service.vocabulary.dto.VocabStructureDto;
 import com.naon.grid.backend.service.vocabulary.dto.VocabWordDto;
@@ -102,10 +101,10 @@ public class AppVocabWordController {
                 }
                 if (sense.getStructures() != null) {
                     for (VocabStructureDto structure : sense.getStructures()) {
-                        if (structure.getExamples() != null) {
-                            for (VocabExampleDto example : structure.getExamples()) {
-                                if (example.getAudioId() != null) {
-                                    audioIds.add(example.getAudioId());
+                        if (structure.getStructureSentences() != null) {
+                            for (ExampleSentenceDto sentence : structure.getStructureSentences()) {
+                                if (sentence.getAudioId() != null) {
+                                    audioIds.add(sentence.getAudioId());
                                 }
                             }
                         }
@@ -122,15 +121,15 @@ public class AppVocabWordController {
         List<Long> imageIds = new ArrayList<>();
         if (dto.getSenses() != null) {
             for (VocabSenseDto sense : dto.getSenses()) {
-                if (sense.getDefImage() != null) {
-                    imageIds.add(sense.getDefImage());
+                if (sense.getDefImageId() != null) {
+                    imageIds.add(sense.getDefImageId());
                 }
                 if (sense.getStructures() != null) {
                     for (VocabStructureDto structure : sense.getStructures()) {
-                        if (structure.getExamples() != null) {
-                            for (VocabExampleDto example : structure.getExamples()) {
-                                if (example.getImage() != null) {
-                                    imageIds.add(example.getImage());
+                        if (structure.getStructureSentences() != null) {
+                            for (ExampleSentenceDto sentence : structure.getStructureSentences()) {
+                                if (sentence.getImageId() != null) {
+                                    imageIds.add(sentence.getImageId());
                                 }
                             }
                         }
@@ -156,7 +155,6 @@ public class AppVocabWordController {
         }
         vo.setHskLevel(dto.getHskLevel());
         vo.setSenses(toSenseVOList(dto.getSenses(), audioMap, imageMap));
-        vo.setExercises(toExerciseVOList(dto.getExercises()));
         return vo;
     }
 
@@ -177,51 +175,51 @@ public class AppVocabWordController {
             audioVO.setAudioUrl(audioMap.get(dto.getDefAudioId()).getFileUrl());
             vo.setDefAudio(audioVO);
         }
-        if (dto.getDefImage() != null && imageMap.containsKey(dto.getDefImage())) {
+        if (dto.getDefImageId() != null && imageMap.containsKey(dto.getDefImageId())) {
             AppVocabWordDetailVO.ImageVO imageVO = new AppVocabWordDetailVO.ImageVO();
-            imageVO.setImageUrl(imageMap.get(dto.getDefImage()).getFileUrl());
+            imageVO.setImageUrl(imageMap.get(dto.getDefImageId()).getFileUrl());
             vo.setDefImage(imageVO);
         }
-        vo.setTranslations(toTextTranslationVOList(dto.getTranslations()));
-        vo.setSynonyms(toSynonymVOList(dto.getSynonyms()));
-        vo.setAntonyms(toAntonymVOList(dto.getAntonyms()));
-        vo.setRelatedForward(toRelatedWordVOList(dto.getRelatedForward()));
-        vo.setRelatedBackward(toRelatedWordVOList(dto.getRelatedBackward()));
-        vo.setRelatedOther(toRelatedWordVOList(dto.getRelatedOther()));
+        vo.setTranslations(toTextTranslationVOList(dto.getDefTranslations()));
+        vo.setSynonyms(toSynonymVOList(dto.getSynonymWords()));
+        vo.setAntonyms(toAntonymVOList(dto.getAntonymWords()));
+        vo.setRelatedForward(toRelatedWordVOList(dto.getSequentialWords()));
+        vo.setRelatedBackward(toRelatedWordVOList(dto.getReverseSequentialWords()));
+        vo.setRelatedOther(toRelatedWordVOList(dto.getJumbledWords()));
         vo.setSenseOrder(dto.getSenseOrder());
         vo.setStructures(toStructureVOList(dto.getStructures(), audioMap, imageMap));
         return vo;
     }
 
-    private List<AppVocabWordDetailVO.SynonymVO> toSynonymVOList(List<String> contents) {
-        if (contents == null) {
+    private List<AppVocabWordDetailVO.SynonymVO> toSynonymVOList(List<VocabRelationDto> dtos) {
+        if (dtos == null) {
             return Collections.emptyList();
         }
-        return contents.stream().map(content -> {
+        return dtos.stream().map(dto -> {
             AppVocabWordDetailVO.SynonymVO vo = new AppVocabWordDetailVO.SynonymVO();
-            vo.setContent(content);
+            vo.setContent(dto.getRelationWord());
             return vo;
         }).collect(Collectors.toList());
     }
 
-    private List<AppVocabWordDetailVO.AntonymVO> toAntonymVOList(List<String> contents) {
-        if (contents == null) {
+    private List<AppVocabWordDetailVO.AntonymVO> toAntonymVOList(List<VocabRelationDto> dtos) {
+        if (dtos == null) {
             return Collections.emptyList();
         }
-        return contents.stream().map(content -> {
+        return dtos.stream().map(dto -> {
             AppVocabWordDetailVO.AntonymVO vo = new AppVocabWordDetailVO.AntonymVO();
-            vo.setContent(content);
+            vo.setContent(dto.getRelationWord());
             return vo;
         }).collect(Collectors.toList());
     }
 
-    private List<AppVocabWordDetailVO.RelatedWordVO> toRelatedWordVOList(List<String> contents) {
-        if (contents == null) {
+    private List<AppVocabWordDetailVO.RelatedWordVO> toRelatedWordVOList(List<VocabRelationDto> dtos) {
+        if (dtos == null) {
             return Collections.emptyList();
         }
-        return contents.stream().map(content -> {
+        return dtos.stream().map(dto -> {
             AppVocabWordDetailVO.RelatedWordVO vo = new AppVocabWordDetailVO.RelatedWordVO();
-            vo.setContent(content);
+            vo.setContent(dto.getRelationWord());
             return vo;
         }).collect(Collectors.toList());
     }
@@ -240,20 +238,20 @@ public class AppVocabWordController {
         vo.setPatternDef(dto.getPatternDef());
         vo.setPatternDefTranslations(toTextTranslationVOList(dto.getPatternDefTranslations()));
         vo.setStructureOrder(dto.getStructureOrder());
-        vo.setExamples(toExampleVOList(dto.getExamples(), audioMap, imageMap));
+        vo.setExamples(toExampleVOList(dto.getStructureSentences(), audioMap, imageMap));
         return vo;
     }
 
-    private List<AppVocabWordDetailVO.VocabExampleVO> toExampleVOList(List<VocabExampleDto> dtos, Map<Long, AudioResourceDto> audioMap, Map<Long, AliOssStorageDto> imageMap) {
+    private List<AppVocabWordDetailVO.VocabExampleVO> toExampleVOList(List<ExampleSentenceDto> dtos, Map<Long, AudioResourceDto> audioMap, Map<Long, AliOssStorageDto> imageMap) {
         if (dtos == null) {
             return Collections.emptyList();
         }
         return dtos.stream().map(dto -> toExampleVO(dto, audioMap, imageMap)).collect(Collectors.toList());
     }
 
-    private AppVocabWordDetailVO.VocabExampleVO toExampleVO(VocabExampleDto dto, Map<Long, AudioResourceDto> audioMap, Map<Long, AliOssStorageDto> imageMap) {
+    private AppVocabWordDetailVO.VocabExampleVO toExampleVO(ExampleSentenceDto dto, Map<Long, AudioResourceDto> audioMap, Map<Long, AliOssStorageDto> imageMap) {
         AppVocabWordDetailVO.VocabExampleVO vo = new AppVocabWordDetailVO.VocabExampleVO();
-        vo.setId(dto.getId());
+        vo.setId(dto.getId() != null ? dto.getId().intValue() : null);
         vo.setSentence(dto.getSentence());
         if (dto.getAudioId() != null && audioMap.containsKey(dto.getAudioId())) {
             AppVocabWordDetailVO.AudioVO audioVO = new AppVocabWordDetailVO.AudioVO();
@@ -262,47 +260,12 @@ public class AppVocabWordController {
         }
         vo.setPinyin(dto.getPinyin());
         vo.setTranslations(toTextTranslationVOList(dto.getTranslations()));
-        if (dto.getImage() != null && imageMap.containsKey(dto.getImage())) {
+        if (dto.getImageId() != null && imageMap.containsKey(dto.getImageId())) {
             AppVocabWordDetailVO.ImageVO imageVO = new AppVocabWordDetailVO.ImageVO();
-            imageVO.setImageUrl(imageMap.get(dto.getImage()).getFileUrl());
+            imageVO.setImageUrl(imageMap.get(dto.getImageId()).getFileUrl());
             vo.setImage(imageVO);
         }
-        vo.setExampleOrder(dto.getExampleOrder());
-        return vo;
-    }
-
-    private List<AppVocabWordDetailVO.VocabExerciseVO> toExerciseVOList(List<VocabExerciseDto> dtos) {
-        if (dtos == null) {
-            return Collections.emptyList();
-        }
-        return dtos.stream().map(this::toExerciseVO).collect(Collectors.toList());
-    }
-
-    private AppVocabWordDetailVO.VocabExerciseVO toExerciseVO(VocabExerciseDto dto) {
-        AppVocabWordDetailVO.VocabExerciseVO vo = new AppVocabWordDetailVO.VocabExerciseVO();
-        vo.setId(dto.getId());
-        vo.setQuestionType(dto.getQuestionType());
-        vo.setQuestionText(dto.getQuestionText());
-        vo.setOptions(toExerciseOptionVOList(dto.getOptions()));
-        vo.setAnswers(dto.getAnswers());
-        vo.setExerciseOrder(dto.getExerciseOrder());
-        return vo;
-    }
-
-    private List<ExerciseOptionVO> toExerciseOptionVOList(List<com.naon.grid.domain.common.ExerciseOption> options) {
-        if (options == null) {
-            return Collections.emptyList();
-        }
-        return options.stream().map(this::toExerciseOptionVO).collect(Collectors.toList());
-    }
-
-    private ExerciseOptionVO toExerciseOptionVO(com.naon.grid.domain.common.ExerciseOption option) {
-        if (option == null) {
-            return null;
-        }
-        ExerciseOptionVO vo = new ExerciseOptionVO();
-        vo.setOption(option.getOption());
-        vo.setText(option.getText());
+        vo.setExampleOrder(dto.getOrder());
         return vo;
     }
 

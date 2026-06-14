@@ -12,12 +12,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -26,101 +22,126 @@ public class ExampleSentenceServiceImpl implements ExampleSentenceService {
     private final ExampleSentenceRepository exampleSentenceRepository;
 
     @Override
-    public ExampleSentenceDto findOne(String bizType, Long bizId) {
-        if (bizType == null || bizId == null) {
-            return null;
-        }
-        List<ExampleSentence> sentences = exampleSentenceRepository.findByBizTypeAndBizIdAndStatus(
-                bizType, bizId, StatusEnum.ENABLED.getCode());
-        if (sentences == null || sentences.isEmpty()) {
-            return null;
-        }
-        sentences.sort(activeSentenceComparator());
-        return toDto(sentences.get(0));
+    public ExampleSentenceDto findById(Long id) {
+        if (id == null) return null;
+        return exampleSentenceRepository.findById(id)
+                .filter(e -> StatusEnum.ENABLED.getCode().equals(e.getStatus()))
+                .map(this::toDto)
+                .orElse(null);
     }
 
     @Override
-    public Map<Long, ExampleSentenceDto> findByBizIds(String bizType, Collection<Long> bizIds) {
-        if (bizType == null || bizIds == null || bizIds.isEmpty()) {
-            return Collections.emptyMap();
-        }
-        List<ExampleSentence> sentences = exampleSentenceRepository.findByBizTypeAndBizIdInAndStatus(
-                bizType, bizIds, StatusEnum.ENABLED.getCode());
-        if (sentences == null || sentences.isEmpty()) {
-            return Collections.emptyMap();
-        }
-        sentences.sort(activeSentenceComparator());
+    public Map<Long, ExampleSentenceDto> findByIds(Collection<Long> ids) {
+        if (ids == null || ids.isEmpty()) return Collections.emptyMap();
+        List<ExampleSentence> all = exampleSentenceRepository.findAllById(ids);
+        if (all == null || all.isEmpty()) return Collections.emptyMap();
         Map<Long, ExampleSentenceDto> result = new LinkedHashMap<>();
-        for (ExampleSentence sentence : sentences) {
-            if (!result.containsKey(sentence.getBizId())) {
-                result.put(sentence.getBizId(), toDto(sentence));
+        for (ExampleSentence e : all) {
+            if (StatusEnum.ENABLED.getCode().equals(e.getStatus())) {
+                result.put(e.getId(), toDto(e));
             }
         }
         return result;
     }
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
-    public ExampleSentenceDto syncOne(String bizType, Long bizId, ExampleSentenceDto sentence) {
-        if (bizType == null || bizId == null) {
-            throw new BadRequestException("例句业务类型或业务ID不能为空");
+    public List<ExampleSentenceDto> findByStructureId(Long structureId) {
+        if (structureId == null) return Collections.emptyList();
+        List<ExampleSentence> sentences = exampleSentenceRepository
+                .findByStructureIdAndStatus(structureId, StatusEnum.ENABLED.getCode());
+        if (sentences == null || sentences.isEmpty()) return Collections.emptyList();
+        sentences.sort(activeSentenceComparator());
+        return sentences.stream().map(this::toDto).collect(Collectors.toList());
+    }
+
+    @Override
+    public Map<Long, List<ExampleSentenceDto>> findByStructureIds(Collection<Long> structureIds) {
+        if (structureIds == null || structureIds.isEmpty()) return Collections.emptyMap();
+        List<ExampleSentence> sentences = exampleSentenceRepository
+                .findByStructureIdInAndStatus(structureIds, StatusEnum.ENABLED.getCode());
+        if (sentences == null || sentences.isEmpty()) return Collections.emptyMap();
+        Map<Long, List<ExampleSentenceDto>> result = new LinkedHashMap<>();
+        for (ExampleSentence s : sentences) {
+            result.computeIfAbsent(s.getStructureId(), k -> new ArrayList<>())
+                  .add(toDto(s));
         }
-        if (sentence == null || StringUtils.isBlank(sentence.getSentence())) {
-            disableExisting(bizType, bizId, null);
+        // Sort each structure's sentences by order descending
+        for (List<ExampleSentenceDto> list : result.values()) {
+            list.sort(Comparator.comparing(ExampleSentenceDto::getOrder,
+                    Comparator.nullsLast(Comparator.reverseOrder())));
+        }
+        return result;
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public ExampleSentenceDto save(ExampleSentenceDto dto) {
+        if (dto == null || StringUtils.isBlank(dto.getSentence())) {
             return null;
         }
 
         ExampleSentence entity;
-        if (sentence.getId() == null) {
+        if (dto.getId() == null) {
             entity = new ExampleSentence();
-            entity.setBizType(bizType);
-            entity.setBizId(bizId);
         } else {
-            entity = exampleSentenceRepository.findById(sentence.getId())
-                    .orElseThrow(() -> new BadRequestException("例句不存在: " + sentence.getId()));
-            if (!bizType.equals(entity.getBizType()) || !bizId.equals(entity.getBizId())
-                    || StatusEnum.DISABLED.getCode().equals(entity.getStatus())) {
-                throw new BadRequestException("例句ID不属于当前业务对象: " + sentence.getId());
-            }
+            entity = exampleSentenceRepository.findById(dto.getId())
+                    .orElseThrow(() -> new BadRequestException("例句不存在: " + dto.getId()));
         }
 
-        apply(entity, sentence);
+        apply(entity, dto);
         entity.setStatus(StatusEnum.ENABLED.getCode());
         entity = exampleSentenceRepository.save(entity);
-        disableExisting(bizType, bizId, entity.getId());
         return toDto(entity);
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void disableByBizIds(String bizType, Collection<Long> bizIds) {
-        if (bizType == null || bizIds == null || bizIds.isEmpty()) {
-            return;
-        }
-        List<ExampleSentence> existing = exampleSentenceRepository.findByBizTypeAndBizIdInAndStatus(
-                bizType, bizIds, StatusEnum.ENABLED.getCode());
-        if (existing == null || existing.isEmpty()) {
-            return;
-        }
-        for (ExampleSentence sentence : existing) {
-            sentence.setStatus(StatusEnum.DISABLED.getCode());
-            exampleSentenceRepository.save(sentence);
-        }
+    public void disableById(Long id) {
+        if (id == null) return;
+        exampleSentenceRepository.findById(id).ifPresent(entity -> {
+            entity.setStatus(StatusEnum.DISABLED.getCode());
+            exampleSentenceRepository.save(entity);
+        });
     }
 
-    private void disableExisting(String bizType, Long bizId, Long keepId) {
-        List<ExampleSentence> existing = exampleSentenceRepository.findByBizTypeAndBizIdAndStatus(
-                bizType, bizId, StatusEnum.ENABLED.getCode());
-        if (existing == null || existing.isEmpty()) {
-            return;
-        }
-        for (ExampleSentence sentence : existing) {
-            if (keepId != null && keepId.equals(sentence.getId())) {
-                continue;
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void disableByIds(Collection<Long> ids) {
+        if (ids == null || ids.isEmpty()) return;
+        List<ExampleSentence> existing = exampleSentenceRepository.findAllById(ids);
+        if (existing == null || existing.isEmpty()) return;
+        for (ExampleSentence e : existing) {
+            if (StatusEnum.ENABLED.getCode().equals(e.getStatus())) {
+                e.setStatus(StatusEnum.DISABLED.getCode());
             }
-            sentence.setStatus(StatusEnum.DISABLED.getCode());
-            exampleSentenceRepository.save(sentence);
         }
+        exampleSentenceRepository.saveAll(existing);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void disableByStructureId(Long structureId) {
+        if (structureId == null) return;
+        List<ExampleSentence> existing = exampleSentenceRepository
+                .findByStructureIdAndStatus(structureId, StatusEnum.ENABLED.getCode());
+        if (existing == null || existing.isEmpty()) return;
+        for (ExampleSentence e : existing) {
+            e.setStatus(StatusEnum.DISABLED.getCode());
+        }
+        exampleSentenceRepository.saveAll(existing);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void disableByStructureIds(Collection<Long> structureIds) {
+        if (structureIds == null || structureIds.isEmpty()) return;
+        List<ExampleSentence> existing = exampleSentenceRepository
+                .findByStructureIdInAndStatus(structureIds, StatusEnum.ENABLED.getCode());
+        if (existing == null || existing.isEmpty()) return;
+        for (ExampleSentence e : existing) {
+            e.setStatus(StatusEnum.DISABLED.getCode());
+        }
+        exampleSentenceRepository.saveAll(existing);
     }
 
     private void apply(ExampleSentence entity, ExampleSentenceDto dto) {
@@ -130,16 +151,16 @@ public class ExampleSentenceServiceImpl implements ExampleSentenceService {
         entity.setTranslations(JsonUtils.toTranslationJson(dto.getTranslations()));
         entity.setImageId(dto.getImageId());
         entity.setSentenceOrder(dto.getOrder() != null ? dto.getOrder() : 0);
+        if (dto.getStructureId() != null) {
+            entity.setStructureId(dto.getStructureId());
+        }
     }
 
     private ExampleSentenceDto toDto(ExampleSentence entity) {
-        if (entity == null) {
-            return null;
-        }
+        if (entity == null) return null;
         ExampleSentenceDto dto = new ExampleSentenceDto();
         dto.setId(entity.getId());
-        dto.setBizType(entity.getBizType());
-        dto.setBizId(entity.getBizId());
+        dto.setStructureId(entity.getStructureId());
         dto.setSentence(entity.getSentence());
         dto.setPinyin(entity.getPinyin());
         dto.setAudioId(entity.getAudioId());

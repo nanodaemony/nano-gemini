@@ -10,7 +10,13 @@ import java.util.List;
 @Repository
 public interface ExampleSentenceRepository extends JpaRepository<ExampleSentence, Long> {
 
-    List<ExampleSentence> findByBizTypeAndBizIdAndStatus(String bizType, Long bizId, Integer status);
+    /**
+     * 查询某结构的所有启用例句（1:N vocab_structure 场景）
+     */
+    List<ExampleSentence> findByStructureIdAndStatus(Long structureId, Integer status);
 
-    List<ExampleSentence> findByBizTypeAndBizIdInAndStatus(String bizType, Collection<Long> bizIds, Integer status);
+    /**
+     * 批量查询多个结构的所有启用例句
+     */
+    List<ExampleSentence> findByStructureIdInAndStatus(Collection<Long> structureIds, Integer status);
 }

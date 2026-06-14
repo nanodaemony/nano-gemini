@@ -38,6 +38,9 @@ public class CharWordDto implements Serializable {
     @ApiModelProperty(value = "组词例句")
     private ExampleSentenceDto wordItemSentence;
 
+    @ApiModelProperty(value = "例句ID（对应 example_sentence.id）")
+    private Long sentenceId;
+
     @ApiModelProperty(value = "创建时间")
     private Timestamp createTime;
 

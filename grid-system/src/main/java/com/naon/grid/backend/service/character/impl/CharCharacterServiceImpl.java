@@ -16,7 +16,6 @@ import com.naon.grid.backend.service.common.ExampleSentenceService;
 import com.naon.grid.backend.service.common.dto.ExampleSentenceDto;
 import com.naon.grid.enums.EditStatusEnum;
 import com.naon.grid.enums.PublishStatusEnum;
-import com.naon.grid.enums.SentenceBizTypeEnum;
 import com.naon.grid.enums.StatusEnum;
 import com.naon.grid.exception.BadRequestException;
 import com.naon.grid.exception.EntityNotFoundException;
@@ -45,8 +44,6 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class CharCharacterServiceImpl implements CharCharacterService {
-
-    private static final String CHAR_WORD_SENTENCE_BIZ_TYPE = SentenceBizTypeEnum.CHAR_WORD_SENTENCE.getCode();
 
     private final CharCharacterRepository charCharacterRepository;
     private final CharComparisonRepository charComparisonRepository;
@@ -265,21 +262,20 @@ public class CharCharacterServiceImpl implements CharCharacterService {
         if (words == null || words.isEmpty()) {
             return words;
         }
-        List<Long> wordIds = words.stream()
-                .map(CharWordDto::getId)
+        List<Long> sentenceIds = words.stream()
+                .map(CharWordDto::getSentenceId)
                 .filter(id -> id != null)
-                .map(Integer::longValue)
                 .collect(Collectors.toList());
-        if (wordIds.isEmpty()) {
+        if (sentenceIds.isEmpty()) {
             return words;
         }
-        Map<Long, ExampleSentenceDto> sentenceMap = exampleSentenceService.findByBizIds(CHAR_WORD_SENTENCE_BIZ_TYPE, wordIds);
+        Map<Long, ExampleSentenceDto> sentenceMap = exampleSentenceService.findByIds(sentenceIds);
         if (sentenceMap == null || sentenceMap.isEmpty()) {
             return words;
         }
         for (CharWordDto word : words) {
-            if (word.getId() != null) {
-                word.setWordItemSentence(sentenceMap.get(word.getId().longValue()));
+            if (word.getSentenceId() != null) {
+                word.setWordItemSentence(sentenceMap.get(word.getSentenceId()));
             }
         }
         return words;
@@ -435,13 +431,12 @@ public class CharCharacterServiceImpl implements CharCharacterService {
         if (words == null || words.isEmpty()) {
             return;
         }
-        List<Long> wordIds = words.stream()
-                .map(CharWord::getId)
+        List<Long> sentenceIds = words.stream()
+                .map(CharWord::getSentenceId)
                 .filter(id -> id != null)
-                .map(Integer::longValue)
                 .collect(Collectors.toList());
-        if (!wordIds.isEmpty()) {
-            exampleSentenceService.disableByBizIds(CHAR_WORD_SENTENCE_BIZ_TYPE, wordIds);
+        if (!sentenceIds.isEmpty()) {
+            exampleSentenceService.disableByIds(sentenceIds);
         }
     }
 
@@ -456,11 +451,23 @@ public class CharCharacterServiceImpl implements CharCharacterService {
             if (savedWord == null || savedWord.getId() == null || submittedDto == null) {
                 continue;
             }
-            exampleSentenceService.syncOne(
-                    CHAR_WORD_SENTENCE_BIZ_TYPE,
-                    savedWord.getId().longValue(),
-                    submittedDto.getWordItemSentence()
-            );
+            ExampleSentenceDto sentenceDto = submittedDto.getWordItemSentence();
+            if (sentenceDto != null && sentenceDto.getSentence() != null && !sentenceDto.getSentence().trim().isEmpty()) {
+                // 如果有旧 sentenceId，用旧 id 去更新
+                if (savedWord.getSentenceId() != null) {
+                    sentenceDto.setId(savedWord.getSentenceId());
+                }
+                ExampleSentenceDto saved = exampleSentenceService.save(sentenceDto);
+                if (saved != null && saved.getId() != null) {
+                    savedWord.setSentenceId(saved.getId());
+                }
+            } else {
+                // 没有例句：禁用旧的，清空 sentenceId
+                if (savedWord.getSentenceId() != null) {
+                    exampleSentenceService.disableById(savedWord.getSentenceId());
+                    savedWord.setSentenceId(null);
+                }
+            }
         }
     }
 
@@ -507,6 +514,7 @@ public class CharCharacterServiceImpl implements CharCharacterService {
         dto.setPartOfSpeech(word.getPartOfSpeech());
         dto.setWordItemTranslations(JsonUtils.parseTranslationList(word.getWordItemTranslations()));
         dto.setWordOrder(word.getWordOrder());
+        dto.setSentenceId(word.getSentenceId());
         dto.setCreateTime(word.getCreateTime());
         dto.setUpdateTime(word.getUpdateTime());
         dto.setStatus(word.getStatus());

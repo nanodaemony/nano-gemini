@@ -47,6 +47,10 @@ public class CharWord implements Serializable {
     @Column(name = "word_item_translations", columnDefinition = "text")
     private String wordItemTranslations;
 
+    @Column(name = "sentence_id")
+    @ApiModelProperty(value = "组词例句ID（对应 example_sentence.id）")
+    private Long sentenceId;
+
     @NotNull
     @Column(name = "`order`", nullable = false)
     @ApiModelProperty(value = "组词排序权重（值大的排前面）")

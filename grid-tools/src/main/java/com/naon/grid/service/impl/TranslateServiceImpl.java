@@ -85,12 +85,8 @@ public class TranslateServiceImpl implements TranslateService {
             GenerationResult result = callDashScope(request.getModel(), prompt);
             log.info("翻译结果，result: {}", JSONUtil.toJsonStr(result));
 
-            // GenerationResult(requestId=9645a4db-40d2-9e0c-8110-119a4a191946, usage=GenerationUsage(inputTokens=32, outputTokens=6, totalTokens=38, outputTokensDetails=null, promptTokensDetails=null), output=GenerationOutput(text=null, finishReason=stop, choices=[GenerationOutput.Choice(finishReason=stop, index=null, message=Message(role=assistant, content=My hair is real hair., toolCalls=null, toolCallId=null, name=null, contents=null, reasoningContent=null, partial=null), logprobs=null)], searchInfo=null, modelName=qwen-mt-flash), statusCode=200, code=, message=)
-
-            // 获取翻译结果 - 从 choices[0].message.content 中获取
-            if (result.getOutput() != null && result.getOutput().getChoices() != null && !result.getOutput().getChoices().isEmpty()) {
-                targetText = result.getOutput().getChoices().get(0).getMessage().getContent();
-            }
+            // 获取翻译结果 - 优先使用 output.text，fallback 到 choices[0].message.content
+            targetText = extractTranslatedText(result);
             requestId = result.getRequestId();
 
             log.info("翻译成功，sourceText: {}, targetLanguage: {}, requestId: {}",
@@ -149,13 +145,8 @@ public class TranslateServiceImpl implements TranslateService {
             GenerationResult result = callDashScope(request.getModel(), prompt);
             log.info("翻译结果，result: {}", JSONUtil.toJsonStr(result));
 
-            // 提取翻译结果
-            String targetText = null;
-            if (result.getOutput() != null && result.getOutput().getChoices() != null
-                    && !result.getOutput().getChoices().isEmpty()
-                    && result.getOutput().getChoices().get(0).getMessage() != null) {
-                targetText = result.getOutput().getChoices().get(0).getMessage().getContent();
-            }
+            // 提取翻译结果 - 优先使用 output.text，fallback 到 choices[0].message.content
+            String targetText = extractTranslatedText(result);
             String requestId = result.getRequestId();
 
             log.info("翻译成功，sourceText: {}, sourceLanguage: {}, targetLanguage: {}, requestId: {}",
@@ -203,5 +194,31 @@ public class TranslateServiceImpl implements TranslateService {
                 .prompt(prompt)
                 .build();
         return gen.call(param);
+    }
+
+    /**
+     * 从 DashScope API 响应中提取翻译文本
+     * <p>
+     * 翻译模型（如 qwen-mt-flash）返回 output.text，
+     * 通用模型（如 qwen-plus）返回 output.choices[].message.content。
+     * 优先使用 text，fallback 到 choices。
+     * @param result DashScope API 响应
+     * @return 翻译文本，提取失败时返回 null
+     */
+    private String extractTranslatedText(GenerationResult result) {
+        if (result.getOutput() == null) {
+            return null;
+        }
+        // 优先使用 output.text（翻译模型返回格式）
+        String text = result.getOutput().getText();
+        if (StringUtils.isNotBlank(text)) {
+            return text;
+        }
+        // fallback 到 output.choices[0].message.content（通用模型返回格式）
+        if (result.getOutput().getChoices() != null && !result.getOutput().getChoices().isEmpty()
+                && result.getOutput().getChoices().get(0).getMessage() != null) {
+            return result.getOutput().getChoices().get(0).getMessage().getContent();
+        }
+        return null;
     }
 }

@@ -102,6 +102,38 @@ public class VocabWordServiceImpl implements VocabWordService {
         if (draft.getPinyin() != null)          dto.setPinyin(draft.getPinyin());
         if (draft.getAudioId() != null)         dto.setAudioId(draft.getAudioId());
         if (draft.getHskLevel() != null)        dto.setHskLevel(draft.getHskLevel());
+
+        // === 列表统计字段：从草稿数据计算（不再走 populateVocabListStats 的 DB 查询） ===
+        if (draft.getSenses() != null && !draft.getSenses().isEmpty()) {
+            dto.setSenseCount(draft.getSenses().size());
+            dto.setStructureCount(
+                draft.getSenses().stream()
+                    .filter(s -> s.getStructures() != null)
+                    .mapToInt(s -> s.getStructures().size())
+                    .sum()
+            );
+            dto.setTranslationStatus(
+                draft.getSenses().stream()
+                    .anyMatch(s -> s.getDefTranslations() != null && !s.getDefTranslations().isEmpty())
+                ? "generated" : "not_generated"
+            );
+            dto.setImageStatus(
+                draft.getSenses().stream()
+                    .anyMatch(s -> s.getDefImageId() != null)
+                ? "generated" : "not_generated"
+            );
+        } else {
+            dto.setSenseCount(0);
+            dto.setStructureCount(0);
+            dto.setTranslationStatus("not_generated");
+            dto.setImageStatus("not_generated");
+        }
+        dto.setPinyinStatus(
+            draft.getPinyin() != null && !draft.getPinyin().isEmpty() ? "generated" : "not_generated"
+        );
+        dto.setAudioStatus(
+            draft.getAudioId() != null ? "generated" : "not_generated"
+        );
     }
 
     /**
@@ -137,6 +169,12 @@ public class VocabWordServiceImpl implements VocabWordService {
                 .collect(Collectors.groupingBy(VocabSense::getWordId));
 
         for (VocabWordDto dto : dtos) {
+            // 有草稿的词汇，统计字段已在 applyDraftOverlay 中从草稿数据计算，跳过 DB 查询结果
+            if (EditStatusEnum.DRAFT.getCode().equals(dto.getEditStatus())
+                    || EditStatusEnum.REVIEWED.getCode().equals(dto.getEditStatus())) {
+                continue;
+            }
+
             dto.setSenseCount(senseCountMap.getOrDefault(dto.getId(), 0L).intValue());
             dto.setStructureCount(structureCountMap.getOrDefault(dto.getId(), 0L).intValue());
 

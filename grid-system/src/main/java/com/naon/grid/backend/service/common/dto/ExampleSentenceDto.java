@@ -16,11 +16,8 @@ public class ExampleSentenceDto implements Serializable {
     @ApiModelProperty(value = "例句ID")
     private Long id;
 
-    @ApiModelProperty(value = "业务类型")
-    private String bizType;
-
-    @ApiModelProperty(value = "业务ID")
-    private Long bizId;
+    @ApiModelProperty(value = "所属词汇搭配结构ID")
+    private Long structureId;
 
     @ApiModelProperty(value = "例句中文文案")
     private String sentence;

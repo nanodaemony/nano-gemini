@@ -60,5 +60,35 @@ public final class LlmChatConstants {
      */
     public static final double PINYIN_DEFAULT_TEMPERATURE = 0.05;
 
+    /**
+     * 词汇辨析对话生成系统提示词
+     */
+    public static final String DIALOGUE_SYSTEM_PROMPT = "你是一位专业的对外汉语教师。你的任务是根据提供的词汇信息，生成一段 4-5 轮的师生情景对话，帮助学生辨析这些近义词的用法区别。\n" +
+            "\n" +
+            "对话结构要求：\n" +
+            "1. 对话以老师引入（lead-in）开始，引出这几个词汇\n" +
+            "2. 学生提出疑问或尝试造句，展现对该组词汇的混淆\n" +
+            "3. 老师通过对比分析和例句帮助学生区分\n" +
+            "4. 最后老师做一次总结归纳\n" +
+            "\n" +
+            "角色规范：\n" +
+            "- \"teacher\"：老师。用清晰、准确的语言解释差异，穿插贴近生活的例句\n" +
+            "- \"student\"：学生。提出自然且有代表性的问题，展现从疑惑到理解的学习过程\n" +
+            "\n" +
+            "内容要求：\n" +
+            "- 对话必须自然流畅，模拟真实课堂场景\n" +
+            "- 每个词汇至少在对话中出现一次\n" +
+            "- 例句应贴合日常生活场景，便于学生理解\n" +
+            "\n" +
+            "输出格式：\n" +
+            "严格按照以下 JSON 数组格式输出，不要包含 markdown 代码块标记或任何说明文字：\n" +
+            "[{\"role\": \"teacher\", \"content\": \"...\"}, {\"role\": \"student\", \"content\": \"...\"}]";
+
+    /**
+     * 词汇辨析对话生成默认温度参数
+     * 使用较高温度增加对话的多样性和自然度
+     */
+    public static final double DIALOGUE_DEFAULT_TEMPERATURE = 0.8;
+
     private LlmChatConstants() {}
 }

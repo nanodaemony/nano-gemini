@@ -60,5 +60,17 @@ public final class LlmChatConstants {
      */
     public static final double PINYIN_DEFAULT_TEMPERATURE = 0.05;
 
+    /**
+     * 词汇辨析对话生成系统提示词
+     */
+    public static final String DIALOGUE_SYSTEM_PROMPT = "你是一位对外汉语老师，需要根据词汇列表生成师生情景对话。" +
+            "对话中要体现词汇的用法区别，每个词汇至少出现一次。" +
+            "请以JSON数组格式返回，每个元素包含role(teacher/student)和content字段。";
+
+    /**
+     * 词汇辨析对话生成默认温度参数
+     */
+    public static final double DIALOGUE_DEFAULT_TEMPERATURE = 0.7;
+
     private LlmChatConstants() {}
 }

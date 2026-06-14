@@ -3,18 +3,19 @@ package com.naon.grid.enums;
 import lombok.Getter;
 
 /**
- * 汉字书类型枚举
+ * 词汇书类型枚举
  */
 @Getter
-public enum CharBookTypeEnum {
+public enum VocabBookTypeEnum {
 
-    HANDWRITING("HANDWRITING", "手写汉字书"),
+    HSK("HSK", "HSK词汇"),
+
     ;
 
     private final String code;
     private final String description;
 
-    CharBookTypeEnum(String code, String description) {
+    VocabBookTypeEnum(String code, String description) {
         this.code = code;
         this.description = description;
     }

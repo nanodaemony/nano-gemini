@@ -35,6 +35,7 @@ CREATE TABLE `vocab_sense`  (
   `def_translations` text NULL COMMENT '释义翻译列表',
   `def_audio_id` bigint NULL DEFAULT NULL COMMENT '中文释义音频资源ID',
   `def_image_id` bigint NULL DEFAULT NULL COMMENT '中文释义图片(ID)',
+  `def_image_sentence_id` bigint NULL DEFAULT NULL COMMENT '释义图片例句ID（对应 example_sentence.id）',
 
   `order` int NOT NULL DEFAULT 0 COMMENT '义项排序权重（大在前）',
   `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',

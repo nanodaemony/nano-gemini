@@ -57,6 +57,7 @@ CREATE TABLE `char_word`  (
   `pinyin` varchar(100) NULL DEFAULT NULL COMMENT '组词拼音',
   `part_of_speech` varchar(50) NULL DEFAULT NULL COMMENT '组词词性',
   `word_item_translations` text NULL COMMENT '组词的外文翻译',
+  `sentence_id` bigint NULL DEFAULT NULL COMMENT '组词例句ID（对应 example_sentence.id）',
 
   `order` int NULL DEFAULT 0 COMMENT '组词排序(值大的排前面)',
   `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',

@@ -20,6 +20,7 @@ import com.naon.grid.modules.app.rest.vo.AppVocabWordDetailVO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -33,6 +34,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/app/vocab")
@@ -64,11 +66,16 @@ public class AppVocabWordController {
 
     @ApiOperation("词汇详情")
     @AnonymousGetMapping("/{id}")
-    public ResponseEntity<AppVocabWordDetailVO> getDetail(@PathVariable Integer id) {
+    public ResponseEntity<AppVocabWordDetailVO> getDetail(
+            @PathVariable Integer id,
+            @RequestParam String language) {
+        if (language == null || language.trim().isEmpty()) {
+            throw new IllegalArgumentException("language 参数不能为空");
+        }
         VocabWordDto dto = vocabWordService.findPublishedById(id);
         Map<Long, AudioResourceDto> audioMap = collectAndBatchQueryAudios(dto);
         Map<Long, AliOssStorageDto> imageMap = collectAndBatchQueryImages(dto);
-        AppVocabWordDetailVO vo = toDetailVO(dto, audioMap, imageMap);
+        AppVocabWordDetailVO vo = toDetailVO(dto, audioMap, imageMap, language);
         return new ResponseEntity<>(vo, HttpStatus.OK);
     }
 
@@ -99,6 +106,9 @@ public class AppVocabWordController {
                 if (sense.getDefAudioId() != null) {
                     audioIds.add(sense.getDefAudioId());
                 }
+                if (sense.getDefImageSentence() != null && sense.getDefImageSentence().getAudioId() != null) {
+                    audioIds.add(sense.getDefImageSentence().getAudioId());
+                }
                 if (sense.getStructures() != null) {
                     for (VocabStructureDto structure : sense.getStructures()) {
                         if (structure.getStructureSentences() != null) {
@@ -114,7 +124,7 @@ public class AppVocabWordController {
         }
         List<AudioResourceDto> audioDtos = audioResourceService.findByIds(audioIds);
         return audioDtos.stream()
-                .collect(Collectors.toMap(AudioResourceDto::getId, audio -> audio));
+                .collect(Collectors.toMap(AudioResourceDto::getId, audio -> audio, (existing, replacement) -> existing));
     }
 
     private Map<Long, AliOssStorageDto> collectAndBatchQueryImages(VocabWordDto dto) {
@@ -123,6 +133,9 @@ public class AppVocabWordController {
             for (VocabSenseDto sense : dto.getSenses()) {
                 if (sense.getDefImageId() != null) {
                     imageIds.add(sense.getDefImageId());
+                }
+                if (sense.getDefImageSentence() != null && sense.getDefImageSentence().getImageId() != null) {
+                    imageIds.add(sense.getDefImageSentence().getImageId());
                 }
                 if (sense.getStructures() != null) {
                     for (VocabStructureDto structure : sense.getStructures()) {
@@ -139,55 +152,80 @@ public class AppVocabWordController {
         }
         List<AliOssStorageDto> imageDtos = aliOssStorageService.findByIds(imageIds);
         return imageDtos.stream()
-                .collect(Collectors.toMap(AliOssStorageDto::getId, img -> img));
+                .collect(Collectors.toMap(AliOssStorageDto::getId, img -> img, (existing, replacement) -> existing));
     }
 
-    private AppVocabWordDetailVO toDetailVO(VocabWordDto dto, Map<Long, AudioResourceDto> audioMap, Map<Long, AliOssStorageDto> imageMap) {
+    private AppVocabWordDetailVO toDetailVO(VocabWordDto dto, Map<Long, AudioResourceDto> audioMap,
+                                             Map<Long, AliOssStorageDto> imageMap, String language) {
         AppVocabWordDetailVO vo = new AppVocabWordDetailVO();
         vo.setId(dto.getId());
         vo.setWord(dto.getWord());
         vo.setWordTraditional(dto.getWordTraditional());
         vo.setPinyin(dto.getPinyin());
-        if (dto.getAudioId() != null && audioMap.containsKey(dto.getAudioId())) {
-            AppVocabWordDetailVO.AudioVO audioVO = new AppVocabWordDetailVO.AudioVO();
-            audioVO.setAudioUrl(audioMap.get(dto.getAudioId()).getFileUrl());
-            vo.setAudio(audioVO);
+        if (dto.getAudioId() != null) {
+            AudioResourceDto audioDto = audioMap.get(dto.getAudioId());
+            if (audioDto != null) {
+                AppVocabWordDetailVO.AudioVO audioVO = new AppVocabWordDetailVO.AudioVO();
+                audioVO.setAudioUrl(audioDto.getFileUrl());
+                vo.setAudio(audioVO);
+            } else {
+                log.error("词汇音频资源未找到, audioId={}", dto.getAudioId());
+            }
         }
         vo.setHskLevel(dto.getHskLevel());
-        vo.setSenses(toSenseVOList(dto.getSenses(), audioMap, imageMap));
+        vo.setSenses(toSenseVOList(dto.getSenses(), audioMap, imageMap, language));
         return vo;
     }
 
-    private List<AppVocabWordDetailVO.VocabSenseVO> toSenseVOList(List<VocabSenseDto> dtos, Map<Long, AudioResourceDto> audioMap, Map<Long, AliOssStorageDto> imageMap) {
+    private List<AppVocabWordDetailVO.VocabSenseVO> toSenseVOList(List<VocabSenseDto> dtos,
+            Map<Long, AudioResourceDto> audioMap, Map<Long, AliOssStorageDto> imageMap, String language) {
         if (dtos == null) {
             return Collections.emptyList();
         }
-        return dtos.stream().map(dto -> toSenseVO(dto, audioMap, imageMap)).collect(Collectors.toList());
+        return dtos.stream().map(dto -> toSenseVO(dto, audioMap, imageMap, language)).collect(Collectors.toList());
     }
 
-    private AppVocabWordDetailVO.VocabSenseVO toSenseVO(VocabSenseDto dto, Map<Long, AudioResourceDto> audioMap, Map<Long, AliOssStorageDto> imageMap) {
+    private AppVocabWordDetailVO.VocabSenseVO toSenseVO(VocabSenseDto dto,
+            Map<Long, AudioResourceDto> audioMap, Map<Long, AliOssStorageDto> imageMap, String language) {
         AppVocabWordDetailVO.VocabSenseVO vo = new AppVocabWordDetailVO.VocabSenseVO();
         vo.setId(dto.getId());
         vo.setPartOfSpeech(dto.getPartOfSpeech());
         vo.setChineseDef(dto.getChineseDef());
-        if (dto.getDefAudioId() != null && audioMap.containsKey(dto.getDefAudioId())) {
-            AppVocabWordDetailVO.AudioVO audioVO = new AppVocabWordDetailVO.AudioVO();
-            audioVO.setAudioUrl(audioMap.get(dto.getDefAudioId()).getFileUrl());
-            vo.setDefAudio(audioVO);
+        // defAudio
+        if (dto.getDefAudioId() != null) {
+            AudioResourceDto audioDto = audioMap.get(dto.getDefAudioId());
+            if (audioDto != null) {
+                AppVocabWordDetailVO.AudioVO audioVO = new AppVocabWordDetailVO.AudioVO();
+                audioVO.setAudioUrl(audioDto.getFileUrl());
+                vo.setDefAudio(audioVO);
+            } else {
+                log.error("义项释义音频资源未找到, audioId={}", dto.getDefAudioId());
+            }
         }
-        if (dto.getDefImageId() != null && imageMap.containsKey(dto.getDefImageId())) {
-            AppVocabWordDetailVO.ImageVO imageVO = new AppVocabWordDetailVO.ImageVO();
-            imageVO.setImageUrl(imageMap.get(dto.getDefImageId()).getFileUrl());
-            vo.setDefImage(imageVO);
+        // defImage
+        if (dto.getDefImageId() != null) {
+            AliOssStorageDto imgDto = imageMap.get(dto.getDefImageId());
+            if (imgDto != null) {
+                AppVocabWordDetailVO.ImageVO imageVO = new AppVocabWordDetailVO.ImageVO();
+                imageVO.setImageUrl(imgDto.getFileUrl());
+                vo.setDefImage(imageVO);
+            } else {
+                log.error("义项释义图片资源未找到, imageId={}", dto.getDefImageId());
+            }
         }
-        vo.setTranslations(toTextTranslationVOList(dto.getDefTranslations()));
+        // translation（按语言筛选单条）
+        vo.setTranslation(filterByLanguage(dto.getDefTranslations(), language));
+        // defImageSentence（释义图片例句）
+        if (dto.getDefImageSentence() != null) {
+            vo.setDefImageSentence(toExampleVO(dto.getDefImageSentence(), audioMap, imageMap, language));
+        }
         vo.setSynonyms(toSynonymVOList(dto.getSynonymWords()));
         vo.setAntonyms(toAntonymVOList(dto.getAntonymWords()));
         vo.setRelatedForward(toRelatedWordVOList(dto.getSequentialWords()));
         vo.setRelatedBackward(toRelatedWordVOList(dto.getReverseSequentialWords()));
         vo.setRelatedOther(toRelatedWordVOList(dto.getJumbledWords()));
         vo.setSenseOrder(dto.getSenseOrder());
-        vo.setStructures(toStructureVOList(dto.getStructures(), audioMap, imageMap));
+        vo.setStructures(toStructureVOList(dto.getStructures(), audioMap, imageMap, language));
         return vo;
     }
 
@@ -224,56 +262,74 @@ public class AppVocabWordController {
         }).collect(Collectors.toList());
     }
 
-    private List<AppVocabWordDetailVO.VocabStructureVO> toStructureVOList(List<VocabStructureDto> dtos, Map<Long, AudioResourceDto> audioMap, Map<Long, AliOssStorageDto> imageMap) {
+    private List<AppVocabWordDetailVO.VocabStructureVO> toStructureVOList(List<VocabStructureDto> dtos,
+            Map<Long, AudioResourceDto> audioMap, Map<Long, AliOssStorageDto> imageMap, String language) {
         if (dtos == null) {
             return Collections.emptyList();
         }
-        return dtos.stream().map(dto -> toStructureVO(dto, audioMap, imageMap)).collect(Collectors.toList());
+        return dtos.stream().map(dto -> toStructureVO(dto, audioMap, imageMap, language)).collect(Collectors.toList());
     }
 
-    private AppVocabWordDetailVO.VocabStructureVO toStructureVO(VocabStructureDto dto, Map<Long, AudioResourceDto> audioMap, Map<Long, AliOssStorageDto> imageMap) {
+    private AppVocabWordDetailVO.VocabStructureVO toStructureVO(VocabStructureDto dto,
+            Map<Long, AudioResourceDto> audioMap, Map<Long, AliOssStorageDto> imageMap, String language) {
         AppVocabWordDetailVO.VocabStructureVO vo = new AppVocabWordDetailVO.VocabStructureVO();
         vo.setId(dto.getId());
         vo.setPattern(dto.getPattern());
         vo.setPatternDef(dto.getPatternDef());
-        vo.setPatternDefTranslations(toTextTranslationVOList(dto.getPatternDefTranslations()));
+        vo.setPatternDefTranslation(filterByLanguage(dto.getPatternDefTranslations(), language));
         vo.setStructureOrder(dto.getStructureOrder());
-        vo.setExamples(toExampleVOList(dto.getStructureSentences(), audioMap, imageMap));
+        vo.setExamples(toExampleVOList(dto.getStructureSentences(), audioMap, imageMap, language));
         return vo;
     }
 
-    private List<AppVocabWordDetailVO.VocabExampleVO> toExampleVOList(List<ExampleSentenceDto> dtos, Map<Long, AudioResourceDto> audioMap, Map<Long, AliOssStorageDto> imageMap) {
-        if (dtos == null) {
-            return Collections.emptyList();
-        }
-        return dtos.stream().map(dto -> toExampleVO(dto, audioMap, imageMap)).collect(Collectors.toList());
-    }
-
-    private AppVocabWordDetailVO.VocabExampleVO toExampleVO(ExampleSentenceDto dto, Map<Long, AudioResourceDto> audioMap, Map<Long, AliOssStorageDto> imageMap) {
+    private AppVocabWordDetailVO.VocabExampleVO toExampleVO(ExampleSentenceDto dto,
+            Map<Long, AudioResourceDto> audioMap, Map<Long, AliOssStorageDto> imageMap, String language) {
         AppVocabWordDetailVO.VocabExampleVO vo = new AppVocabWordDetailVO.VocabExampleVO();
         vo.setId(dto.getId() != null ? dto.getId().intValue() : null);
         vo.setSentence(dto.getSentence());
-        if (dto.getAudioId() != null && audioMap.containsKey(dto.getAudioId())) {
-            AppVocabWordDetailVO.AudioVO audioVO = new AppVocabWordDetailVO.AudioVO();
-            audioVO.setAudioUrl(audioMap.get(dto.getAudioId()).getFileUrl());
-            vo.setAudio(audioVO);
+        if (dto.getAudioId() != null) {
+            AudioResourceDto audioDto = audioMap.get(dto.getAudioId());
+            if (audioDto != null) {
+                AppVocabWordDetailVO.AudioVO audioVO = new AppVocabWordDetailVO.AudioVO();
+                audioVO.setAudioUrl(audioDto.getFileUrl());
+                vo.setAudio(audioVO);
+            } else {
+                log.error("例句音频资源未找到, audioId={}", dto.getAudioId());
+            }
         }
         vo.setPinyin(dto.getPinyin());
-        vo.setTranslations(toTextTranslationVOList(dto.getTranslations()));
-        if (dto.getImageId() != null && imageMap.containsKey(dto.getImageId())) {
-            AppVocabWordDetailVO.ImageVO imageVO = new AppVocabWordDetailVO.ImageVO();
-            imageVO.setImageUrl(imageMap.get(dto.getImageId()).getFileUrl());
-            vo.setImage(imageVO);
+        vo.setTranslation(filterByLanguage(dto.getTranslations(), language));
+        if (dto.getImageId() != null) {
+            AliOssStorageDto imgDto = imageMap.get(dto.getImageId());
+            if (imgDto != null) {
+                AppVocabWordDetailVO.ImageVO imageVO = new AppVocabWordDetailVO.ImageVO();
+                imageVO.setImageUrl(imgDto.getFileUrl());
+                vo.setImage(imageVO);
+            } else {
+                log.error("例句图片资源未找到, imageId={}", dto.getImageId());
+            }
         }
         vo.setExampleOrder(dto.getOrder());
         return vo;
     }
 
-    private List<TextTranslationVO> toTextTranslationVOList(List<com.naon.grid.domain.common.TextTranslation> translations) {
-        if (translations == null) {
+    private List<AppVocabWordDetailVO.VocabExampleVO> toExampleVOList(List<ExampleSentenceDto> dtos,
+            Map<Long, AudioResourceDto> audioMap, Map<Long, AliOssStorageDto> imageMap, String language) {
+        if (dtos == null) {
             return Collections.emptyList();
         }
-        return translations.stream().map(this::toTextTranslationVO).collect(Collectors.toList());
+        return dtos.stream().map(dto -> toExampleVO(dto, audioMap, imageMap, language)).collect(Collectors.toList());
+    }
+
+    private TextTranslationVO filterByLanguage(List<com.naon.grid.domain.common.TextTranslation> translations, String language) {
+        if (translations == null || language == null) {
+            return null;
+        }
+        return translations.stream()
+                .filter(t -> language.equals(t.getLanguage()))
+                .findFirst()
+                .map(this::toTextTranslationVO)
+                .orElse(null);
     }
 
     private TextTranslationVO toTextTranslationVO(com.naon.grid.domain.common.TextTranslation translation) {

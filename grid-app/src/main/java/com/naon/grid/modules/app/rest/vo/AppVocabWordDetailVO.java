@@ -65,8 +65,11 @@ public class AppVocabWordDetailVO implements Serializable {
         @ApiModelProperty(value = "释义图片")
         private ImageVO defImage;
 
-        @ApiModelProperty(value = "外文翻译列表")
-        private List<TextTranslationVO> translations;
+        @ApiModelProperty(value = "中文释义外文翻译（按语言筛选后的单条）")
+        private TextTranslationVO translation;
+
+        @ApiModelProperty(value = "释义图片例句")
+        private VocabExampleVO defImageSentence;
 
         @ApiModelProperty(value = "近义词列表")
         private List<SynonymVO> synonyms;
@@ -123,8 +126,8 @@ public class AppVocabWordDetailVO implements Serializable {
         @ApiModelProperty(value = "搭配释义")
         private String patternDef;
 
-        @ApiModelProperty(value = "搭配释义外文翻译列表")
-        private List<TextTranslationVO> patternDefTranslations;
+        @ApiModelProperty(value = "搭配释义外文翻译（按语言筛选后的单条）")
+        private TextTranslationVO patternDefTranslation;
 
         @ApiModelProperty(value = "搭配排序")
         private Integer structureOrder;
@@ -148,8 +151,8 @@ public class AppVocabWordDetailVO implements Serializable {
         @ApiModelProperty(value = "例句拼音")
         private String pinyin;
 
-        @ApiModelProperty(value = "例句外文翻译列表")
-        private List<TextTranslationVO> translations;
+        @ApiModelProperty(value = "例句外文翻译（按语言筛选后的单条）")
+        private TextTranslationVO translation;
 
         @ApiModelProperty(value = "例句图片")
         private ImageVO image;

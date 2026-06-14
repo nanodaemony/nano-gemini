@@ -39,6 +39,7 @@ import com.naon.grid.exception.BadRequestException;
 import io.swagger.annotations.ApiModelProperty;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.Size;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.Data;
@@ -166,10 +167,10 @@ public class LlmChatController {
             }
         }
 
-        // 2. 调用大模型
+        // 2. 调用大模型（provider 和 model 可选，默认 ALIYUN / qwen-plus）
         ChatRequest chatRequest = new ChatRequest();
-        chatRequest.setProvider(ChatProviderEnum.ALIYUN);
-        chatRequest.setModel("qwen-plus");
+        chatRequest.setProvider(request.getProvider() != null ? request.getProvider() : ChatProviderEnum.ALIYUN);
+        chatRequest.setModel(request.getModel() != null ? request.getModel() : "qwen-plus");
         chatRequest.setSystemPrompt(LlmChatConstants.DIALOGUE_SYSTEM_PROMPT);
         chatRequest.setUserPrompt(userPromptBuilder.toString());
         chatRequest.setTemperature(LlmChatConstants.DIALOGUE_DEFAULT_TEMPERATURE);
@@ -212,6 +213,8 @@ public class LlmChatController {
                     vo.setRole(role);
                     vo.setContent(content);
                     result.add(vo);
+                } else {
+                    log.warn("跳过无效对话条目（索引 {}）：role 或 content 为空", i);
                 }
             }
 
@@ -229,8 +232,15 @@ public class LlmChatController {
     @Data
     public static class VocabComparisonDialogueRequest {
         @NotEmpty(message = "词汇列表不能为空")
+        @Size(max = 5, message = "词汇数量不能超过5个")
         @ApiModelProperty(value = "词汇列表", required = true)
         private List<VocabWordInfo> words;
+
+        @ApiModelProperty(value = "大模型厂商", example = "ALIYUN")
+        private ChatProviderEnum provider;
+
+        @ApiModelProperty(value = "模型名称", example = "qwen-plus")
+        private String model;
     }
 
     @Data

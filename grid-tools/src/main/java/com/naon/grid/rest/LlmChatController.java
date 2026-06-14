@@ -37,6 +37,7 @@ import com.alibaba.fastjson2.JSONArray;
 import com.naon.grid.enums.ChatProviderEnum;
 import com.naon.grid.exception.BadRequestException;
 import io.swagger.annotations.ApiModelProperty;
+import io.swagger.annotations.ApiModel;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.Size;
@@ -150,6 +151,11 @@ public class LlmChatController {
 
     @Log("词汇辨析对话生成")
     @ApiOperation(value = "词汇辨析对话生成", notes = "根据词汇列表生成师生情景对话，帮助辨析近义词用法区别")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "对话生成成功"),
+            @ApiResponse(code = 400, message = "请求参数错误或对话生成失败"),
+            @ApiResponse(code = 500, message = "服务内部错误")
+    })
     @AnonymousPostMapping("/vocab-comparison-dialogue")
     public ResponseEntity<VocabComparisonDialogueResponse> generateDialogue(
             @Validated @RequestBody VocabComparisonDialogueRequest request) {
@@ -224,12 +230,13 @@ public class LlmChatController {
 
             return result;
         } catch (Exception e) {
-            log.error("解析对话生成响应失败: {}", e.getMessage());
+            log.error("解析对话生成响应失败: {}. 原始响应: {}", e.getMessage(), jsonText);
             throw new BadRequestException("对话生成失败，请重试");
         }
     }
 
     @Data
+    @ApiModel(description = "词汇辨析对话生成请求")
     public static class VocabComparisonDialogueRequest {
         @NotEmpty(message = "词汇列表不能为空")
         @Size(max = 5, message = "词汇数量不能超过5个")
@@ -244,6 +251,7 @@ public class LlmChatController {
     }
 
     @Data
+    @ApiModel(description = "词汇信息")
     public static class VocabWordInfo {
         @NotBlank(message = "词汇词头不能为空")
         @ApiModelProperty(value = "词汇词头", required = true)
@@ -257,12 +265,14 @@ public class LlmChatController {
     }
 
     @Data
+    @ApiModel(description = "词汇辨析对话生成响应")
     public static class VocabComparisonDialogueResponse {
         @ApiModelProperty(value = "情景对话列表")
         private List<VocabChatBaseVO> chats;
     }
 
     @Data
+    @ApiModel(description = "对话条目")
     public static class VocabChatBaseVO {
         @ApiModelProperty(value = "角色: teacher=老师, student=学生")
         private String role;

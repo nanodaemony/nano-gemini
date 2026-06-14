@@ -1,5 +1,6 @@
 package com.naon.grid.modules.app.rest.vo;
 
+import com.naon.grid.backend.rest.vo.ExampleSentenceVO;
 import com.naon.grid.backend.rest.vo.TextTranslationVO;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
@@ -46,14 +47,14 @@ public class AppCharCharacterDetailVO implements Serializable {
     private TextTranslationVO descTranslation;
 
     @ApiModelProperty(value = "辨析列表")
-    private List<CharDiscriminationVO> discriminations;
+    private List<CharComparisonVO> comparisons;
 
     @ApiModelProperty(value = "组词列表")
     private List<CharWordVO> words;
 
     @Getter
     @Setter
-    public static class CharDiscriminationVO implements Serializable {
+    public static class CharComparisonVO implements Serializable {
 
         @ApiModelProperty(value = "辨析汉字")
         private String comparisonChar;
@@ -106,16 +107,8 @@ public class AppCharCharacterDetailVO implements Serializable {
         @ApiModelProperty(value = "组词翻译")
         private TextTranslationVO wordItemTranslation;
 
-        @ApiModelProperty(value = "例句")
-        private String exampleSentence;
+        @ApiModelProperty(value = "组词例句")
+        private AppExampleSentenceVO exampleSentence;
 
-        @ApiModelProperty(value = "例句拼音")
-        private String examplePinyin;
-
-        @ApiModelProperty(value = "例句翻译")
-        private TextTranslationVO exampleTranslation;
-
-        @ApiModelProperty(value = "例句图片")
-        private ImageVO exampleImage;
     }
 }

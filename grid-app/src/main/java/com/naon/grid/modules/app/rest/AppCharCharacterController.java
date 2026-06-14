@@ -17,6 +17,7 @@ import com.naon.grid.modules.app.rest.request.AppCharCharacterSearchRequest;
 import com.naon.grid.modules.app.rest.vo.AppCharCharacterBaseVO;
 import com.naon.grid.modules.app.rest.vo.AppCharCharacterDetailVO;
 import com.naon.grid.modules.app.rest.vo.AppCharStrokeVO;
+import com.naon.grid.modules.app.rest.vo.AppExampleSentenceVO;
 import com.naon.grid.service.AliOssStorageService;
 import com.naon.grid.service.dto.AliOssStorageDto;
 import io.swagger.annotations.Api;
@@ -119,12 +120,12 @@ public class AppCharCharacterController {
         vo.setComponentCombination(dto.getComponentCombination());
         vo.setCharDesc(dto.getCharDesc());
         vo.setDescTranslation(filterByLanguage(dto.getDescTranslations(), language));
-        vo.setDiscriminations(toDiscriminationVOList(dto.getComparisons(), language));
+        vo.setComparisons(toDiscriminationVOList(dto.getComparisons(), language));
         vo.setWords(toWordVOList(dto.getWords(), language));
         return vo;
     }
 
-    private List<AppCharCharacterDetailVO.CharDiscriminationVO> toDiscriminationVOList(
+    private List<AppCharCharacterDetailVO.CharComparisonVO> toDiscriminationVOList(
             List<CharComparisonDto> dtos, String language) {
         if (dtos == null) {
             return Collections.emptyList();
@@ -132,9 +133,9 @@ public class AppCharCharacterController {
         return dtos.stream().map(dto -> toDiscriminationVO(dto, language)).collect(Collectors.toList());
     }
 
-    private AppCharCharacterDetailVO.CharDiscriminationVO toDiscriminationVO(
+    private AppCharCharacterDetailVO.CharComparisonVO toDiscriminationVO(
             CharComparisonDto dto, String language) {
-        AppCharCharacterDetailVO.CharDiscriminationVO vo = new AppCharCharacterDetailVO.CharDiscriminationVO();
+        AppCharCharacterDetailVO.CharComparisonVO vo = new AppCharCharacterDetailVO.CharComparisonVO();
         vo.setComparisonChar(dto.getComparisonChar());
         vo.setComparisonPinyin(dto.getComparisonPinyin());
         vo.setComparisonCharTranslation(filterByLanguage(dto.getComparisonCharTranslations(), language));
@@ -160,16 +161,17 @@ public class AppCharCharacterController {
         vo.setWordItemTranslation(filterByLanguage(dto.getWordItemTranslations(), language));
         ExampleSentenceDto sentenceDto = dto.getWordItemSentence();
         if (sentenceDto != null) {
-            vo.setExampleSentence(sentenceDto.getSentence());
-            vo.setExamplePinyin(sentenceDto.getPinyin());
-            vo.setExampleTranslation(filterByLanguage(sentenceDto.getTranslations(), language));
+            AppExampleSentenceVO exampleSentence = new AppExampleSentenceVO();
+            exampleSentence.setSentence(sentenceDto.getSentence());
+            exampleSentence.setPinyin(sentenceDto.getPinyin());
+            exampleSentence.setTranslation(filterByLanguage(sentenceDto.getTranslations(), language));
             if (sentenceDto.getImageId() != null) {
                 try {
                     AliOssStorageDto ossDto = aliOssStorageService.findById(sentenceDto.getImageId());
                     if (ossDto != null) {
                         AppCharCharacterDetailVO.ImageVO imageVO = new AppCharCharacterDetailVO.ImageVO();
                         imageVO.setImageUrl(ossDto.getFileUrl());
-                        vo.setExampleImage(imageVO);
+                        exampleSentence.setImage(imageVO);
                     }
                 } catch (Exception e) {
                     log.error("例句图片资源未找到, imageId={}", sentenceDto.getImageId(), e);

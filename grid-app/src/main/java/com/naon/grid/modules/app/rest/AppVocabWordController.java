@@ -219,12 +219,12 @@ public class AppVocabWordController {
         if (dto.getDefImageSentence() != null) {
             vo.setDefImageSentence(toExampleVO(dto.getDefImageSentence(), audioMap, imageMap, language));
         }
-        vo.setSynonyms(toSynonymVOList(dto.getSynonymWords()));
-        vo.setAntonyms(toAntonymVOList(dto.getAntonymWords()));
-        vo.setRelatedForward(toRelatedWordVOList(dto.getSequentialWords()));
-        vo.setRelatedBackward(toRelatedWordVOList(dto.getReverseSequentialWords()));
-        vo.setRelatedOther(toRelatedWordVOList(dto.getJumbledWords()));
-        vo.setSenseOrder(dto.getSenseOrder());
+        vo.setSynonymWords(toSynonymVOList(dto.getSynonymWords()));
+        vo.setAntonymWords(toAntonymVOList(dto.getAntonymWords()));
+        vo.setSequentialWords(toRelatedWordVOList(dto.getSequentialWords()));
+        vo.setReverseSequentialWords(toRelatedWordVOList(dto.getReverseSequentialWords()));
+        vo.setJumbledWords(toRelatedWordVOList(dto.getJumbledWords()));
+        vo.setOrder(dto.getSenseOrder());
         vo.setStructures(toStructureVOList(dto.getStructures(), audioMap, imageMap, language));
         return vo;
     }
@@ -273,11 +273,10 @@ public class AppVocabWordController {
     private AppVocabWordDetailVO.VocabStructureVO toStructureVO(VocabStructureDto dto,
             Map<Long, AudioResourceDto> audioMap, Map<Long, AliOssStorageDto> imageMap, String language) {
         AppVocabWordDetailVO.VocabStructureVO vo = new AppVocabWordDetailVO.VocabStructureVO();
-        vo.setId(dto.getId());
         vo.setPattern(dto.getPattern());
         vo.setPatternDef(dto.getPatternDef());
         vo.setPatternDefTranslation(filterByLanguage(dto.getPatternDefTranslations(), language));
-        vo.setStructureOrder(dto.getStructureOrder());
+        vo.setOrder(dto.getStructureOrder());
         vo.setExamples(toExampleVOList(dto.getStructureSentences(), audioMap, imageMap, language));
         return vo;
     }
@@ -285,7 +284,6 @@ public class AppVocabWordController {
     private AppVocabWordDetailVO.VocabExampleVO toExampleVO(ExampleSentenceDto dto,
             Map<Long, AudioResourceDto> audioMap, Map<Long, AliOssStorageDto> imageMap, String language) {
         AppVocabWordDetailVO.VocabExampleVO vo = new AppVocabWordDetailVO.VocabExampleVO();
-        vo.setId(dto.getId() != null ? dto.getId().intValue() : null);
         vo.setSentence(dto.getSentence());
         if (dto.getAudioId() != null) {
             AudioResourceDto audioDto = audioMap.get(dto.getAudioId());
@@ -309,7 +307,7 @@ public class AppVocabWordController {
                 log.error("例句图片资源未找到, imageId={}", dto.getImageId());
             }
         }
-        vo.setExampleOrder(dto.getOrder());
+        vo.setOrder(dto.getOrder());
         return vo;
     }
 

@@ -72,22 +72,22 @@ public class AppVocabWordDetailVO implements Serializable {
         private VocabExampleVO defImageSentence;
 
         @ApiModelProperty(value = "近义词列表")
-        private List<SynonymVO> synonyms;
+        private List<SynonymVO> synonymWords;
 
         @ApiModelProperty(value = "反义词列表")
-        private List<AntonymVO> antonyms;
+        private List<AntonymVO> antonymWords;
 
         @ApiModelProperty(value = "正序关联词汇")
-        private List<RelatedWordVO> relatedForward;
+        private List<RelatedWordVO> sequentialWords;
 
         @ApiModelProperty(value = "逆序关联词汇")
-        private List<RelatedWordVO> relatedBackward;
+        private List<RelatedWordVO> reverseSequentialWords;
 
-        @ApiModelProperty(value = "其他关联词汇")
-        private List<RelatedWordVO> relatedOther;
+        @ApiModelProperty(value = "乱序关联词汇")
+        private List<RelatedWordVO> jumbledWords;
 
         @ApiModelProperty(value = "义项排序")
-        private Integer senseOrder;
+        private Integer order;
 
         @ApiModelProperty(value = "搭配列表")
         private List<VocabStructureVO> structures;
@@ -117,8 +117,6 @@ public class AppVocabWordDetailVO implements Serializable {
     @Getter
     @Setter
     public static class VocabStructureVO implements Serializable {
-        @ApiModelProperty(value = "搭配ID")
-        private Integer id;
 
         @ApiModelProperty(value = "搭配文案")
         private String pattern;
@@ -130,7 +128,7 @@ public class AppVocabWordDetailVO implements Serializable {
         private TextTranslationVO patternDefTranslation;
 
         @ApiModelProperty(value = "搭配排序")
-        private Integer structureOrder;
+        private Integer order;
 
         @ApiModelProperty(value = "例句列表")
         private List<VocabExampleVO> examples;
@@ -139,8 +137,6 @@ public class AppVocabWordDetailVO implements Serializable {
     @Getter
     @Setter
     public static class VocabExampleVO implements Serializable {
-        @ApiModelProperty(value = "例句ID")
-        private Integer id;
 
         @ApiModelProperty(value = "例句中文文案")
         private String sentence;
@@ -151,14 +147,14 @@ public class AppVocabWordDetailVO implements Serializable {
         @ApiModelProperty(value = "例句拼音")
         private String pinyin;
 
-        @ApiModelProperty(value = "例句外文翻译（按语言筛选后的单条）")
+        @ApiModelProperty(value = "例句外文翻译")
         private TextTranslationVO translation;
 
         @ApiModelProperty(value = "例句图片")
         private ImageVO image;
 
         @ApiModelProperty(value = "例句排序")
-        private Integer exampleOrder;
+        private Integer order;
     }
 
 }

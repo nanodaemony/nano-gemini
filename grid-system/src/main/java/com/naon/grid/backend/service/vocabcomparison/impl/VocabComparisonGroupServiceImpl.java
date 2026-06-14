@@ -319,17 +319,33 @@ public class VocabComparisonGroupServiceImpl implements VocabComparisonGroupServ
         if (draft.getExerciseQuestionIds() != null) {
             dto.setExerciseQuestionIds(draft.getExerciseQuestionIds());
         }
+
+        // 从草稿计算列表统计字段：条目数量
+        if (draft.getItems() != null) {
+            dto.setItemCount(draft.getItems().size());
+        }
     }
 
     /**
-     * Batch populate itemCount for each group DTO in the list.
+     * 批量填充条目数量。
+     * 草稿/已审核实体的 itemCount 已在 {@link #applyDraftOverlay} 中从草稿数据计算，跳过 DB 查询。
      */
     private void populateItemCounts(List<VocabComparisonGroupDto> dtos) {
         if (dtos == null || dtos.isEmpty()) {
             return;
         }
 
-        List<Long> groupIds = dtos.stream().map(VocabComparisonGroupDto::getId).collect(Collectors.toList());
+        List<Long> groupIds = dtos.stream()
+                .filter(d -> !(EditStatusEnum.DRAFT.getCode().equals(d.getEditStatus())
+                        || EditStatusEnum.REVIEWED.getCode().equals(d.getEditStatus())))
+                .map(VocabComparisonGroupDto::getId)
+                .collect(Collectors.toList());
+
+        if (groupIds.isEmpty()) {
+            // 全部都是草稿/已审核实体，无需 DB 查询
+            return;
+        }
+
         List<VocabComparisonItem> allItems = itemRepository.findByGroupIdInAndStatus(
                 groupIds, StatusEnum.ENABLED.getCode());
 
@@ -337,6 +353,15 @@ public class VocabComparisonGroupServiceImpl implements VocabComparisonGroupServ
                 .collect(Collectors.groupingBy(VocabComparisonItem::getGroupId, Collectors.counting()));
 
         for (VocabComparisonGroupDto dto : dtos) {
+            if (EditStatusEnum.DRAFT.getCode().equals(dto.getEditStatus())
+                    || EditStatusEnum.REVIEWED.getCode().equals(dto.getEditStatus())) {
+                // 草稿实体已在 applyDraftOverlay 中设置 itemCount
+                // 如果草稿没有 items 数据（null），则从 DB 兜底
+                if (dto.getItemCount() == null) {
+                    dto.setItemCount(countMap.getOrDefault(dto.getId(), 0L).intValue());
+                }
+                continue;
+            }
             dto.setItemCount(countMap.getOrDefault(dto.getId(), 0L).intValue());
         }
     }

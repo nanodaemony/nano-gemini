@@ -15,7 +15,6 @@
  */
 package com.naon.grid.rest;
 
-import com.naon.grid.annotation.rest.AnonymousGetMapping;
 import com.naon.grid.annotation.rest.AnonymousPostMapping;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;

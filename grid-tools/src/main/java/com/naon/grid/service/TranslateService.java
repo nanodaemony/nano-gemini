@@ -15,6 +15,8 @@
  */
 package com.naon.grid.service;
 
+import com.naon.grid.service.dto.TranslateDirectRequest;
+import com.naon.grid.service.dto.TranslateDirectResponse;
 import com.naon.grid.service.dto.TranslateRequest;
 import com.naon.grid.service.dto.TranslateResponse;
 
@@ -31,4 +33,11 @@ public interface TranslateService {
      * @return 翻译响应
      */
     TranslateResponse translate(TranslateRequest request);
+
+    /**
+     * 执行指定源语言和目标语言的翻译
+     * @param request 翻译请求
+     * @return 翻译响应
+     */
+    TranslateDirectResponse translateDirect(TranslateDirectRequest request);
 }

@@ -1,15 +1,12 @@
 package com.naon.grid.backend.service.vocabulary.impl;
 
-import com.naon.grid.backend.domain.common.ExampleSentence;
 import com.naon.grid.backend.domain.vocabulary.*;
-import com.naon.grid.backend.repo.common.ExampleSentenceRepository;
 import com.naon.grid.backend.repo.vocabulary.*;
 import com.naon.grid.backend.service.common.ExampleSentenceService;
 import com.naon.grid.backend.service.common.dto.ExampleSentenceDto;
 import com.naon.grid.backend.service.vocabulary.dto.*;
 import com.naon.grid.enums.EditStatusEnum;
 import com.naon.grid.enums.PublishStatusEnum;
-import com.naon.grid.enums.SentenceBizTypeEnum;
 import com.naon.grid.enums.StatusEnum;
 import com.naon.grid.enums.VocabRelationTypeEnum;
 import lombok.RequiredArgsConstructor;
@@ -41,10 +38,6 @@ public class VocabWordServiceImpl implements VocabWordService {
     private final VocabRelationRepository vocabRelationRepository;
     private final VocabWordMapper vocabWordMapper;
     private final ExampleSentenceService exampleSentenceService;
-    private final ExampleSentenceRepository exampleSentenceRepository;
-
-    private static final String DEF_IMAGE_SENTENCE_BIZ = SentenceBizTypeEnum.VOCAB_SENSE_DEF_IMAGE_SENTENCE.getCode();
-    private static final String STRUCTURE_SENTENCE_BIZ = SentenceBizTypeEnum.VOCAB_SENSE_STRUCTURE_SENTENCE.getCode();
 
     @Override
     public PageResult<VocabWordDto> queryAll(VocabWordQueryCriteria criteria, Pageable pageable) {
@@ -340,13 +333,13 @@ public class VocabWordServiceImpl implements VocabWordService {
                 // 删除关联词汇
                 disableRelationsBySenseId(sense.getId());
                 // 删除释义图片例句
-                exampleSentenceService.disableByBizIds(DEF_IMAGE_SENTENCE_BIZ,
-                        Collections.singletonList(sense.getId().longValue()));
+                if (sense.getDefImageSentenceId() != null) {
+                    exampleSentenceService.disableById(sense.getDefImageSentenceId());
+                }
                 // 删除结构及其例句
                 List<VocabStructure> structures = vocabStructureRepository.findBySenseId(sense.getId());
                 for (VocabStructure s : structures) {
-                    exampleSentenceService.disableByBizIds(STRUCTURE_SENTENCE_BIZ,
-                            Collections.singletonList(s.getId().longValue()));
+                    exampleSentenceService.disableByStructureId(s.getId().longValue());
                     s.setStatus(StatusEnum.DISABLED.getCode());
                     vocabStructureRepository.save(s);
                 }
@@ -396,8 +389,7 @@ public class VocabWordServiceImpl implements VocabWordService {
         // 软删除被移除的结构及其例句
         for (VocabStructure structure : existing) {
             if (!submittedIds.contains(structure.getId())) {
-                exampleSentenceService.disableByBizIds(STRUCTURE_SENTENCE_BIZ,
-                        Collections.singletonList(structure.getId().longValue()));
+                exampleSentenceService.disableByStructureId(structure.getId().longValue());
                 structure.setStatus(StatusEnum.DISABLED.getCode());
                 vocabStructureRepository.save(structure);
             }
@@ -405,38 +397,44 @@ public class VocabWordServiceImpl implements VocabWordService {
     }
 
     private void syncStructureSentences(Long structureId, List<ExampleSentenceDto> sentenceDtos) {
+        if (structureId == null) return;
+
         // 先软删除该结构旧例句
-        exampleSentenceService.disableByBizIds(STRUCTURE_SENTENCE_BIZ, Collections.singletonList(structureId));
+        exampleSentenceService.disableByStructureId(structureId);
 
         if (sentenceDtos == null || sentenceDtos.isEmpty()) return;
 
-        List<ExampleSentence> toSave = new ArrayList<>();
         for (ExampleSentenceDto dto : sentenceDtos) {
-            ExampleSentence entity;
-            if (dto.getId() != null && dto.getId() > 0) {
-                entity = exampleSentenceRepository.findById(dto.getId()).orElse(null);
-                if (entity == null) continue;
-            } else {
-                entity = new ExampleSentence();
-            }
-            entity.setBizType(STRUCTURE_SENTENCE_BIZ);
-            entity.setBizId(structureId);
-            entity.setSentence(dto.getSentence());
-            entity.setPinyin(dto.getPinyin());
-            entity.setAudioId(dto.getAudioId());
-            entity.setTranslations(JsonUtils.toTranslationJson(dto.getTranslations()));
-            entity.setImageId(dto.getImageId());
-            entity.setSentenceOrder(dto.getOrder() != null ? dto.getOrder() : 0);
-            entity.setStatus(StatusEnum.ENABLED.getCode());
-            toSave.add(entity);
-        }
-        if (!toSave.isEmpty()) {
-            exampleSentenceRepository.saveAll(toSave);
+            dto.setId(null); // 每次都新建
+            dto.setStructureId(structureId);
+            exampleSentenceService.save(dto);
         }
     }
 
     private void syncDefImageSentence(Integer senseId, ExampleSentenceDto dto) {
-        exampleSentenceService.syncOne(DEF_IMAGE_SENTENCE_BIZ, senseId.longValue(), dto);
+        if (senseId == null) return;
+        VocabSense sense = vocabSenseRepository.findById(senseId).orElse(null);
+        if (sense == null) return;
+
+        if (dto != null && dto.getSentence() != null && !dto.getSentence().trim().isEmpty()) {
+            // 如果有旧 sentence，用旧 id 去更新
+            if (sense.getDefImageSentenceId() != null) {
+                dto.setId(sense.getDefImageSentenceId());
+            }
+            ExampleSentenceDto saved = exampleSentenceService.save(dto);
+            if (saved != null && saved.getId() != null
+                    && !saved.getId().equals(sense.getDefImageSentenceId())) {
+                sense.setDefImageSentenceId(saved.getId());
+                vocabSenseRepository.save(sense);
+            }
+        } else {
+            // 没有例句：禁用旧的，清空
+            if (sense.getDefImageSentenceId() != null) {
+                exampleSentenceService.disableById(sense.getDefImageSentenceId());
+                sense.setDefImageSentenceId(null);
+                vocabSenseRepository.save(sense);
+            }
+        }
     }
 
     private void syncRelations(Integer wordId, Integer senseId, String word, VocabSenseDto dto) {
@@ -498,8 +496,9 @@ public class VocabWordServiceImpl implements VocabWordService {
         dto.setStatus(sense.getStatus());
 
         // 加载释义图片例句
-        dto.setDefImageSentence(exampleSentenceService.findOne(
-                DEF_IMAGE_SENTENCE_BIZ, sense.getId().longValue()));
+        if (sense.getDefImageSentenceId() != null) {
+            dto.setDefImageSentence(exampleSentenceService.findById(sense.getDefImageSentenceId()));
+        }
 
         // 加载关联词汇（按类型分组）
         List<VocabRelation> relations = vocabRelationRepository.findBySenseIdAndStatus(
@@ -543,15 +542,10 @@ public class VocabWordServiceImpl implements VocabWordService {
         }
 
         // 批量加载结构例句
-        List<Long> structureIds = dtos.stream().map(s -> s.getId().longValue()).collect(Collectors.toList());
-        List<ExampleSentence> allSentences = exampleSentenceRepository
-                .findByBizTypeAndBizIdInAndStatus(STRUCTURE_SENTENCE_BIZ, structureIds, StatusEnum.ENABLED.getCode());
-
-        Map<Long, List<ExampleSentenceDto>> sentenceMap = new HashMap<>();
-        for (ExampleSentence s : allSentences) {
-            sentenceMap.computeIfAbsent(s.getBizId(), k -> new ArrayList<>())
-                       .add(toExampleSentenceDto(s));
-        }
+        List<Long> structureIds = dtos.stream()
+                .map(s -> s.getId().longValue())
+                .collect(Collectors.toList());
+        Map<Long, List<ExampleSentenceDto>> sentenceMap = exampleSentenceService.findByStructureIds(structureIds);
 
         for (VocabStructureDto dto : dtos) {
             dto.setStructureSentences(sentenceMap.getOrDefault(dto.getId().longValue(), Collections.emptyList()));
@@ -571,24 +565,6 @@ public class VocabWordServiceImpl implements VocabWordService {
         dto.setRelationSenseId(entity.getRelationSenseId());
         dto.setRelationWord(entity.getRelationWord());
         dto.setOrder(entity.getRelationOrder());
-        dto.setCreateTime(entity.getCreateTime());
-        dto.setUpdateTime(entity.getUpdateTime());
-        dto.setStatus(entity.getStatus());
-        return dto;
-    }
-
-    private ExampleSentenceDto toExampleSentenceDto(ExampleSentence entity) {
-        if (entity == null) return null;
-        ExampleSentenceDto dto = new ExampleSentenceDto();
-        dto.setId(entity.getId());
-        dto.setBizType(entity.getBizType());
-        dto.setBizId(entity.getBizId());
-        dto.setSentence(entity.getSentence());
-        dto.setPinyin(entity.getPinyin());
-        dto.setAudioId(entity.getAudioId());
-        dto.setTranslations(JsonUtils.parseTranslationList(entity.getTranslations()));
-        dto.setImageId(entity.getImageId());
-        dto.setOrder(entity.getSentenceOrder());
         dto.setCreateTime(entity.getCreateTime());
         dto.setUpdateTime(entity.getUpdateTime());
         dto.setStatus(entity.getStatus());

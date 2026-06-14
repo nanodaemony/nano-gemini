@@ -31,6 +31,9 @@ public class VocabSenseDto extends BaseDTO implements Serializable {
     @ApiModelProperty(value = "中文释义图片资源ID")
     private Long defImageId;
 
+    @ApiModelProperty(value = "释义图片例句ID（对应 example_sentence.id）")
+    private Long defImageSentenceId;
+
     @ApiModelProperty(value = "中文释义外文翻译")
     private List<TextTranslation> defTranslations;
 

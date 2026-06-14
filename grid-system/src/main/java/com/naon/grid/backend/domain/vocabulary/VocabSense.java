@@ -46,6 +46,10 @@ public class VocabSense implements Serializable {
     @ApiModelProperty(value = "中文释义图片资源ID")
     private Long defImageId;
 
+    @Column(name = "def_image_sentence_id")
+    @ApiModelProperty(value = "释义图片例句ID（对应 example_sentence.id）")
+    private Long defImageSentenceId;
+
     @Column(name = "def_translations", columnDefinition = "json")
     @ApiModelProperty(value = "外文翻译列表")
     private String defTranslations;

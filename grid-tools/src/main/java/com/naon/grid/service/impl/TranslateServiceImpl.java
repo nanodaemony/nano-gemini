@@ -152,7 +152,8 @@ public class TranslateServiceImpl implements TranslateService {
             // 提取翻译结果
             String targetText = null;
             if (result.getOutput() != null && result.getOutput().getChoices() != null
-                    && !result.getOutput().getChoices().isEmpty()) {
+                    && !result.getOutput().getChoices().isEmpty()
+                    && result.getOutput().getChoices().get(0).getMessage() != null) {
                 targetText = result.getOutput().getChoices().get(0).getMessage().getContent();
             }
             String requestId = result.getRequestId();

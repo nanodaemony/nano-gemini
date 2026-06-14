@@ -64,24 +64,6 @@ CREATE TABLE `vocab_structure`  (
 ) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '词汇结构表';
 
 
--- 词汇练习表
--- 注：一个词汇可能有多个练习题目，一个练习题目对应一条数据。
-CREATE TABLE `vocab_exercise`  (
-  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '练习题目ID',
-  `word_id` bigint NOT NULL COMMENT '所属词汇ID',
-  `question_type` varchar(20) NOT NULL COMMENT '题目类型（选择/填空等）',
-  `question_text` varchar(512) DEFAULT NULL COMMENT '练习题干描述',
-  `options` varchar(1024) DEFAULT NULL COMMENT '选项列表（JSON），结构：[{option:A/B/C/D, text:选项文案}]',
-  `answers` varchar(512) DEFAULT NULL COMMENT '答案列表（可多选）',
-  `order` int NOT NULL DEFAULT 0 COMMENT '练习题目排序权重（大在前）',
-  `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-  `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
-  `status` tinyint NOT NULL DEFAULT 1 COMMENT '有效状态, 1:有效 0:无效',
-  PRIMARY KEY (`id`) USING BTREE,
-  INDEX `idx_word_id`(`word_id` ASC) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 5 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '词汇练习表';
-
-
 -- 关联词汇表
 -- 记录词汇与词汇之间的关联关系
 -- 关联义项ID暂时不需要
@@ -135,3 +117,5 @@ CREATE TABLE `vocab_book`  (
   `status` tinyint NOT NULL DEFAULT 1 COMMENT '有效状态, 1:有效 0:无效',
   PRIMARY KEY (`id`) USING BTREE
 ) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '词汇书表';
+
+

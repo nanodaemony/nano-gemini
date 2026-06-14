@@ -4,7 +4,6 @@ import com.naon.grid.backend.domain.common.ExampleSentence;
 import com.naon.grid.backend.repo.common.ExampleSentenceRepository;
 import com.naon.grid.backend.service.common.dto.ExampleSentenceDto;
 import com.naon.grid.domain.common.TextTranslation;
-import com.naon.grid.enums.SentenceBizTypeEnum;
 import com.naon.grid.enums.StatusEnum;
 import com.naon.grid.exception.BadRequestException;
 import com.naon.grid.utils.JsonUtils;
@@ -14,14 +13,16 @@ import org.mockito.ArgumentCaptor;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -39,7 +40,7 @@ class ExampleSentenceServiceImplTest {
     }
 
     @Test
-    void syncOneCreatesSentenceWhenNoIdIsProvided() {
+    void saveCreatesNewSentenceWhenNoId() {
         ExampleSentenceDto dto = new ExampleSentenceDto();
         dto.setSentence("你好，我叫小明。");
         dto.setPinyin("nǐ hǎo, wǒ jiào xiǎo míng.");
@@ -52,125 +53,183 @@ class ExampleSentenceServiceImplTest {
         translation.setTranslation("Hello, my name is Xiaoming.");
         dto.setTranslations(Collections.singletonList(translation));
 
-        when(repository.findByBizTypeAndBizIdAndStatus(
-                SentenceBizTypeEnum.CHAR_WORD_SENTENCE.getCode(), 9L, StatusEnum.ENABLED.getCode()))
-                .thenReturn(Collections.emptyList());
-        when(repository.save(any(ExampleSentence.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(repository.save(any(ExampleSentence.class))).thenAnswer(invocation -> {
+            ExampleSentence e = invocation.getArgument(0);
+            e.setId(99L);
+            return e;
+        });
 
-        service.syncOne(SentenceBizTypeEnum.CHAR_WORD_SENTENCE.getCode(), 9L, dto);
+        ExampleSentenceDto result = service.save(dto);
+
+        assertNotNull(result);
+        assertEquals(99L, result.getId().longValue());
 
         ArgumentCaptor<ExampleSentence> captor = ArgumentCaptor.forClass(ExampleSentence.class);
         verify(repository).save(captor.capture());
         ExampleSentence saved = captor.getValue();
-        assertEquals(SentenceBizTypeEnum.CHAR_WORD_SENTENCE.getCode(), saved.getBizType());
-        assertEquals(Long.valueOf(9L), saved.getBizId());
         assertEquals("你好，我叫小明。", saved.getSentence());
+        assertEquals("nǐ hǎo, wǒ jiào xiǎo míng.", saved.getPinyin());
         assertEquals(Long.valueOf(21L), saved.getAudioId());
         assertEquals(Long.valueOf(34L), saved.getImageId());
         assertEquals(Integer.valueOf(5), saved.getSentenceOrder());
         assertEquals(StatusEnum.ENABLED.getCode(), saved.getStatus());
-        assertEquals("Hello, my name is Xiaoming.", JsonUtils.parseTranslationList(saved.getTranslations()).get(0).getTranslation());
+        assertEquals("Hello, my name is Xiaoming.",
+                JsonUtils.parseTranslationList(saved.getTranslations()).get(0).getTranslation());
     }
 
     @Test
-    void syncOneUpdatesOwnedSentenceAndDisablesOtherActiveRows() {
+    void saveUpdatesExistingSentenceWhenIdProvided() {
         ExampleSentence existing = new ExampleSentence();
         existing.setId(88L);
-        existing.setBizType(SentenceBizTypeEnum.CHAR_WORD_SENTENCE.getCode());
-        existing.setBizId(9L);
         existing.setSentence("旧例句");
         existing.setStatus(StatusEnum.ENABLED.getCode());
-
-        ExampleSentence duplicate = new ExampleSentence();
-        duplicate.setId(89L);
-        duplicate.setBizType(SentenceBizTypeEnum.CHAR_WORD_SENTENCE.getCode());
-        duplicate.setBizId(9L);
-        duplicate.setSentence("重复例句");
-        duplicate.setStatus(StatusEnum.ENABLED.getCode());
 
         ExampleSentenceDto dto = new ExampleSentenceDto();
         dto.setId(88L);
         dto.setSentence("新例句");
 
         when(repository.findById(88L)).thenReturn(Optional.of(existing));
-        when(repository.findByBizTypeAndBizIdAndStatus(
-                SentenceBizTypeEnum.CHAR_WORD_SENTENCE.getCode(), 9L, StatusEnum.ENABLED.getCode()))
-                .thenReturn(Arrays.asList(existing, duplicate));
         when(repository.save(any(ExampleSentence.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        service.syncOne(SentenceBizTypeEnum.CHAR_WORD_SENTENCE.getCode(), 9L, dto);
+        ExampleSentenceDto result = service.save(dto);
 
         assertEquals("新例句", existing.getSentence());
-        assertEquals(StatusEnum.DISABLED.getCode(), duplicate.getStatus());
         verify(repository).save(existing);
-        verify(repository).save(duplicate);
     }
 
     @Test
-    void syncOneRejectsSentenceIdOwnedByAnotherBizObject() {
-        ExampleSentence existing = new ExampleSentence();
-        existing.setId(88L);
-        existing.setBizType(SentenceBizTypeEnum.CHAR_WORD_SENTENCE.getCode());
-        existing.setBizId(10L);
-        existing.setStatus(StatusEnum.ENABLED.getCode());
+    void saveReturnsNullWhenDtoIsNull() {
+        assertNull(service.save(null));
+    }
 
+    @Test
+    void saveReturnsNullWhenSentenceIsBlank() {
         ExampleSentenceDto dto = new ExampleSentenceDto();
-        dto.setId(88L);
+        dto.setSentence("   ");
+        assertNull(service.save(dto));
+    }
+
+    @Test
+    void saveThrowsWhenIdNotFound() {
+        ExampleSentenceDto dto = new ExampleSentenceDto();
+        dto.setId(999L);
         dto.setSentence("新例句");
 
-        when(repository.findById(88L)).thenReturn(Optional.of(existing));
+        when(repository.findById(999L)).thenReturn(Optional.empty());
 
-        BadRequestException exception = assertThrows(BadRequestException.class,
-                () -> service.syncOne(SentenceBizTypeEnum.CHAR_WORD_SENTENCE.getCode(), 9L, dto));
-
-        assertTrue(exception.getMessage().contains("例句ID不属于当前业务对象"));
-        verify(repository, never()).save(any(ExampleSentence.class));
+        assertThrows(BadRequestException.class, () -> service.save(dto));
     }
 
     @Test
-    void syncOneDisablesExistingSentencesWhenRequestIsEmpty() {
-        ExampleSentence existing = new ExampleSentence();
-        existing.setId(88L);
-        existing.setBizType(SentenceBizTypeEnum.CHAR_WORD_SENTENCE.getCode());
-        existing.setBizId(9L);
-        existing.setSentence("旧例句");
-        existing.setStatus(StatusEnum.ENABLED.getCode());
+    void findByIdReturnsDtoWhenFoundAndEnabled() {
+        ExampleSentence entity = new ExampleSentence();
+        entity.setId(1L);
+        entity.setSentence("例句");
+        entity.setStatus(StatusEnum.ENABLED.getCode());
 
-        when(repository.findByBizTypeAndBizIdAndStatus(
-                SentenceBizTypeEnum.CHAR_WORD_SENTENCE.getCode(), 9L, StatusEnum.ENABLED.getCode()))
-                .thenReturn(Collections.singletonList(existing));
+        when(repository.findById(1L)).thenReturn(Optional.of(entity));
 
-        service.syncOne(SentenceBizTypeEnum.CHAR_WORD_SENTENCE.getCode(), 9L, null);
-
-        assertEquals(StatusEnum.DISABLED.getCode(), existing.getStatus());
-        verify(repository).save(existing);
+        ExampleSentenceDto result = service.findById(1L);
+        assertNotNull(result);
+        assertEquals("例句", result.getSentence());
     }
 
     @Test
-    void findByBizIdsReturnsOneSentencePerBizId() {
+    void findByIdReturnsNullWhenDisabled() {
+        ExampleSentence entity = new ExampleSentence();
+        entity.setId(1L);
+        entity.setStatus(StatusEnum.DISABLED.getCode());
+
+        when(repository.findById(1L)).thenReturn(Optional.of(entity));
+
+        assertNull(service.findById(1L));
+    }
+
+    @Test
+    void findByIdReturnsNullWhenNull() {
+        assertNull(service.findById(null));
+    }
+
+    @Test
+    void findByIdsReturnsMapOfEnabledSentences() {
         ExampleSentence first = new ExampleSentence();
-        first.setId(88L);
-        first.setBizType(SentenceBizTypeEnum.CHAR_WORD_SENTENCE.getCode());
-        first.setBizId(9L);
-        first.setSentence("第一条例句");
+        first.setId(1L);
+        first.setSentence("第一句");
         first.setStatus(StatusEnum.ENABLED.getCode());
 
         ExampleSentence second = new ExampleSentence();
-        second.setId(90L);
-        second.setBizType(SentenceBizTypeEnum.CHAR_WORD_SENTENCE.getCode());
-        second.setBizId(10L);
-        second.setSentence("第二条例句");
+        second.setId(2L);
+        second.setSentence("第二句");
+        second.setStatus(StatusEnum.DISABLED.getCode());
+
+        when(repository.findAllById(Arrays.asList(1L, 2L))).thenReturn(Arrays.asList(first, second));
+
+        Map<Long, ExampleSentenceDto> result = service.findByIds(Arrays.asList(1L, 2L));
+
+        assertEquals(1, result.size());
+        assertTrue(result.containsKey(1L));
+    }
+
+    @Test
+    void findByStructureIdReturnsOrderedSentences() {
+        ExampleSentence first = new ExampleSentence();
+        first.setId(1L);
+        first.setStructureId(10L);
+        first.setSentence("例句A");
+        first.setSentenceOrder(5);
+        first.setStatus(StatusEnum.ENABLED.getCode());
+
+        ExampleSentence second = new ExampleSentence();
+        second.setId(2L);
+        second.setStructureId(10L);
+        second.setSentence("例句B");
+        second.setSentenceOrder(10);
         second.setStatus(StatusEnum.ENABLED.getCode());
 
-        when(repository.findByBizTypeAndBizIdInAndStatus(
-                eq(SentenceBizTypeEnum.CHAR_WORD_SENTENCE.getCode()), eq(Arrays.asList(9L, 10L)), eq(StatusEnum.ENABLED.getCode())))
+        when(repository.findByStructureIdAndStatus(10L, StatusEnum.ENABLED.getCode()))
                 .thenReturn(Arrays.asList(first, second));
 
-        Map<Long, ExampleSentenceDto> result = service.findByBizIds(
-                SentenceBizTypeEnum.CHAR_WORD_SENTENCE.getCode(), Arrays.asList(9L, 10L));
+        List<ExampleSentenceDto> result = service.findByStructureId(10L);
 
         assertEquals(2, result.size());
-        assertEquals("第一条例句", result.get(9L).getSentence());
-        assertEquals("第二条例句", result.get(10L).getSentence());
+        // order 大的在前（10 > 5）
+        assertEquals("例句B", result.get(0).getSentence());
+        assertEquals("例句A", result.get(1).getSentence());
+    }
+
+    @Test
+    void disableByIdSetsStatusToDisabled() {
+        ExampleSentence entity = new ExampleSentence();
+        entity.setId(1L);
+        entity.setStatus(StatusEnum.ENABLED.getCode());
+
+        when(repository.findById(1L)).thenReturn(Optional.of(entity));
+
+        service.disableById(1L);
+
+        assertEquals(StatusEnum.DISABLED.getCode(), entity.getStatus());
+        verify(repository).save(entity);
+    }
+
+    @Test
+    void disableByStructureIdDisablesAllActiveSentences() {
+        ExampleSentence s1 = new ExampleSentence();
+        s1.setId(1L);
+        s1.setStructureId(10L);
+        s1.setStatus(StatusEnum.ENABLED.getCode());
+
+        ExampleSentence s2 = new ExampleSentence();
+        s2.setId(2L);
+        s2.setStructureId(10L);
+        s2.setStatus(StatusEnum.ENABLED.getCode());
+
+        when(repository.findByStructureIdAndStatus(10L, StatusEnum.ENABLED.getCode()))
+                .thenReturn(Arrays.asList(s1, s2));
+
+        service.disableByStructureId(10L);
+
+        assertEquals(StatusEnum.DISABLED.getCode(), s1.getStatus());
+        assertEquals(StatusEnum.DISABLED.getCode(), s2.getStatus());
+        verify(repository).saveAll(Arrays.asList(s1, s2));
     }
 }

@@ -58,7 +58,6 @@ CREATE TABLE `char_word`  (
   `part_of_speech` varchar(50) NULL DEFAULT NULL COMMENT '组词词性',
   `word_item_translations` text NULL COMMENT '组词的外文翻译',
   `sentence_id` bigint NULL DEFAULT NULL COMMENT '组词例句ID（对应 example_sentence.id）',
-
   `order` int NULL DEFAULT 0 COMMENT '组词排序(值大的排前面)',
   `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
@@ -120,7 +119,7 @@ CREATE TABLE `char_book` (
 ) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '汉字书表';
 
 -- 汉字部首表
-CREATE TABLE IF NOT EXISTS `char_radical` (
+CREATE TABLE `char_radical` (
     `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '部首ID',
     `radical` VARCHAR(10) NOT NULL COMMENT '部首名称',
     `stroke_num` int(11) DEFAULT NULL COMMENT '笔画数',

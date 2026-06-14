@@ -67,7 +67,10 @@ public class CharCharacterServiceImpl implements CharCharacterService {
     }
 
     /**
-     * 批量填充列表统计数据和状态：辨析数、组词数、翻译/拼音/音频状态
+     * 批量填充列表统计数据和状态：辨析数、组词数、翻译/拼音/音频状态。
+     *
+     * 草稿/已审核的实体，comparisonCount/wordCount 已在 {@link #applyDraftOverlay}
+     * 中根据草稿数据计算设置，此处仅填充已发布实体的数据。
      */
     private void populateCharListStats(List<CharCharacterDto> dtos) {
         if (dtos == null || dtos.isEmpty()) return;
@@ -91,21 +94,40 @@ public class CharCharacterServiceImpl implements CharCharacterService {
                 ));
 
         for (CharCharacterDto dto : dtos) {
-            dto.setComparisonCount(comparisonCountMap.getOrDefault(dto.getId(), 0L).intValue());
-            dto.setWordCount(wordCountMap.getOrDefault(dto.getId(), 0L).intValue());
-            dto.setTranslationStatus(
-                dto.getDescTranslations() != null && !dto.getDescTranslations().isEmpty()
-                    ? "generated" : "not_generated"
-            );
-            dto.setPinyinStatus(
-                dto.getPinyin() != null && !dto.getPinyin().isEmpty()
-                    ? "generated" : "not_generated"
-            );
-            dto.setAudioStatus(
-                dto.getAudioId() != null
-                    ? "generated" : "not_generated"
-            );
+            // 所有实体：comparisonCount/wordCount 兜底 ——
+            // 草稿实体已在 applyDraftOverlay 中从草稿数据设置（如有草稿数据），
+            // 若草稿没有该数据（null-check 跳过），则从 DB 子表兜底以保证不为 null
+            if (dto.getComparisonCount() == null) {
+                dto.setComparisonCount(comparisonCountMap.getOrDefault(dto.getId(), 0L).intValue());
+            }
+            if (dto.getWordCount() == null) {
+                dto.setWordCount(wordCountMap.getOrDefault(dto.getId(), 0L).intValue());
+            }
+            // 翻译/拼音/音频状态：草稿实体已在 applyDraftOverlay 中设置，仅处理已发布实体
+            if (!isDraftOrReviewed(dto)) {
+                dto.setTranslationStatus(
+                    dto.getDescTranslations() != null && !dto.getDescTranslations().isEmpty()
+                        ? "generated" : "not_generated"
+                );
+                dto.setPinyinStatus(
+                    dto.getPinyin() != null && !dto.getPinyin().isEmpty()
+                        ? "generated" : "not_generated"
+                );
+                dto.setAudioStatus(
+                    dto.getAudioId() != null
+                        ? "generated" : "not_generated"
+                );
+            }
         }
+    }
+
+    /**
+     * 判断 DTO 是否为草稿或已审核状态（即有未发布的草稿内容）
+     */
+    private boolean isDraftOrReviewed(CharCharacterDto dto) {
+        String editStatus = dto.getEditStatus();
+        return EditStatusEnum.DRAFT.getCode().equals(editStatus)
+            || EditStatusEnum.REVIEWED.getCode().equals(editStatus);
     }
 
     /**
@@ -130,7 +152,7 @@ public class CharCharacterServiceImpl implements CharCharacterService {
      * 永远不覆盖：id、status、publishStatus、editStatus、createBy、updateBy、
      * createTime、updateTime —— 这些字段以主表为准。
      *
-     * 不读取：comparisons、words —— 列表页不返回子表。
+     * 不读取：comparisons、words —— 列表页不返回子表（但会从列表大小计算 count）。
      *
      * @throws BadRequestException 草稿数据缺失或解析失败
      */
@@ -157,6 +179,29 @@ public class CharCharacterServiceImpl implements CharCharacterService {
         if (draft.getComponentCombination() != null)  dto.setComponentCombination(draft.getComponentCombination());
         if (draft.getCharDesc() != null)              dto.setCharDesc(draft.getCharDesc());
         if (draft.getDescTranslations() != null)      dto.setDescTranslations(draft.getDescTranslations());
+
+        // ===== 从草稿计算列表统计字段（comparisonCount / wordCount / 翻译/拼音/音频状态） =====
+        // 辨析数：取草稿中辨析列表的大小（前端未提交辨析时不覆盖，保留已发布的数据）
+        if (draft.getComparisons() != null) {
+            dto.setComparisonCount(draft.getComparisons().size());
+        }
+        // 组词数：取草稿中组词列表的大小（前端未提交组词时不覆盖）
+        if (draft.getWords() != null) {
+            dto.setWordCount(draft.getWords().size());
+        }
+        // 翻译/拼音/音频状态：基于草稿中的实际数据计算
+        dto.setTranslationStatus(
+            draft.getDescTranslations() != null && !draft.getDescTranslations().isEmpty()
+                ? "generated" : "not_generated"
+        );
+        dto.setPinyinStatus(
+            draft.getPinyin() != null && !draft.getPinyin().isEmpty()
+                ? "generated" : "not_generated"
+        );
+        dto.setAudioStatus(
+            draft.getAudioId() != null
+                ? "generated" : "not_generated"
+        );
     }
 
     @Override

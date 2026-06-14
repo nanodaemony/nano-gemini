@@ -11,6 +11,7 @@ import com.naon.grid.enums.StatusEnum;
 import com.naon.grid.enums.VocabRelationTypeEnum;
 import lombok.RequiredArgsConstructor;
 import com.naon.grid.utils.JsonUtils;
+import com.alibaba.fastjson2.JSON;
 import com.naon.grid.utils.PageResult;
 import com.naon.grid.utils.PageUtil;
 import com.naon.grid.utils.QueryHelp;
@@ -339,7 +340,10 @@ public class VocabWordServiceImpl implements VocabWordService {
                 // 删除结构及其例句
                 List<VocabStructure> structures = vocabStructureRepository.findBySenseId(sense.getId());
                 for (VocabStructure s : structures) {
-                    exampleSentenceService.disableByStructureId(s.getId().longValue());
+                    if (s.getSentenceIds() != null && !s.getSentenceIds().isEmpty()) {
+                        List<Long> ids = JSON.parseArray(s.getSentenceIds(), Long.class);
+                        exampleSentenceService.disableByIds(ids);
+                    }
                     s.setStatus(StatusEnum.DISABLED.getCode());
                     vocabStructureRepository.save(s);
                 }
@@ -383,32 +387,65 @@ public class VocabWordServiceImpl implements VocabWordService {
                 structureId = structure.getId();
             }
             // 同步结构例句
-            syncStructureSentences(structureId.longValue(), dto.getStructureSentences());
+            syncStructureSentences(structureId, dto.getStructureSentences());
         }
 
         // 软删除被移除的结构及其例句
         for (VocabStructure structure : existing) {
             if (!submittedIds.contains(structure.getId())) {
-                exampleSentenceService.disableByStructureId(structure.getId().longValue());
+                if (structure.getSentenceIds() != null && !structure.getSentenceIds().isEmpty()) {
+                    List<Long> ids = JSON.parseArray(structure.getSentenceIds(), Long.class);
+                    exampleSentenceService.disableByIds(ids);
+                }
                 structure.setStatus(StatusEnum.DISABLED.getCode());
                 vocabStructureRepository.save(structure);
             }
         }
     }
 
-    private void syncStructureSentences(Long structureId, List<ExampleSentenceDto> sentenceDtos) {
+    private void syncStructureSentences(Integer structureId, List<ExampleSentenceDto> sentenceDtos) {
         if (structureId == null) return;
 
-        // 先软删除该结构旧例句
-        exampleSentenceService.disableByStructureId(structureId);
+        // 查找 vocab_structure 实体
+        VocabStructure structure = vocabStructureRepository.findById(structureId).orElse(null);
+        if (structure == null) return;
 
-        if (sentenceDtos == null || sentenceDtos.isEmpty()) return;
+        if (sentenceDtos == null || sentenceDtos.isEmpty()) {
+            // 没有例句：禁用旧的，清空 sentence_ids
+            String oldIdsStr = structure.getSentenceIds();
+            if (oldIdsStr != null && !oldIdsStr.isEmpty()) {
+                List<Long> oldIds = JSON.parseArray(oldIdsStr, Long.class);
+                exampleSentenceService.disableByIds(oldIds);
+            }
+            structure.setSentenceIds(null);
+            vocabStructureRepository.save(structure);
+            return;
+        }
 
+        // 禁用旧的例句
+        String oldIdsStr = structure.getSentenceIds();
+        if (oldIdsStr != null && !oldIdsStr.isEmpty()) {
+            List<Long> oldIds = JSON.parseArray(oldIdsStr, Long.class);
+            exampleSentenceService.disableByIds(oldIds);
+        }
+
+        // 保存新例句，收集 ID
+        List<Long> newIds = new ArrayList<>();
         for (ExampleSentenceDto dto : sentenceDtos) {
             dto.setId(null); // 每次都新建
-            dto.setStructureId(structureId);
-            exampleSentenceService.save(dto);
+            ExampleSentenceDto saved = exampleSentenceService.save(dto);
+            if (saved != null && saved.getId() != null) {
+                newIds.add(saved.getId());
+            }
         }
+
+        // 写回 sentence_ids
+        if (!newIds.isEmpty()) {
+            structure.setSentenceIds(JSON.toJSONString(newIds));
+        } else {
+            structure.setSentenceIds(null);
+        }
+        vocabStructureRepository.save(structure);
     }
 
     private void syncDefImageSentence(Integer senseId, ExampleSentenceDto dto) {
@@ -526,6 +563,8 @@ public class VocabWordServiceImpl implements VocabWordService {
         if (structures == null || structures.isEmpty()) return Collections.emptyList();
 
         List<VocabStructureDto> dtos = new ArrayList<>();
+        // Collect all sentence IDs
+        Set<Long> allSentenceIds = new LinkedHashSet<>();
         for (VocabStructure s : structures) {
             VocabStructureDto d = new VocabStructureDto();
             d.setId(s.getId());
@@ -535,20 +574,39 @@ public class VocabWordServiceImpl implements VocabWordService {
             d.setPatternDef(s.getPatternDef());
             d.setPatternDefTranslations(JsonUtils.parseTranslationList(s.getPatternDefTranslations()));
             d.setStructureOrder(s.getStructureOrder());
+            d.setSentenceIds(s.getSentenceIds());
             d.setCreateTime(s.getCreateTime());
             d.setUpdateTime(s.getUpdateTime());
             d.setStatus(s.getStatus());
             dtos.add(d);
+
+            if (s.getSentenceIds() != null && !s.getSentenceIds().isEmpty()) {
+                List<Long> ids = JSON.parseArray(s.getSentenceIds(), Long.class);
+                allSentenceIds.addAll(ids);
+            }
         }
 
-        // 批量加载结构例句
-        List<Long> structureIds = dtos.stream()
-                .map(s -> s.getId().longValue())
-                .collect(Collectors.toList());
-        Map<Long, List<ExampleSentenceDto>> sentenceMap = exampleSentenceService.findByStructureIds(structureIds);
+        // Batch load all sentences
+        Map<Long, ExampleSentenceDto> sentenceMap = new HashMap<>();
+        if (!allSentenceIds.isEmpty()) {
+            sentenceMap = exampleSentenceService.findByIds(allSentenceIds);
+        }
 
+        // Assign sentences to each structure
         for (VocabStructureDto dto : dtos) {
-            dto.setStructureSentences(sentenceMap.getOrDefault(dto.getId().longValue(), Collections.emptyList()));
+            if (dto.getSentenceIds() != null && !dto.getSentenceIds().isEmpty()) {
+                List<Long> ids = JSON.parseArray(dto.getSentenceIds(), Long.class);
+                List<ExampleSentenceDto> sentences = new ArrayList<>();
+                for (Long id : ids) {
+                    ExampleSentenceDto s = sentenceMap.get(id);
+                    if (s != null) {
+                        sentences.add(s);
+                    }
+                }
+                dto.setStructureSentences(sentences);
+            } else {
+                dto.setStructureSentences(Collections.emptyList());
+            }
         }
 
         return dtos;

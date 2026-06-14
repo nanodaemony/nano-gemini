@@ -29,10 +29,6 @@ public class ExampleSentence implements Serializable {
     @ApiModelProperty(value = "例句ID", hidden = true)
     private Long id;
 
-    @Column(name = "structure_id")
-    @ApiModelProperty(value = "所属词汇搭配结构ID")
-    private Long structureId;
-
     @Column(name = "sentence", nullable = false, length = 1024)
     private String sentence;
 

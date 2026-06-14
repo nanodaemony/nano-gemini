@@ -13,7 +13,6 @@ import org.mockito.ArgumentCaptor;
 
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -24,7 +23,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -171,33 +169,6 @@ class ExampleSentenceServiceImplTest {
     }
 
     @Test
-    void findByStructureIdReturnsOrderedSentences() {
-        ExampleSentence first = new ExampleSentence();
-        first.setId(1L);
-        first.setStructureId(10L);
-        first.setSentence("例句A");
-        first.setSentenceOrder(5);
-        first.setStatus(StatusEnum.ENABLED.getCode());
-
-        ExampleSentence second = new ExampleSentence();
-        second.setId(2L);
-        second.setStructureId(10L);
-        second.setSentence("例句B");
-        second.setSentenceOrder(10);
-        second.setStatus(StatusEnum.ENABLED.getCode());
-
-        when(repository.findByStructureIdAndStatus(10L, StatusEnum.ENABLED.getCode()))
-                .thenReturn(Arrays.asList(first, second));
-
-        List<ExampleSentenceDto> result = service.findByStructureId(10L);
-
-        assertEquals(2, result.size());
-        // order 大的在前（10 > 5）
-        assertEquals("例句B", result.get(0).getSentence());
-        assertEquals("例句A", result.get(1).getSentence());
-    }
-
-    @Test
     void disableByIdSetsStatusToDisabled() {
         ExampleSentence entity = new ExampleSentence();
         entity.setId(1L);
@@ -209,27 +180,5 @@ class ExampleSentenceServiceImplTest {
 
         assertEquals(StatusEnum.DISABLED.getCode(), entity.getStatus());
         verify(repository).save(entity);
-    }
-
-    @Test
-    void disableByStructureIdDisablesAllActiveSentences() {
-        ExampleSentence s1 = new ExampleSentence();
-        s1.setId(1L);
-        s1.setStructureId(10L);
-        s1.setStatus(StatusEnum.ENABLED.getCode());
-
-        ExampleSentence s2 = new ExampleSentence();
-        s2.setId(2L);
-        s2.setStructureId(10L);
-        s2.setStatus(StatusEnum.ENABLED.getCode());
-
-        when(repository.findByStructureIdAndStatus(10L, StatusEnum.ENABLED.getCode()))
-                .thenReturn(Arrays.asList(s1, s2));
-
-        service.disableByStructureId(10L);
-
-        assertEquals(StatusEnum.DISABLED.getCode(), s1.getStatus());
-        assertEquals(StatusEnum.DISABLED.getCode(), s2.getStatus());
-        verify(repository).saveAll(Arrays.asList(s1, s2));
     }
 }

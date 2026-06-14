@@ -1,9 +1,7 @@
 -- 例句文案表
--- 1:1 场景（char_word、vocab_sense、vocab_comparison_chat）由业务表的 FK 列引用；
--- 1:N 场景（vocab_structure）由 structure_id 列指向父表。
+-- 业务表通过 FK 列或 sentence_ids JSON 引用本表
 CREATE TABLE `example_sentence`  (
   `id` bigint NOT NULL AUTO_INCREMENT COMMENT '例句ID',
-  `structure_id` bigint DEFAULT NULL COMMENT '所属词汇搭配结构ID（1:N 场景，对应 vocab_structure.id）',
   `sentence` varchar(1024) NOT NULL COMMENT '例句中文文案',
   `pinyin` varchar(2048) NULL DEFAULT NULL COMMENT '例句拼音',
   `audio_id` bigint NULL DEFAULT NULL COMMENT '例句音频资源ID',
@@ -13,8 +11,7 @@ CREATE TABLE `example_sentence`  (
   `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
   `status` tinyint NOT NULL DEFAULT 1 COMMENT '有效状态, 1:有效 0:无效',
-  PRIMARY KEY (`id`) USING BTREE,
-  INDEX `idx_structure_id`(`structure_id`)
+  PRIMARY KEY (`id`) USING BTREE
 ) ENGINE=InnoDB AUTO_INCREMENT=1 CHARACTER SET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='例句文案表';
 
 

@@ -13,7 +13,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -40,35 +39,6 @@ public class ExampleSentenceServiceImpl implements ExampleSentenceService {
             if (StatusEnum.ENABLED.getCode().equals(e.getStatus())) {
                 result.put(e.getId(), toDto(e));
             }
-        }
-        return result;
-    }
-
-    @Override
-    public List<ExampleSentenceDto> findByStructureId(Long structureId) {
-        if (structureId == null) return Collections.emptyList();
-        List<ExampleSentence> sentences = exampleSentenceRepository
-                .findByStructureIdAndStatus(structureId, StatusEnum.ENABLED.getCode());
-        if (sentences == null || sentences.isEmpty()) return Collections.emptyList();
-        sentences.sort(activeSentenceComparator());
-        return sentences.stream().map(this::toDto).collect(Collectors.toList());
-    }
-
-    @Override
-    public Map<Long, List<ExampleSentenceDto>> findByStructureIds(Collection<Long> structureIds) {
-        if (structureIds == null || structureIds.isEmpty()) return Collections.emptyMap();
-        List<ExampleSentence> sentences = exampleSentenceRepository
-                .findByStructureIdInAndStatus(structureIds, StatusEnum.ENABLED.getCode());
-        if (sentences == null || sentences.isEmpty()) return Collections.emptyMap();
-        Map<Long, List<ExampleSentenceDto>> result = new LinkedHashMap<>();
-        for (ExampleSentence s : sentences) {
-            result.computeIfAbsent(s.getStructureId(), k -> new ArrayList<>())
-                  .add(toDto(s));
-        }
-        // Sort each structure's sentences by order descending
-        for (List<ExampleSentenceDto> list : result.values()) {
-            list.sort(Comparator.comparing(ExampleSentenceDto::getOrder,
-                    Comparator.nullsLast(Comparator.reverseOrder())));
         }
         return result;
     }
@@ -118,32 +88,6 @@ public class ExampleSentenceServiceImpl implements ExampleSentenceService {
         exampleSentenceRepository.saveAll(existing);
     }
 
-    @Override
-    @Transactional(rollbackFor = Exception.class)
-    public void disableByStructureId(Long structureId) {
-        if (structureId == null) return;
-        List<ExampleSentence> existing = exampleSentenceRepository
-                .findByStructureIdAndStatus(structureId, StatusEnum.ENABLED.getCode());
-        if (existing == null || existing.isEmpty()) return;
-        for (ExampleSentence e : existing) {
-            e.setStatus(StatusEnum.DISABLED.getCode());
-        }
-        exampleSentenceRepository.saveAll(existing);
-    }
-
-    @Override
-    @Transactional(rollbackFor = Exception.class)
-    public void disableByStructureIds(Collection<Long> structureIds) {
-        if (structureIds == null || structureIds.isEmpty()) return;
-        List<ExampleSentence> existing = exampleSentenceRepository
-                .findByStructureIdInAndStatus(structureIds, StatusEnum.ENABLED.getCode());
-        if (existing == null || existing.isEmpty()) return;
-        for (ExampleSentence e : existing) {
-            e.setStatus(StatusEnum.DISABLED.getCode());
-        }
-        exampleSentenceRepository.saveAll(existing);
-    }
-
     private void apply(ExampleSentence entity, ExampleSentenceDto dto) {
         entity.setSentence(dto.getSentence());
         entity.setPinyin(dto.getPinyin());
@@ -151,16 +95,12 @@ public class ExampleSentenceServiceImpl implements ExampleSentenceService {
         entity.setTranslations(JsonUtils.toTranslationJson(dto.getTranslations()));
         entity.setImageId(dto.getImageId());
         entity.setSentenceOrder(dto.getOrder() != null ? dto.getOrder() : 0);
-        if (dto.getStructureId() != null) {
-            entity.setStructureId(dto.getStructureId());
-        }
     }
 
     private ExampleSentenceDto toDto(ExampleSentence entity) {
         if (entity == null) return null;
         ExampleSentenceDto dto = new ExampleSentenceDto();
         dto.setId(entity.getId());
-        dto.setStructureId(entity.getStructureId());
         dto.setSentence(entity.getSentence());
         dto.setPinyin(entity.getPinyin());
         dto.setAudioId(entity.getAudioId());
@@ -171,14 +111,5 @@ public class ExampleSentenceServiceImpl implements ExampleSentenceService {
         dto.setUpdateTime(entity.getUpdateTime());
         dto.setStatus(entity.getStatus());
         return dto;
-    }
-
-    private Comparator<ExampleSentence> activeSentenceComparator() {
-        return Comparator.comparing(ExampleSentence::getSentenceOrder,
-                        Comparator.nullsLast(Comparator.reverseOrder()))
-                .thenComparing(ExampleSentence::getUpdateTime,
-                        Comparator.nullsLast(Comparator.reverseOrder()))
-                .thenComparing(ExampleSentence::getId,
-                        Comparator.nullsLast(Comparator.reverseOrder()));
     }
 }

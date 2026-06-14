@@ -49,6 +49,10 @@ public class VocabStructure implements Serializable {
     @ApiModelProperty(value = "结构搭配释义外文翻译（JSON）")
     private String patternDefTranslations;
 
+    @Column(name = "sentence_ids", columnDefinition = "text")
+    @ApiModelProperty(value = "结构例句ID列表（JSON 数组格式）")
+    private String sentenceIds;
+
     @NotNull
     @Column(name = "`order`", nullable = false)
     @ApiModelProperty(value = "搭配排序权重")

@@ -34,6 +34,9 @@ public class VocabStructureDto extends BaseDTO implements Serializable {
     @ApiModelProperty(value = "搭配排序权重")
     private Integer structureOrder;
 
+    @ApiModelProperty(value = "结构例句ID列表（JSON 数组格式）")
+    private String sentenceIds;
+
     @ApiModelProperty(value = "结构例句列表（通过通用例句表存储）")
     private List<ExampleSentenceDto> structureSentences;
 

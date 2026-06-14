@@ -54,6 +54,7 @@ CREATE TABLE `vocab_structure`  (
   `pattern` varchar(255) NOT NULL COMMENT '结构文案',
   `pattern_def` varchar(512) NULL DEFAULT NULL COMMENT '结构释义(可空)',
   `pattern_def_translations` text NULL DEFAULT NULL COMMENT '结构释义外文翻译,JSON列表格式(List<TextTranslation>)',
+  `sentence_ids` text NULL COMMENT '结构例句ID列表（JSON 数组，如 [1,2,3]）',
   `order` int NOT NULL DEFAULT 0 COMMENT '搭配排序权重（大在前）',
   `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',

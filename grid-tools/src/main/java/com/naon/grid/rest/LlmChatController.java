@@ -32,6 +32,16 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
+import com.alibaba.fastjson2.JSON;
+import com.alibaba.fastjson2.JSONArray;
+import com.naon.grid.enums.ChatProviderEnum;
+import com.naon.grid.exception.BadRequestException;
+import io.swagger.annotations.ApiModelProperty;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotEmpty;
+import java.util.ArrayList;
+import java.util.List;
+import lombok.Data;
 import org.springframework.web.bind.annotation.*;
 
 /**
@@ -135,5 +145,119 @@ public class LlmChatController {
                 .build();
 
         return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @Log("词汇辨析对话生成")
+    @ApiOperation(value = "词汇辨析对话生成", notes = "根据词汇列表生成师生情景对话，帮助辨析近义词用法区别")
+    @AnonymousPostMapping("/vocab-comparison-dialogue")
+    public ResponseEntity<VocabComparisonDialogueResponse> generateDialogue(
+            @Validated @RequestBody VocabComparisonDialogueRequest request) {
+
+        // 1. 构造 userPrompt：格式化词汇信息
+        StringBuilder userPromptBuilder = new StringBuilder("请为以下词汇生成辨析情景对话：\n");
+        for (int i = 0; i < request.getWords().size(); i++) {
+            VocabWordInfo word = request.getWords().get(i);
+            userPromptBuilder.append("\n").append(i + 1).append(". ").append(word.getWord());
+            if (word.getPartOfSpeech() != null && !word.getPartOfSpeech().isEmpty()) {
+                userPromptBuilder.append("（").append(word.getPartOfSpeech()).append("）");
+            }
+            if (word.getUsageComparison() != null && !word.getUsageComparison().isEmpty()) {
+                userPromptBuilder.append("\n   用法对比：").append(word.getUsageComparison());
+            }
+        }
+
+        // 2. 调用大模型
+        ChatRequest chatRequest = new ChatRequest();
+        chatRequest.setProvider(ChatProviderEnum.ALIYUN);
+        chatRequest.setModel("qwen-plus");
+        chatRequest.setSystemPrompt(LlmChatConstants.DIALOGUE_SYSTEM_PROMPT);
+        chatRequest.setUserPrompt(userPromptBuilder.toString());
+        chatRequest.setTemperature(LlmChatConstants.DIALOGUE_DEFAULT_TEMPERATURE);
+
+        ChatResponse chatResponse = chatService.chat(chatRequest);
+
+        // 3. 解析 JSON 响应
+        List<VocabChatBaseVO> dialogues = parseDialogueResponse(chatResponse.getContent());
+
+        // 4. 返回
+        VocabComparisonDialogueResponse response = new VocabComparisonDialogueResponse();
+        response.setChats(dialogues);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    /**
+     * 解析 LLM 返回的 JSON 字符串为对话列表
+     */
+    private List<VocabChatBaseVO> parseDialogueResponse(String jsonText) {
+        if (jsonText == null || jsonText.trim().isEmpty()) {
+            throw new BadRequestException("对话生成失败，模型返回为空");
+        }
+
+        try {
+            String trimmed = jsonText.trim();
+            // 处理 LLM 可能用 markdown 代码块包裹的情况
+            if (trimmed.startsWith("```")) {
+                trimmed = trimmed.replaceAll("^```(?:json)?\\s*", "").replaceAll("\\s*```$", "");
+            }
+
+            JSONArray jsonArray = JSON.parseArray(trimmed);
+            List<VocabChatBaseVO> result = new ArrayList<>();
+
+            for (int i = 0; i < jsonArray.size(); i++) {
+                com.alibaba.fastjson2.JSONObject obj = jsonArray.getJSONObject(i);
+                String role = obj.getString("role");
+                String content = obj.getString("content");
+                if (role != null && !role.isEmpty() && content != null && !content.isEmpty()) {
+                    VocabChatBaseVO vo = new VocabChatBaseVO();
+                    vo.setRole(role);
+                    vo.setContent(content);
+                    result.add(vo);
+                }
+            }
+
+            if (result.isEmpty()) {
+                throw new BadRequestException("对话生成失败，生成的对话内容为空");
+            }
+
+            return result;
+        } catch (Exception e) {
+            log.error("解析对话生成响应失败: {}", e.getMessage());
+            throw new BadRequestException("对话生成失败，请重试");
+        }
+    }
+
+    @Data
+    public static class VocabComparisonDialogueRequest {
+        @NotEmpty(message = "词汇列表不能为空")
+        @ApiModelProperty(value = "词汇列表", required = true)
+        private List<VocabWordInfo> words;
+    }
+
+    @Data
+    public static class VocabWordInfo {
+        @NotBlank(message = "词汇词头不能为空")
+        @ApiModelProperty(value = "词汇词头", required = true)
+        private String word;
+
+        @ApiModelProperty(value = "词性")
+        private String partOfSpeech;
+
+        @ApiModelProperty(value = "用法对比")
+        private String usageComparison;
+    }
+
+    @Data
+    public static class VocabComparisonDialogueResponse {
+        @ApiModelProperty(value = "情景对话列表")
+        private List<VocabChatBaseVO> chats;
+    }
+
+    @Data
+    public static class VocabChatBaseVO {
+        @ApiModelProperty(value = "角色: teacher=老师, student=学生")
+        private String role;
+
+        @ApiModelProperty(value = "中文对话内容")
+        private String content;
     }
 }

@@ -19,6 +19,7 @@ import com.naon.grid.service.dto.QwenImageBatchRequest;
 import com.naon.grid.service.dto.QwenImageBatchResponse;
 import com.naon.grid.service.dto.QwenImageRequest;
 import com.naon.grid.service.dto.QwenImageResponse;
+import com.naon.grid.service.dto.RadicalEvolutionRequest;
 
 /**
  * 千问文生图（Qwen-Image）Service 接口
@@ -40,4 +41,12 @@ public interface ImageService {
      * @return 响应参数（包含最终 OSS 图像 URL 列表）
      */
     QwenImageBatchResponse generateBatch(QwenImageBatchRequest request);
+
+    /**
+     * 生成部首演化图
+     * <p>根据教师编写的演化解说文案，自动填充提示词模板，生成展示该部首从甲骨文→小篆→楷书演化过程的信息图。</p>
+     * @param request 请求参数（部首 + 演化解说）
+     * @return 响应参数（包含最终 OSS 图像 URL）
+     */
+    QwenImageResponse generateRadicalEvolution(RadicalEvolutionRequest request);
 }

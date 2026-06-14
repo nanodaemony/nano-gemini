@@ -29,6 +29,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import com.naon.grid.config.AliOssConfig;
 import com.naon.grid.config.AliYunImageConfig;
+import com.naon.grid.constants.ImageGenerateConstants;
 import com.naon.grid.domain.AliOssStorage;
 import com.naon.grid.domain.ImageRecord;
 import com.naon.grid.domain.enums.OssBusinessType;
@@ -41,6 +42,7 @@ import com.naon.grid.service.dto.QwenImageBatchRequest;
 import com.naon.grid.service.dto.QwenImageBatchResponse;
 import com.naon.grid.service.dto.QwenImageRequest;
 import com.naon.grid.service.dto.QwenImageResponse;
+import com.naon.grid.service.dto.RadicalEvolutionRequest;
 import com.naon.grid.utils.FileUtil;
 import com.naon.grid.utils.StringUtils;
 import org.springframework.stereotype.Service;
@@ -183,6 +185,61 @@ public class ImageServiceImpl implements ImageService {
             log.error("文生图批量生成失败: {}", e.getMessage(), e);
             throw new BadRequestException("文生图批量生成失败: " + e.getMessage());
         }
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public QwenImageResponse generateRadicalEvolution(RadicalEvolutionRequest request) {
+        if (StringUtils.isBlank(request.getRadical())) {
+            throw new BadRequestException("部首不能为空");
+        }
+        if (StringUtils.isBlank(request.getEvolutionDesc())) {
+            throw new BadRequestException("演化解说不能为空");
+        }
+
+        // 从演化解说中提取象形特征描述
+        // 取第一句或"古文字"后到句号的内容作为象形特征
+        String pictographicDesc = extractPictographicFeature(request.getEvolutionDesc());
+
+        // 填充提示词模板（第一个 %s=象形特征, 第二个 %s=部首）
+        String prompt = String.format(ImageGenerateConstants.RADICAL_EVOLUTION_PROMPT,
+                pictographicDesc, request.getRadical());
+
+        log.info("部首演化图提示词: radical={}, prompt={}",
+                request.getRadical(), StringUtils.truncate(prompt, 100));
+
+        // 复用已有的文生图接口
+        QwenImageRequest imageRequest = new QwenImageRequest();
+        imageRequest.setPrompt(prompt);
+        imageRequest.setNegativePrompt("水印、现代数码字体、照片、写实人物、3D渲染、过于鲜艳的颜色、霓虹色、卡通、动漫、构图杂乱、字形扭曲、笔画错误");
+        // 保持默认 model: qwen-image-2.0-pro, promptExtend: true, size: 2048*2048
+
+        return generate(imageRequest);
+    }
+
+    /**
+     * 从演化解说中提取甲骨文象形特征描述
+     * <p>策略：取解说中以"古文字"开头到第一个句号之间的内容。</p>
+     */
+    private String extractPictographicFeature(String evolutionDesc) {
+        if (StringUtils.isBlank(evolutionDesc)) {
+            return "";
+        }
+        // 尝试提取 "古文字..." 部分
+        int idx = evolutionDesc.indexOf("古文字");
+        if (idx >= 0) {
+            int endIdx = evolutionDesc.indexOf("。", idx);
+            if (endIdx > idx) {
+                return evolutionDesc.substring(idx, endIdx);
+            }
+            return evolutionDesc.substring(idx);
+        }
+        // 没有"古文字"关键词时，取第一句
+        int firstPeriod = evolutionDesc.indexOf("。");
+        if (firstPeriod > 0) {
+            return evolutionDesc.substring(0, firstPeriod);
+        }
+        return evolutionDesc;
     }
 
     /**

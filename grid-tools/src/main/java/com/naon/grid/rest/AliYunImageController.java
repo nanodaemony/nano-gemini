@@ -26,6 +26,7 @@ import com.naon.grid.service.dto.QwenImageBatchRequest;
 import com.naon.grid.service.dto.QwenImageBatchResponse;
 import com.naon.grid.service.dto.QwenImageRequest;
 import com.naon.grid.service.dto.QwenImageResponse;
+import com.naon.grid.service.dto.RadicalEvolutionRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -60,4 +61,14 @@ public class AliYunImageController {
         QwenImageBatchResponse response = imageService.generateBatch(request);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
+
+    @Log("部首演化图生成")
+    @ApiOperation("部首演化图生成（根据演化解说自动生成甲骨文→小篆→楷书演化信息图）")
+    @AnonymousPostMapping("/radical-evolution")
+    public ResponseEntity<QwenImageResponse> generateRadicalEvolution(
+            @Validated @RequestBody RadicalEvolutionRequest request) {
+        QwenImageResponse response = imageService.generateRadicalEvolution(request);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
 }
+

@@ -22,6 +22,8 @@ import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
 import com.naon.grid.annotation.Log;
 import com.naon.grid.service.TranslateService;
+import com.naon.grid.service.dto.TranslateDirectRequest;
+import com.naon.grid.service.dto.TranslateDirectResponse;
 import com.naon.grid.service.dto.TranslateRequest;
 import com.naon.grid.service.dto.TranslateResponse;
 import org.springframework.http.HttpStatus;
@@ -54,10 +56,19 @@ public class TranslateController {
      * }
      * @return 翻译结果
      */
-    @Log("执行翻译")
-    @ApiOperation("执行翻译")
+    @Log("中文翻译")
+    @ApiOperation("中文翻译")
     @AnonymousPostMapping
     public ResponseEntity<TranslateResponse> translate(@Validated @RequestBody TranslateRequest request) {
         return new ResponseEntity<>(translateService.translate(request), HttpStatus.OK);
     }
+
+    @Log("指定源语言翻译")
+    @ApiOperation("指定源语言翻译")
+    @AnonymousPostMapping("/direct")
+    public ResponseEntity<TranslateDirectResponse> translateDirect(@Validated @RequestBody TranslateDirectRequest request) {
+        return new ResponseEntity<>(translateService.translateDirect(request), HttpStatus.OK);
+    }
+
+
 }

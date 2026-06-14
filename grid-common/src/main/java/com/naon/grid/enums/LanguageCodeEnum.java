@@ -7,7 +7,7 @@ public enum LanguageCodeEnum {
 
     ENGLISH(0, "en", "英语", "English"),
     CHINESE(1, "zh", "简体中文", "Chinese"),
-    ZH_TW(2, "zh_tw", "繁体中文", "Traditional Chinese"),
+    ZH_TW(2, "Tr", "繁体中文", "Traditional Chinese"),
     RUSSIAN(3, "ru", "俄语", "Russian"),
     JAPANESE(4, "ja", "日语", "Japanese"),
     KOREAN(5, "ko", "韩语", "Korean"),

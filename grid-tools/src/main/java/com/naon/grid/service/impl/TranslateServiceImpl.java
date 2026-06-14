@@ -28,6 +28,8 @@ import com.naon.grid.enums.LanguageCodeEnum;
 import com.naon.grid.exception.BadRequestException;
 import com.naon.grid.repository.TranslateRecordRepository;
 import com.naon.grid.service.TranslateService;
+import com.naon.grid.service.dto.TranslateDirectRequest;
+import com.naon.grid.service.dto.TranslateDirectResponse;
 import com.naon.grid.service.dto.TranslateRequest;
 import com.naon.grid.service.dto.TranslateResponse;
 import com.naon.grid.utils.StringUtils;
@@ -79,16 +81,8 @@ public class TranslateServiceImpl implements TranslateService {
             // 构建翻译提示词 - 使用英文名称 codeName
             String prompt = buildTranslatePrompt(request.getSourceText(), languageEnum.getCodeName());
 
-            // 构建请求参数
-            Generation gen = new Generation();
-            GenerationParam param = GenerationParam.builder()
-                    .apiKey(aliTranslateConfig.getApiKey())
-                    .model(request.getModel())
-                    .prompt(prompt)
-                    .build();
-
-            // 调用 API
-            GenerationResult result = gen.call(param);
+            // 调用 DashScope API
+            GenerationResult result = callDashScope(request.getModel(), prompt);
             log.info("翻译结果，result: {}", JSONUtil.toJsonStr(result));
 
             // GenerationResult(requestId=9645a4db-40d2-9e0c-8110-119a4a191946, usage=GenerationUsage(inputTokens=32, outputTokens=6, totalTokens=38, outputTokensDetails=null, promptTokensDetails=null), output=GenerationOutput(text=null, finishReason=stop, choices=[GenerationOutput.Choice(finishReason=stop, index=null, message=Message(role=assistant, content=My hair is real hair., toolCalls=null, toolCallId=null, name=null, contents=null, reasoningContent=null, partial=null), logprobs=null)], searchInfo=null, modelName=qwen-mt-flash), statusCode=200, code=, message=)
@@ -105,6 +99,7 @@ public class TranslateServiceImpl implements TranslateService {
             // 保存记录
             TranslateRecord record = new TranslateRecord();
             record.setSourceText(request.getSourceText());
+            record.setSourceLanguage("zh");
             record.setTargetText(targetText);
             record.setTargetLanguage(request.getTargetLanguage());
             record.setModel(request.getModel());
@@ -119,6 +114,71 @@ public class TranslateServiceImpl implements TranslateService {
         }
     }
 
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public TranslateDirectResponse translateDirect(TranslateDirectRequest request) {
+        // 验证参数
+        if (StringUtils.isBlank(request.getSourceText())) {
+            throw new BadRequestException("源文本不能为空");
+        }
+        if (StringUtils.isBlank(request.getTargetLanguage())) {
+            throw new BadRequestException("目标语言不能为空");
+        }
+        if (request.getSourceText().length() > 500) {
+            throw new BadRequestException("源文本长度不能超过500字");
+        }
+
+        // 验证语言代码
+        LanguageCodeEnum sourceEnum = LanguageCodeEnum.fromCode(request.getSourceLanguage());
+        if (sourceEnum == null) {
+            throw new BadRequestException("不支持的源语言代码: " + request.getSourceLanguage());
+        }
+        LanguageCodeEnum targetEnum = LanguageCodeEnum.fromCode(request.getTargetLanguage());
+        if (targetEnum == null) {
+            throw new BadRequestException("不支持的目标语言代码: " + request.getTargetLanguage());
+        }
+
+        Constants.baseHttpApiUrl = "https://dashscope.aliyuncs.com/api/v1";
+
+        try {
+            // 构建动态 prompt — 使用英文名称 codeName
+            String prompt = String.format("请将以下%s翻译成%s，只返回译文，不要添加任何解释：\n\n%s",
+                    sourceEnum.getCodeName(), targetEnum.getCodeName(), request.getSourceText());
+
+            // 调用 DashScope API（复用公共方法）
+            GenerationResult result = callDashScope(request.getModel(), prompt);
+            log.info("翻译结果，result: {}", JSONUtil.toJsonStr(result));
+
+            // 提取翻译结果
+            String targetText = null;
+            if (result.getOutput() != null && result.getOutput().getChoices() != null
+                    && !result.getOutput().getChoices().isEmpty()) {
+                targetText = result.getOutput().getChoices().get(0).getMessage().getContent();
+            }
+            String requestId = result.getRequestId();
+
+            log.info("翻译成功，sourceText: {}, sourceLanguage: {}, targetLanguage: {}, requestId: {}",
+                    request.getSourceText(), request.getSourceLanguage(), request.getTargetLanguage(), requestId);
+
+            // 保存记录
+            TranslateRecord record = new TranslateRecord();
+            record.setSourceText(request.getSourceText());
+            record.setSourceLanguage(request.getSourceLanguage());
+            record.setTargetText(targetText);
+            record.setTargetLanguage(request.getTargetLanguage());
+            record.setModel(request.getModel());
+            record.setRequestId(requestId);
+            translateRecordRepository.save(record);
+
+            return new TranslateDirectResponse(record.getId(), request.getSourceText(),
+                    request.getSourceLanguage(), targetText, request.getTargetLanguage());
+
+        } catch (Exception e) {
+            log.error("翻译失败: {}", e.getMessage(), e);
+            throw new BadRequestException("翻译失败: " + e.getMessage());
+        }
+    }
+
     /**
      * 构建翻译提示词
      * @param text 源文本
@@ -126,5 +186,21 @@ public class TranslateServiceImpl implements TranslateService {
      */
     private String buildTranslatePrompt(String text, String targetLanguageName) {
         return String.format("请将以下中文文本翻译成%s，只返回译文，不要添加任何解释：\n\n%s", targetLanguageName, text);
+    }
+
+    /**
+     * 调用 DashScope API
+     * @param model 模型名称
+     * @param prompt 提示词
+     * @return API 响应结果
+     */
+    private GenerationResult callDashScope(String model, String prompt) throws Exception {
+        Generation gen = new Generation();
+        GenerationParam param = GenerationParam.builder()
+                .apiKey(aliTranslateConfig.getApiKey())
+                .model(model)
+                .prompt(prompt)
+                .build();
+        return gen.call(param);
     }
 }

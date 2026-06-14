@@ -15,7 +15,6 @@ import com.naon.grid.backend.service.vocabcomparison.dto.VocabComparisonGroupQue
 import com.naon.grid.backend.service.vocabcomparison.dto.VocabComparisonItemDto;
 import com.naon.grid.enums.EditStatusEnum;
 import com.naon.grid.enums.PublishStatusEnum;
-import com.naon.grid.enums.SentenceBizTypeEnum;
 import com.naon.grid.enums.StatusEnum;
 import com.naon.grid.exception.BadRequestException;
 import com.naon.grid.exception.EntityNotFoundException;
@@ -43,8 +42,6 @@ public class VocabComparisonGroupServiceImpl implements VocabComparisonGroupServ
     private final VocabComparisonItemRepository itemRepository;
     private final VocabComparisonChatRepository chatRepository;
     private final ExampleSentenceService exampleSentenceService;
-
-    private static final String COMPARISON_CHAT_BIZ = SentenceBizTypeEnum.VOCAB_COMPARISON_CHAT.getCode();
 
     @Override
     public PageResult<VocabComparisonGroupDto> queryAll(VocabComparisonGroupQueryCriteria criteria, Pageable pageable) {
@@ -414,8 +411,7 @@ public class VocabComparisonGroupServiceImpl implements VocabComparisonGroupServ
 
     /**
      * Load chats from the formal table for a given group,
-     * then batch-load example_sentences by bizIds and preferentially read
-     * pinyin/translations/audioId from the example_sentence.
+     * then batch-load example_sentences by exampleSentenceId FK.
      */
     private List<VocabComparisonChatDto> loadChats(Long groupId) {
         List<VocabComparisonChat> chats = chatRepository.findByGroupIdAndStatus(
@@ -426,18 +422,22 @@ public class VocabComparisonGroupServiceImpl implements VocabComparisonGroupServ
 
         List<VocabComparisonChatDto> dtos = chats.stream().map(this::toChatDto).collect(Collectors.toList());
 
-        // Batch load example_sentences by bizType=VOCAB_COMPARISON_CHAT and bizId=chat.id
-        List<Long> chatIds = dtos.stream().map(VocabComparisonChatDto::getId).collect(Collectors.toList());
-        Map<Long, ExampleSentenceDto> sentenceMap = exampleSentenceService.findByBizIds(COMPARISON_CHAT_BIZ, chatIds);
-
-        // Preferentially read from example_sentence
-        for (VocabComparisonChatDto dto : dtos) {
-            ExampleSentenceDto sentence = sentenceMap.get(dto.getId());
-            if (sentence != null) {
-                dto.setPinyin(sentence.getPinyin());
-                dto.setTranslations(sentence.getTranslations());
-                dto.setAudioId(sentence.getAudioId());
-                dto.setExampleSentenceId(sentence.getId());
+        // 通过 chat.exampleSentenceId 直接批量加载例句
+        List<Long> sentenceIds = dtos.stream()
+                .map(VocabComparisonChatDto::getExampleSentenceId)
+                .filter(id -> id != null)
+                .collect(Collectors.toList());
+        if (!sentenceIds.isEmpty()) {
+            Map<Long, ExampleSentenceDto> sentenceMap = exampleSentenceService.findByIds(sentenceIds);
+            for (VocabComparisonChatDto dto : dtos) {
+                if (dto.getExampleSentenceId() != null) {
+                    ExampleSentenceDto sentence = sentenceMap.get(dto.getExampleSentenceId());
+                    if (sentence != null) {
+                        dto.setPinyin(sentence.getPinyin());
+                        dto.setTranslations(sentence.getTranslations());
+                        dto.setAudioId(sentence.getAudioId());
+                    }
+                }
             }
         }
 
@@ -487,26 +487,28 @@ public class VocabComparisonGroupServiceImpl implements VocabComparisonGroupServ
      * Sync chats during publish:
      * soft delete old chats + disable their example_sentences
      * → create new chats
-     * → create example_sentences via syncOne
+     * → create example_sentences (without bizType)
      * → backfill chat.exampleSentenceId.
      */
     private void syncChats(Long groupId, List<VocabComparisonChatDto> submittedDtos) {
-        // Soft delete old chats and disable their example_sentences
+        // 1. 软删除旧的 chats 及其例句
         List<VocabComparisonChat> existing = chatRepository.findByGroupIdAndStatus(
                 groupId, StatusEnum.ENABLED.getCode());
-        List<Long> oldChatIds = existing.stream().map(VocabComparisonChat::getId).collect(Collectors.toList());
+        List<Long> oldSentenceIds = existing.stream()
+                .map(VocabComparisonChat::getExampleSentenceId)
+                .filter(id -> id != null)
+                .collect(Collectors.toList());
         if (!existing.isEmpty()) {
             for (VocabComparisonChat chat : existing) {
                 chat.setStatus(StatusEnum.DISABLED.getCode());
             }
             chatRepository.saveAll(existing);
         }
-        // Disable example_sentences for old chats
-        if (!oldChatIds.isEmpty()) {
-            exampleSentenceService.disableByBizIds(COMPARISON_CHAT_BIZ, oldChatIds);
+        if (!oldSentenceIds.isEmpty()) {
+            exampleSentenceService.disableByIds(oldSentenceIds);
         }
 
-        // Create new chats
+        // 2. 创建新 chats
         if (submittedDtos == null || submittedDtos.isEmpty()) {
             return;
         }
@@ -520,7 +522,7 @@ public class VocabComparisonGroupServiceImpl implements VocabComparisonGroupServ
             chat.setStatus(StatusEnum.ENABLED.getCode());
             chat = chatRepository.save(chat);
 
-            // Create example_sentence for this chat
+            // 创建例句（不设 bizType）
             ExampleSentenceDto sentenceDto = new ExampleSentenceDto();
             sentenceDto.setSentence(dto.getContent());
             sentenceDto.setPinyin(dto.getPinyin());
@@ -528,10 +530,7 @@ public class VocabComparisonGroupServiceImpl implements VocabComparisonGroupServ
             sentenceDto.setTranslations(dto.getTranslations());
             sentenceDto.setOrder(dto.getOrder());
 
-            ExampleSentenceDto savedSentence = exampleSentenceService.syncOne(
-                    COMPARISON_CHAT_BIZ, chat.getId(), sentenceDto);
-
-            // Backfill chat.exampleSentenceId
+            ExampleSentenceDto savedSentence = exampleSentenceService.save(sentenceDto);
             if (savedSentence != null && savedSentence.getId() != null) {
                 chat.setExampleSentenceId(savedSentence.getId());
                 chatRepository.save(chat);

@@ -156,6 +156,7 @@ public class CharRadicalServiceImpl implements CharRadicalService {
         // 回写主表字段
         entity.setRadical(draftDto.getRadical());
         entity.setStrokeNum(draftDto.getStrokeNum());
+        entity.setRelationId(draftDto.getRelationId());
         entity.setEvolutionDesc(draftDto.getEvolutionDesc());
         entity.setEvolutionDescTranslations(JsonUtils.toTranslationJson(draftDto.getEvolutionDescTranslations()));
         entity.setEvolutionImageId(draftDto.getEvolutionImageId());
@@ -186,6 +187,7 @@ public class CharRadicalServiceImpl implements CharRadicalService {
         dto.setId(entity.getId());
         dto.setRadical(entity.getRadical());
         dto.setStrokeNum(entity.getStrokeNum());
+        dto.setRelationId(entity.getRelationId());
         dto.setEvolutionDesc(entity.getEvolutionDesc());
         dto.setEvolutionDescTranslations(JsonUtils.parseTranslationList(entity.getEvolutionDescTranslations()));
         dto.setEvolutionImageId(entity.getEvolutionImageId());
@@ -224,6 +226,7 @@ public class CharRadicalServiceImpl implements CharRadicalService {
         }
         if (draft.getRadical() != null)                dto.setRadical(draft.getRadical());
         if (draft.getStrokeNum() != null)              dto.setStrokeNum(draft.getStrokeNum());
+        if (draft.getRelationId() != null)             dto.setRelationId(draft.getRelationId());
         if (draft.getEvolutionDesc() != null)          dto.setEvolutionDesc(draft.getEvolutionDesc());
         if (draft.getEvolutionDescTranslations() != null) dto.setEvolutionDescTranslations(draft.getEvolutionDescTranslations());
         if (draft.getEvolutionImageId() != null)       dto.setEvolutionImageId(draft.getEvolutionImageId());

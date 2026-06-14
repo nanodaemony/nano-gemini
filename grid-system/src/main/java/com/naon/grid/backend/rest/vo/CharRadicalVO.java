@@ -19,6 +19,9 @@ public class CharRadicalVO {
     @ApiModelProperty(value = "笔画数")
     private Integer strokeNum;
 
+    @ApiModelProperty(value = "关联部首ID")
+    private Long relationId;
+
     @ApiModelProperty(value = "演化解说")
     private String evolutionDesc;
 

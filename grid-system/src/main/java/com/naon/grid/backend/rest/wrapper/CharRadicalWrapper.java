@@ -34,6 +34,7 @@ public class CharRadicalWrapper {
         CharRadicalDto dto = new CharRadicalDto();
         dto.setRadical(request.getRadical());
         dto.setStrokeNum(request.getStrokeNum());
+        dto.setRelationId(request.getRelationId());
         dto.setEvolutionDesc(request.getEvolutionDesc());
         dto.setEvolutionDescTranslations(toTextTranslationList(request.getEvolutionDescTranslations()));
         dto.setEvolutionImageId(request.getEvolutionImageId());
@@ -48,6 +49,7 @@ public class CharRadicalWrapper {
         vo.setId(dto.getId());
         vo.setRadical(dto.getRadical());
         vo.setStrokeNum(dto.getStrokeNum());
+        vo.setRelationId(dto.getRelationId());
         vo.setEvolutionDesc(dto.getEvolutionDesc());
         vo.setEvolutionDescTranslations(toTextTranslationVOList(dto.getEvolutionDescTranslations()));
         vo.setEvolutionImageId(dto.getEvolutionImageId());
@@ -66,6 +68,7 @@ public class CharRadicalWrapper {
         vo.setId(dto.getId());
         vo.setRadical(dto.getRadical());
         vo.setStrokeNum(dto.getStrokeNum());
+        vo.setRelationId(dto.getRelationId());
         vo.setEvolutionImageId(dto.getEvolutionImageId());
         vo.setPublishStatus(dto.getPublishStatus());
         vo.setEditStatus(dto.getEditStatus());

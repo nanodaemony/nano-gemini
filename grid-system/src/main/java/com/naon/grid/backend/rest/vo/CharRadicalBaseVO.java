@@ -18,6 +18,9 @@ public class CharRadicalBaseVO {
     @ApiModelProperty(value = "笔画数")
     private Integer strokeNum;
 
+    @ApiModelProperty(value = "关联部首ID")
+    private Long relationId;
+
     @ApiModelProperty(value = "演化解说图片（路径或资源ID）")
     private String evolutionImageId;
 

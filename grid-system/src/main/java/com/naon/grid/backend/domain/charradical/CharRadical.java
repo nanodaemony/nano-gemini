@@ -36,6 +36,10 @@ public class CharRadical extends BaseEntity implements Serializable {
     @ApiModelProperty(value = "笔画数")
     private Integer strokeNum;
 
+    @Column(name = "relation_id")
+    @ApiModelProperty(value = "关联部首ID")
+    private Long relationId;
+
     @Column(name = "evolution_desc", length = 2048)
     @ApiModelProperty(value = "演化解说")
     private String evolutionDesc;

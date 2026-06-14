@@ -43,6 +43,10 @@ public class TranslateRecord extends BaseEntity implements Serializable {
     @Column(columnDefinition = "text")
     private String sourceText;
 
+    @ApiModelProperty(value = "源语言代码")
+    @Column(length = 50)
+    private String sourceLanguage;
+
     @ApiModelProperty(value = "目标文本（译文）")
     @Column(columnDefinition = "text")
     private String targetText;

@@ -50,7 +50,7 @@ public class CharRadicalServiceImpl implements CharRadicalService {
         if (EditStatusEnum.DRAFT.getCode().equals(entity.getEditStatus())
                 || EditStatusEnum.REVIEWED.getCode().equals(entity.getEditStatus())) {
             if (entity.getDraftContent() == null) {
-                throw new BadRequestException("草稿内容不存在");
+                return toBaseDto(entity);
             }
             CharRadicalDto dto;
             try {

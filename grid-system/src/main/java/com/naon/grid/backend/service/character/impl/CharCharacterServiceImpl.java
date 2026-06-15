@@ -302,6 +302,17 @@ public class CharCharacterServiceImpl implements CharCharacterService {
             throw new EntityNotFoundException(CharCharacter.class, "id", String.valueOf(id));
         }
 
+        // 如果修改了汉字本身，校验发布状态：
+        // - 已发布 → 不允许修改（保证已发布的汉字文案可搜索）
+        // - 未发布 → 同步更新 character 列，保证草稿阶段的修改也能被搜到
+        String newCharacter = resources.getCharacter();
+        if (newCharacter != null && !newCharacter.equals(charCharacter.getCharacter())) {
+            if (PublishStatusEnum.PUBLISHED.getCode().equals(charCharacter.getPublishStatus())) {
+                throw new BadRequestException("已发布的汉字不允许修改汉字本身");
+            }
+            charCharacter.setCharacter(newCharacter);
+        }
+
         // If current status is REVIEWED or PUBLISHED, revert to DRAFT
         if (EditStatusEnum.REVIEWED.getCode().equals(charCharacter.getEditStatus()) ||
             EditStatusEnum.PUBLISHED.getCode().equals(charCharacter.getEditStatus())) {

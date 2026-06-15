@@ -269,6 +269,18 @@ public class VocabWordServiceImpl implements VocabWordService {
         if (vocabWord.getId() == null || StatusEnum.DISABLED.getCode().equals(vocabWord.getStatus())) {
             throw new EntityNotFoundException(VocabWord.class, "id", String.valueOf(id));
         }
+
+        // 如果修改了词汇本身，校验发布状态：
+        // - 已发布 → 不允许修改（保证已发布的词汇文案可搜索）
+        // - 未发布 → 同步更新 word 列，保证草稿阶段的修改也能被搜到
+        String newWord = resources.getWord();
+        if (newWord != null && !newWord.equals(vocabWord.getWord())) {
+            if (PublishStatusEnum.PUBLISHED.getCode().equals(vocabWord.getPublishStatus())) {
+                throw new BadRequestException("已发布的词汇不允许修改词汇本身");
+            }
+            vocabWord.setWord(newWord);
+        }
+
         if (EditStatusEnum.REVIEWED.getCode().equals(vocabWord.getEditStatus()) ||
             EditStatusEnum.PUBLISHED.getCode().equals(vocabWord.getEditStatus())) {
             vocabWord.setEditStatus(EditStatusEnum.DRAFT.getCode());

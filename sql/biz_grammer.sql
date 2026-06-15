@@ -8,7 +8,7 @@ CREATE TABLE `grammar_point` (
     `category` VARCHAR(50) DEFAULT NULL COMMENT '类别',
     `sub_category` VARCHAR(50) DEFAULT NULL COMMENT '细目',
 
-    `draft_content` text DEFAULT NULL COMMENT '草稿内容（JSON结构）',
+    `draft_content` text COMMENT '草稿内容（JSON结构）',
     `edit_status` VARCHAR(20) NOT NULL DEFAULT 'draft' COMMENT '编辑状态：draft-草稿 reviewing-审核中',
     `publish_status` VARCHAR(20) NOT NULL DEFAULT 'unpublished' COMMENT '发布状态：unpublished-未发布 published-已发布',
     `create_by` VARCHAR(255) DEFAULT NULL COMMENT '创建人',
@@ -20,7 +20,7 @@ CREATE TABLE `grammar_point` (
     INDEX `idx_name` (`name`),
     INDEX `idx_category` (`category`),
     INDEX `idx_publish_status` (`publish_status`),
-    INDEX `idx_edit_status` (`edit_status`),
+    INDEX `idx_edit_status` (`edit_status`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='语法点主表';
 
 -- 语法意义表
@@ -30,7 +30,7 @@ CREATE TABLE `grammar_meaning` (
     `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '语法意义ID',
     `grammar_id` BIGINT NOT NULL COMMENT '语法点ID',
     `meaning_content` VARCHAR(2048) NOT NULL COMMENT '语法意义内容（如：表示在上面）',
-    `meaning_content_translations` text DEFAULT NULL COMMENT '语法意义外文翻译',
+    `meaning_content_translations` text COMMENT '语法意义外文翻译',
     `image_id` BIGINT DEFAULT NULL COMMENT '语法意义图片ID',
     `meaning_sentence_ids` VARCHAR(128) DEFAULT NULL COMMENT '语法意义例句ID列表, JSON格式',
     `order` INT NOT NULL DEFAULT 0 COMMENT '排序权重(值大的排前面)',
@@ -87,7 +87,7 @@ CREATE TABLE `grammar_error` (
     `status` TINYINT NOT NULL DEFAULT 1 COMMENT '有效状态：1-有效，0-无效',
     PRIMARY KEY (`id`),
     INDEX `idx_grammar_id` (`grammar_id`),
-    INDEX `idx_status_order` (`status`, `error_order`),
+    INDEX `idx_status_order` (`status`, `order`),
     INDEX `idx_status` (`status`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='语法偏误表';
 

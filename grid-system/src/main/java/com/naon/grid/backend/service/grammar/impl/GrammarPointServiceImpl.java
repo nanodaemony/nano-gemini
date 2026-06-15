@@ -665,11 +665,11 @@ public class GrammarPointServiceImpl implements GrammarPointService {
     }
 
     @FunctionalInterface
-    private interface SentenceIdsGetter {
-        String getSentenceIds(Object entity);
+    private interface SentenceIdsGetter<T> {
+        String getSentenceIds(T entity);
     }
 
-    private <T> void disableChildSentences(List<T> entities, SentenceIdsGetter idsGetter) {
+    private <T> void disableChildSentences(List<T> entities, SentenceIdsGetter<T> idsGetter) {
         if (entities == null || entities.isEmpty()) return;
         List<Long> allIds = new ArrayList<>();
         for (T entity : entities) {

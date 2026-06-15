@@ -212,6 +212,7 @@ public class ImageServiceImpl implements ImageService {
         QwenImageRequest imageRequest = new QwenImageRequest();
         imageRequest.setPrompt(prompt);
         imageRequest.setNegativePrompt("水印、现代数码字体、照片、写实人物、3D渲染、过于鲜艳的颜色、霓虹色、卡通、动漫、构图杂乱、字形扭曲、笔画错误");
+        imageRequest.setSize("900*600");
         // 保持默认 model: qwen-image-2.0-pro, promptExtend: true, size: 2048*2048
 
         return generate(imageRequest);

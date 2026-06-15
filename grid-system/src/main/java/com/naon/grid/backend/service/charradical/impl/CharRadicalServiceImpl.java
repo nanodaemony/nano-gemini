@@ -146,15 +146,11 @@ public class CharRadicalServiceImpl implements CharRadicalService {
         }
 
         // 校验必填字段
-        if (draftDto.getRadical() == null || draftDto.getRadical().trim().isEmpty()) {
-            throw new BadRequestException("部首名称不能为空");
-        }
         if (draftDto.getStrokeNum() == null) {
             throw new BadRequestException("笔画数不能为空");
         }
 
-        // 回写主表字段
-        entity.setRadical(draftDto.getRadical());
+        // 回写主表字段（radical 字段创建后不允许修改）
         entity.setStrokeNum(draftDto.getStrokeNum());
         entity.setRelationId(draftDto.getRelationId());
         entity.setEvolutionDesc(draftDto.getEvolutionDesc());

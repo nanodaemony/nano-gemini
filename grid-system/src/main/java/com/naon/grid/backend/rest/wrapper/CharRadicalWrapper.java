@@ -32,7 +32,6 @@ public class CharRadicalWrapper {
     public static CharRadicalDto toDto(CharRadicalUpdateRequest request) {
         if (request == null) return null;
         CharRadicalDto dto = new CharRadicalDto();
-        dto.setRadical(request.getRadical());
         dto.setStrokeNum(request.getStrokeNum());
         dto.setRelationId(request.getRelationId());
         dto.setEvolutionDesc(request.getEvolutionDesc());

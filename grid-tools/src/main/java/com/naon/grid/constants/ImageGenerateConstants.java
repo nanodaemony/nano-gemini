@@ -20,7 +20,7 @@ package com.naon.grid.constants;
  * @author nano
  * @date 2026-06-14
  */
-public interface ImageGenerateConstants {
+public class ImageGenerateConstants {
 
     /**
      * 部首演化图提示词模板
@@ -29,7 +29,7 @@ public interface ImageGenerateConstants {
      * %s — 象形特征描述（如 模拟侧立的人形）
      * %s — 部首（如 人、木、水）
      */
-    String RADICAL_EVOLUTION_PROMPT = "你是一位专业的汉字书法与古文字学者插图师。" +
+    public static final String RADICAL_EVOLUTION_PROMPT = "你是一位专业的汉字书法与古文字学者插图师。" +
             "请生成一幅展示该汉字/部首从古至今演化过程的科普信息图。" +
             "画面采用从左至右的水平时间轴构图，展示该字在三个关键历史阶段的书体形态，" +
             "并配以考古学风格的背景衬托。" +

@@ -13,6 +13,10 @@ public enum AppErrorCode {
     TOKEN_INVALID(1005, "无效的Token"),
     DEVICE_LIMIT_EXCEEDED(1006, "设备数量超出限制"),
 
+    // 订阅相关 1200-1299
+    SUBSCRIPTION_REQUIRED(1200, "需要订阅后才能访问此内容"),
+    SUBSCRIPTION_EXPIRED(1201, "订阅已过期，请续费"),
+
     // 参数错误 1100-1199
     INVALID_PHONE(1100, "手机号格式错误"),
     INVALID_PASSWORD(1101, "密码格式错误"),

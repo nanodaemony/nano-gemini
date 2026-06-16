@@ -12,6 +12,7 @@ import com.naon.grid.modules.app.repository.GridUserTokenRepository;
 import com.naon.grid.modules.app.security.AppTokenProvider;
 import com.naon.grid.modules.app.security.DeviceManager;
 import com.naon.grid.modules.app.service.AppAuthService;
+import com.naon.grid.modules.app.service.SubscriptionService;
 import com.naon.grid.modules.app.service.dto.*;
 import com.naon.grid.utils.RsaUtils;
 import com.naon.grid.utils.StringUtils;
@@ -39,6 +40,7 @@ public class AppAuthServiceImpl implements AppAuthService {
     private final PasswordEncoder passwordEncoder;
     private final AppTokenProvider appTokenProvider;
     private final DeviceManager deviceManager;
+    private final SubscriptionService subscriptionService;
 
     @Value("${app.auth.token-expire-seconds:604800}")
     private long tokenExpireSeconds;
@@ -74,6 +76,9 @@ public class AppAuthServiceImpl implements AppAuthService {
         normalRole.setRoleCode("NORMAL");
         normalRole.setRoleName("普通用户");
         userRoleRepository.save(normalRole);
+
+        // 注册自动送试用
+        subscriptionService.grantTrial(user.getId());
 
         return generateToken(user, registerDTO.getDeviceId(), registerDTO.getDeviceName());
     }

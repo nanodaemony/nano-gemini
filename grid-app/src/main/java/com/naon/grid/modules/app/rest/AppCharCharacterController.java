@@ -1,8 +1,6 @@
 package com.naon.grid.modules.app.rest;
 
-import com.naon.grid.annotation.RequireSubscription;
 import com.naon.grid.annotation.rest.AnonymousGetMapping;
-import com.naon.grid.enums.UserLevel;
 import com.naon.grid.backend.rest.vo.CharStrokeVO;
 import com.naon.grid.backend.rest.vo.TextTranslationVO;
 import com.naon.grid.backend.rest.wrapper.CharStrokeWrapper;
@@ -57,9 +55,8 @@ public class AppCharCharacterController {
         return new ResponseEntity<>(vos, HttpStatus.OK);
     }
 
-    @RequireSubscription(UserLevel.VIP)
     @ApiOperation("根据ID查询汉字详情")
-    @GetMapping("/{id}")
+    @AnonymousGetMapping("/{id}")
     public ResponseEntity<AppCharCharacterDetailVO> getDetail(
             @PathVariable Integer id,
             @RequestParam String language) {

@@ -1,9 +1,6 @@
 package com.naon.grid.modules.app.rest;
 
-import com.naon.grid.annotation.Log;
-import com.naon.grid.annotation.rest.AnonymousPostMapping;
 import com.naon.grid.modules.app.service.SubscriptionService;
-import com.naon.grid.modules.app.service.dto.ActivateSubscriptionDTO;
 import com.naon.grid.modules.app.service.dto.AppSubscriptionVO;
 import com.naon.grid.modules.app.service.dto.CreateOrderDTO;
 import com.naon.grid.modules.app.utils.AppSecurityUtils;
@@ -46,13 +43,5 @@ public class AppSubscriptionController {
         result.put("periodMonths", dto.getPeriodMonths());
         result.put("userId", userId);
         return ResponseEntity.ok(result);
-    }
-
-    @ApiOperation("激活订阅（支付回调/内部调用）")
-    @AnonymousPostMapping("/activate")
-    @Log("激活订阅")
-    public ResponseEntity<Void> activateSubscription(@Validated @RequestBody ActivateSubscriptionDTO dto) {
-        subscriptionService.activateSubscription(dto);
-        return ResponseEntity.ok().build();
     }
 }

@@ -7,7 +7,9 @@ import javax.persistence.*;
 import java.io.Serializable;
 
 @Entity
-@Table(name = "dynamic_config")
+@Table(name = "dynamic_config", uniqueConstraints = {
+    @UniqueConstraint(columnNames = {"namespace", "config_key"}, name = "idx_ns_key")
+})
 @Getter
 @Setter
 public class DynamicConfig extends BaseEntity implements Serializable {

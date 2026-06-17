@@ -59,11 +59,14 @@ public class DynamicConfigServiceImpl implements DynamicConfigService {
     public DynamicConfigDto findById(Long id) {
         DynamicConfig entity = repository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException(DynamicConfig.class, "id", id.toString()));
+        if (StatusEnum.DISABLED.getCode().equals(entity.getStatus())) {
+            throw new EntityNotFoundException(DynamicConfig.class, "id", id.toString());
+        }
         return toDto(entity);
     }
 
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public void create(DynamicConfigDto dto) {
         DynamicConfig entity = new DynamicConfig();
         entity.setNamespace(dto.getNamespace());
@@ -77,7 +80,7 @@ public class DynamicConfigServiceImpl implements DynamicConfigService {
     }
 
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public void update(Long id, DynamicConfigDto dto) {
         DynamicConfig entity = repository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException(DynamicConfig.class, "id", id.toString()));
@@ -101,7 +104,7 @@ public class DynamicConfigServiceImpl implements DynamicConfigService {
     }
 
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public void delete(Long id) {
         DynamicConfig entity = repository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException(DynamicConfig.class, "id", id.toString()));

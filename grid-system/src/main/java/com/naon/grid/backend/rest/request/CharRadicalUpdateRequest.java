@@ -8,6 +8,9 @@ import java.util.List;
 @Data
 public class CharRadicalUpdateRequest {
 
+    @ApiModelProperty(value = "部首名称")
+    private String radicalName;
+
     @ApiModelProperty(value = "笔画数")
     private Integer strokeNum;
 

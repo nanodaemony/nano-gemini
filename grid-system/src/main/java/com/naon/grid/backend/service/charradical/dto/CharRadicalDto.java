@@ -15,8 +15,11 @@ public class CharRadicalDto extends BaseDTO {
     @ApiModelProperty(value = "部首ID")
     private Long id;
 
-    @ApiModelProperty(value = "部首名称")
+    @ApiModelProperty(value = "部首")
     private String radical;
+
+    @ApiModelProperty(value = "部首名称")
+    private String radicalName;
 
     @ApiModelProperty(value = "笔画数")
     private Integer strokeNum;

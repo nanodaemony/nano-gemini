@@ -10,7 +10,7 @@ import java.io.Serializable;
 public class CharRadicalQueryCriteria implements Serializable {
 
     @ApiModelProperty(value = "部首名称模糊查询")
-    @Query(blurry = "radical")
+    @Query(blurry = "radical,radicalName")
     private String blurry;
 
     @ApiModelProperty(value = "发布状态: unpublished / published")

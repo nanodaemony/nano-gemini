@@ -151,6 +151,7 @@ public class CharRadicalServiceImpl implements CharRadicalService {
         }
 
         // 回写主表字段（radical 字段创建后不允许修改）
+        entity.setRadicalName(draftDto.getRadicalName());
         entity.setStrokeNum(draftDto.getStrokeNum());
         entity.setRelationId(draftDto.getRelationId());
         entity.setEvolutionDesc(draftDto.getEvolutionDesc());
@@ -182,6 +183,7 @@ public class CharRadicalServiceImpl implements CharRadicalService {
         CharRadicalDto dto = new CharRadicalDto();
         dto.setId(entity.getId());
         dto.setRadical(entity.getRadical());
+        dto.setRadicalName(entity.getRadicalName());
         dto.setStrokeNum(entity.getStrokeNum());
         dto.setRelationId(entity.getRelationId());
         dto.setEvolutionDesc(entity.getEvolutionDesc());
@@ -221,6 +223,7 @@ public class CharRadicalServiceImpl implements CharRadicalService {
             throw new BadRequestException("草稿内容不存在");
         }
         if (draft.getRadical() != null)                dto.setRadical(draft.getRadical());
+        if (draft.getRadicalName() != null)            dto.setRadicalName(draft.getRadicalName());
         if (draft.getStrokeNum() != null)              dto.setStrokeNum(draft.getStrokeNum());
         if (draft.getRelationId() != null)             dto.setRelationId(draft.getRelationId());
         if (draft.getEvolutionDesc() != null)          dto.setEvolutionDesc(draft.getEvolutionDesc());

@@ -29,8 +29,12 @@ public class CharRadical extends BaseEntity implements Serializable {
     private Long id;
 
     @Column(name = "radical", nullable = false, length = 10)
-    @ApiModelProperty(value = "部首名称")
+    @ApiModelProperty(value = "部首")
     private String radical;
+
+    @Column(name = "radical_name", length = 32)
+    @ApiModelProperty(value = "部首名称")
+    private String radicalName;
 
     @Column(name = "stroke_num", nullable = false)
     @ApiModelProperty(value = "笔画数")

@@ -121,7 +121,8 @@ CREATE TABLE `char_book` (
 -- 汉字部首表
 CREATE TABLE `char_radical` (
     `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '部首ID',
-    `radical` VARCHAR(10) NOT NULL COMMENT '部首名称',
+    `radical` VARCHAR(10) NOT NULL COMMENT '部首',
+    `radical_name` VARCHAR(32) NOT NULL COMMENT '部首名称',
     `stroke_num` int(11) DEFAULT NULL COMMENT '笔画数',
     `relation_id` bigint(20) DEFAULT NULL COMMENT '关联部首ID',
     `evolution_desc` VARCHAR(2048) DEFAULT NULL COMMENT '演化解说',

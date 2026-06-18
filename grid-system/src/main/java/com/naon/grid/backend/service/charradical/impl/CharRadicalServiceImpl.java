@@ -187,6 +187,17 @@ public class CharRadicalServiceImpl implements CharRadicalService {
         return list.stream().map(this::toBaseDto).collect(Collectors.toList());
     }
 
+    @Override
+    public CharRadicalDto findPublishedById(Long id) {
+        CharRadical entity = charRadicalRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException(CharRadical.class, "id", String.valueOf(id)));
+        if (StatusEnum.DISABLED.getCode().equals(entity.getStatus())
+                || !PublishStatusEnum.PUBLISHED.getCode().equals(entity.getPublishStatus())) {
+            throw new EntityNotFoundException(CharRadical.class, "id", String.valueOf(id));
+        }
+        return toBaseDto(entity);
+    }
+
     // ==================== Private Helper Methods ====================
 
     private CharRadicalDto toBaseDto(CharRadical entity) {

@@ -50,7 +50,7 @@ public class AppCharRadicalController {
             @PathVariable Long id,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "8") int size) {
-        CharRadicalDto radicalDto = charRadicalService.findById(id);
+        CharRadicalDto radicalDto = charRadicalService.findPublishedById(id);
         Page<CharCharacterDto> charPage = charCharacterService.findPublishedByRadicalId(
                 id, PageRequest.of(page, size));
 

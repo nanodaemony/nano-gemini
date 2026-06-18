@@ -24,4 +24,6 @@ public interface CharRadicalService {
     void offline(Long id);
 
     List<CharRadicalDto> findAllPublished();
+
+    CharRadicalDto findPublishedById(Long id);
 }

@@ -663,6 +663,13 @@ public class CharCharacterServiceImpl implements CharCharacterService {
     }
 
     @Override
+    public Page<CharCharacterDto> findPublishedByRadicalId(Long radicalId, Pageable pageable) {
+        Page<CharCharacter> page = charCharacterRepository.findByRadicalIdAndStatusAndPublishStatus(
+                radicalId, StatusEnum.ENABLED.getCode(), PublishStatusEnum.PUBLISHED.getCode(), pageable);
+        return page.map(charCharacterMapper::toDto);
+    }
+
+    @Override
     @Transactional(rollbackFor = Exception.class)
     public void offline(Integer id) {
         CharCharacter charCharacter = charCharacterRepository.findById(id)

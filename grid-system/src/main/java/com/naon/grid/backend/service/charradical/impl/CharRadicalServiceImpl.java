@@ -17,6 +17,9 @@ import com.naon.grid.utils.QueryHelp;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+
+import java.util.List;
+import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -175,6 +178,13 @@ public class CharRadicalServiceImpl implements CharRadicalService {
         }
         entity.setPublishStatus(PublishStatusEnum.UNPUBLISHED.getCode());
         charRadicalRepository.save(entity);
+    }
+
+    @Override
+    public List<CharRadicalDto> findAllPublished() {
+        List<CharRadical> list = charRadicalRepository.findByStatusAndPublishStatusOrderByIdAsc(
+                StatusEnum.ENABLED.getCode(), PublishStatusEnum.PUBLISHED.getCode());
+        return list.stream().map(this::toBaseDto).collect(Collectors.toList());
     }
 
     // ==================== Private Helper Methods ====================

@@ -3,6 +3,7 @@ package com.naon.grid.backend.service.character;
 import com.naon.grid.backend.service.character.dto.CharCharacterDto;
 import com.naon.grid.backend.service.character.dto.CharCharacterQueryCriteria;
 import com.naon.grid.utils.PageResult;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import java.util.List;
@@ -30,4 +31,6 @@ public interface CharCharacterService {
     void publishDraft(Integer id);
 
     void offline(Integer id);
+
+    Page<CharCharacterDto> findPublishedByRadicalId(Long radicalId, Pageable pageable);
 }

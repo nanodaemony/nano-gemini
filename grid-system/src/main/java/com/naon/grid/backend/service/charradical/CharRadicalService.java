@@ -5,6 +5,8 @@ import com.naon.grid.backend.service.charradical.dto.CharRadicalQueryCriteria;
 import com.naon.grid.utils.PageResult;
 import org.springframework.data.domain.Pageable;
 
+import java.util.List;
+
 public interface CharRadicalService {
 
     PageResult<CharRadicalDto> queryAll(CharRadicalQueryCriteria criteria, Pageable pageable);
@@ -20,4 +22,6 @@ public interface CharRadicalService {
     void publishDraft(Long id);
 
     void offline(Long id);
+
+    List<CharRadicalDto> findAllPublished();
 }

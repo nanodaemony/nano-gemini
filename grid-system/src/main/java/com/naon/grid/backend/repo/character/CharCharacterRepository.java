@@ -3,6 +3,8 @@ package com.naon.grid.backend.repo.character;
 import com.naon.grid.backend.domain.character.CharCharacter;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -48,4 +50,15 @@ public interface CharCharacterRepository extends JpaRepository<CharCharacter, In
      * @return 匹配的汉字列表
      */
     List<CharCharacter> findByIdIn(List<Integer> ids);
+
+    /**
+     * 根据 radicalId 分页查询已发布的汉字
+     *
+     * @param radicalId     部首ID
+     * @param status        有效状态
+     * @param publishStatus 发布状态
+     * @param pageable      分页参数
+     * @return 分页的汉字列表
+     */
+    Page<CharCharacter> findByRadicalIdAndStatusAndPublishStatus(Long radicalId, Integer status, String publishStatus, Pageable pageable);
 }

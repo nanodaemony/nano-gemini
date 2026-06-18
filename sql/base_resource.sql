@@ -125,3 +125,24 @@ CREATE TABLE IF NOT EXISTS `translate_record` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='翻译记录表';
 
+
+-- ----------------------------
+-- 动态配置表
+-- 存储系统的动态 KV 配置，通过后台接口管理，运行时缓存在内存中。
+-- ----------------------------
+DROP TABLE IF EXISTS `dynamic_config`;
+CREATE TABLE `dynamic_config` (
+    `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '主键',
+    `namespace` varchar(100) NOT NULL COMMENT '空间/分组标签',
+    `name` varchar(200) NOT NULL COMMENT '配置名称',
+    `config_key` varchar(200) NOT NULL COMMENT '配置键',
+    `value` varchar(2000) DEFAULT NULL COMMENT '配置值',
+    `description` varchar(500) DEFAULT NULL COMMENT '备注说明',
+    `status` int(11) DEFAULT 1 COMMENT '状态：1=启用，0=禁用（软删除）',
+    `create_by` varchar(50) DEFAULT NULL COMMENT '创建人',
+    `update_by` varchar(50) DEFAULT NULL COMMENT '更新人',
+    `create_time` datetime DEFAULT NULL COMMENT '创建时间',
+    `update_time` datetime DEFAULT NULL COMMENT '更新时间',
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `idx_ns_key` (`namespace`, `config_key`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='动态配置表';

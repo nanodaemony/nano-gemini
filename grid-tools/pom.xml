@@ -11,7 +11,6 @@
     <name>工具模块</name>
 
     <properties>
-        <mail.version>1.4.7</mail.version>
         <alipay.version>4.22.57.ALL</alipay.version>
         <aliyun.oss.version>3.17.4</aliyun.oss.version>
         <dashscope.version>2.22.17</dashscope.version>
@@ -24,13 +23,6 @@
             <groupId>com.naon.grid</groupId>
             <artifactId>grid-logging</artifactId>
             <version>2.7</version>
-        </dependency>
-
-        <!--邮件依赖-->
-        <dependency>
-            <groupId>javax.mail</groupId>
-            <artifactId>mail</artifactId>
-            <version>${mail.version}</version>
         </dependency>
 
         <!--支付宝依赖-->

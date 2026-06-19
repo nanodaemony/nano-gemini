@@ -15,22 +15,11 @@
  */
 package com.naon.grid.modules.system.service;
 
-import com.naon.grid.domain.vo.EmailVo;
-
 /**
  * @author Zheng Jie
  * @date 2018-12-26
  */
 public interface VerifyService {
-
-    /**
-     * 发送验证码
-     * @param email /
-     * @param key /
-     * @return /
-     */
-    EmailVo sendEmail(String email, String key);
-
 
     /**
      * 验证

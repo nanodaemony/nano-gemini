@@ -18,8 +18,6 @@ package com.naon.grid.modules.system.rest;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
-import com.naon.grid.domain.vo.EmailVo;
-import com.naon.grid.service.EmailService;
 import com.naon.grid.modules.system.service.VerifyService;
 import com.naon.grid.utils.enums.CodeBiEnum;
 import com.naon.grid.utils.enums.CodeEnum;
@@ -39,23 +37,6 @@ import java.util.Objects;
 public class VerifyController {
 
     private final VerifyService verificationCodeService;
-    private final EmailService emailService;
-
-    @PostMapping(value = "/resetEmail")
-    @ApiOperation("重置邮箱，发送验证码")
-    public ResponseEntity<Object> resetEmail(@RequestParam String email){
-        EmailVo emailVo = verificationCodeService.sendEmail(email, CodeEnum.EMAIL_RESET_EMAIL_CODE.getKey());
-        emailService.send(emailVo,emailService.find());
-        return new ResponseEntity<>(HttpStatus.OK);
-    }
-
-    @PostMapping(value = "/email/resetPass")
-    @ApiOperation("重置密码，发送验证码")
-    public ResponseEntity<Object> resetPass(@RequestParam String email){
-        EmailVo emailVo = verificationCodeService.sendEmail(email, CodeEnum.EMAIL_RESET_PWD_CODE.getKey());
-        emailService.send(emailVo,emailService.find());
-        return new ResponseEntity<>(HttpStatus.OK);
-    }
 
     @GetMapping(value = "/validated")
     @ApiOperation("验证码验证")

@@ -18,6 +18,11 @@ package com.naon.grid.rest;
 import com.naon.grid.annotation.Log;
 import com.naon.grid.annotation.rest.AnonymousPostMapping;
 import com.naon.grid.constants.LlmChatConstants;
+import com.naon.grid.enums.ChatProviderEnum;
+import com.naon.grid.rest.request.VocabComparisonDialogueRequest;
+import com.naon.grid.rest.vo.VocabComparisonDialogueResponse;
+import com.naon.grid.rest.vo.VocabChatBaseVO;
+import com.naon.grid.rest.wrapper.LlmChatWrapper;
 import com.naon.grid.service.ChatService;
 import com.naon.grid.service.dto.ChatRequest;
 import com.naon.grid.service.dto.ChatResponse;
@@ -32,19 +37,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
-import com.alibaba.fastjson2.JSON;
-import com.alibaba.fastjson2.JSONArray;
-import com.naon.grid.enums.ChatProviderEnum;
-import com.naon.grid.exception.BadRequestException;
-import io.swagger.annotations.ApiModelProperty;
-import io.swagger.annotations.ApiModel;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.Size;
-import java.util.ArrayList;
-import java.util.List;
-import lombok.Data;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 /**
  * 大模型对话控制器
@@ -133,20 +128,8 @@ public class LlmChatController {
     })
     @AnonymousPostMapping("/pinyin")
     public ResponseEntity<PinyinResponse> pinyin(@Validated @RequestBody PinyinRequest request) {
-        ChatRequest chatRequest = new ChatRequest();
-        chatRequest.setProvider(request.getProvider());
-        chatRequest.setModel(request.getModel());
-        chatRequest.setSystemPrompt(LlmChatConstants.PINYIN_SYSTEM_PROMPT);
-        chatRequest.setUserPrompt(request.getChineseText());
-        chatRequest.setTemperature(LlmChatConstants.PINYIN_DEFAULT_TEMPERATURE);
-
-        ChatResponse chatResponse = chatService.chat(chatRequest);
-
-        PinyinResponse response = PinyinResponse.builder()
-                .pinyin(chatResponse.getContent())
-                .build();
-
-        return new ResponseEntity<>(response, HttpStatus.OK);
+        ChatResponse chatResponse = chatService.chat(LlmChatWrapper.toChatRequest(request));
+        return new ResponseEntity<>(LlmChatWrapper.toPinyinResponse(chatResponse), HttpStatus.OK);
     }
 
     @Log("词汇辨析对话生成")
@@ -163,7 +146,7 @@ public class LlmChatController {
         // 1. 构造 userPrompt：格式化词汇信息
         StringBuilder userPromptBuilder = new StringBuilder("请为以下词汇生成辨析情景对话：\n");
         for (int i = 0; i < request.getWords().size(); i++) {
-            VocabWordInfo word = request.getWords().get(i);
+            VocabComparisonDialogueRequest.VocabWordInfo word = request.getWords().get(i);
             userPromptBuilder.append("\n").append(i + 1).append(". ").append(word.getWord());
             if (word.getPartOfSpeech() != null && !word.getPartOfSpeech().isEmpty()) {
                 userPromptBuilder.append("（").append(word.getPartOfSpeech()).append("）");
@@ -173,111 +156,22 @@ public class LlmChatController {
             }
         }
 
-        // 2. 调用大模型（provider 和 model 可选，默认 ALIYUN / qwen-plus）
-        ChatRequest chatRequest = new ChatRequest();
-        chatRequest.setProvider(request.getProvider() != null ? request.getProvider() : ChatProviderEnum.ALIYUN);
-        chatRequest.setModel(request.getModel() != null ? request.getModel() : "qwen-plus");
-        chatRequest.setSystemPrompt(LlmChatConstants.DIALOGUE_SYSTEM_PROMPT);
-        chatRequest.setUserPrompt(userPromptBuilder.toString());
-        chatRequest.setTemperature(LlmChatConstants.DIALOGUE_DEFAULT_TEMPERATURE);
+        // 2. 调用大模型
+        ChatRequest chatRequest = LlmChatWrapper.toChatRequest(
+                request.getProvider() != null ? request.getProvider().name() : null,
+                request.getModel(),
+                LlmChatConstants.DIALOGUE_SYSTEM_PROMPT,
+                userPromptBuilder.toString(),
+                LlmChatConstants.DIALOGUE_DEFAULT_TEMPERATURE);
 
         ChatResponse chatResponse = chatService.chat(chatRequest);
 
         // 3. 解析 JSON 响应
-        List<VocabChatBaseVO> dialogues = parseDialogueResponse(chatResponse.getContent());
+        List<VocabChatBaseVO> dialogues = LlmChatWrapper.parseDialogueResponse(chatResponse.getContent());
 
         // 4. 返回
         VocabComparisonDialogueResponse response = new VocabComparisonDialogueResponse();
         response.setChats(dialogues);
         return new ResponseEntity<>(response, HttpStatus.OK);
-    }
-
-    /**
-     * 解析 LLM 返回的 JSON 字符串为对话列表
-     */
-    private List<VocabChatBaseVO> parseDialogueResponse(String jsonText) {
-        if (jsonText == null || jsonText.trim().isEmpty()) {
-            throw new BadRequestException("对话生成失败，模型返回为空");
-        }
-
-        try {
-            String trimmed = jsonText.trim();
-            // 处理 LLM 可能用 markdown 代码块包裹的情况
-            if (trimmed.startsWith("```")) {
-                trimmed = trimmed.replaceAll("^```(?:json)?\\s*", "").replaceAll("\\s*```$", "");
-            }
-
-            JSONArray jsonArray = JSON.parseArray(trimmed);
-            List<VocabChatBaseVO> result = new ArrayList<>();
-
-            for (int i = 0; i < jsonArray.size(); i++) {
-                com.alibaba.fastjson2.JSONObject obj = jsonArray.getJSONObject(i);
-                String role = obj.getString("role");
-                String content = obj.getString("content");
-                if (role != null && !role.isEmpty() && content != null && !content.isEmpty()) {
-                    VocabChatBaseVO vo = new VocabChatBaseVO();
-                    vo.setRole(role);
-                    vo.setContent(content);
-                    result.add(vo);
-                } else {
-                    log.warn("跳过无效对话条目（索引 {}）：role 或 content 为空", i);
-                }
-            }
-
-            if (result.isEmpty()) {
-                throw new BadRequestException("对话生成失败，生成的对话内容为空");
-            }
-
-            return result;
-        } catch (Exception e) {
-            log.error("解析对话生成响应失败: {}. 原始响应: {}", e.getMessage(), jsonText);
-            throw new BadRequestException("对话生成失败，请重试");
-        }
-    }
-
-    @Data
-    @ApiModel(description = "词汇辨析对话生成请求")
-    public static class VocabComparisonDialogueRequest {
-        @NotEmpty(message = "词汇列表不能为空")
-        @Size(max = 5, message = "词汇数量不能超过5个")
-        @ApiModelProperty(value = "词汇列表", required = true)
-        private List<VocabWordInfo> words;
-
-        @ApiModelProperty(value = "大模型厂商", example = "ALIYUN")
-        private ChatProviderEnum provider;
-
-        @ApiModelProperty(value = "模型名称", example = "qwen-plus")
-        private String model;
-    }
-
-    @Data
-    @ApiModel(description = "词汇信息")
-    public static class VocabWordInfo {
-        @NotBlank(message = "词汇词头不能为空")
-        @ApiModelProperty(value = "词汇词头", required = true)
-        private String word;
-
-        @ApiModelProperty(value = "词性")
-        private String partOfSpeech;
-
-        @ApiModelProperty(value = "用法对比")
-        private String usageComparison;
-    }
-
-    @Data
-    @ApiModel(description = "词汇辨析对话生成响应")
-    public static class VocabComparisonDialogueResponse {
-        @ApiModelProperty(value = "情景对话列表")
-        private List<VocabChatBaseVO> chats;
-    }
-
-    @Data
-    @ApiModel(description = "对话条目")
-    public static class VocabChatBaseVO {
-        @ApiModelProperty(value = "角色: teacher=老师, student=学生")
-        private String role;
-
-        @ApiModelProperty(value = "中文对话内容")
-        private String content;
     }
 }

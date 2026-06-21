@@ -130,6 +130,7 @@ mvn spring-boot:run -Dspring-boot.run.profiles=dev
 - **JSON 序列化**: 翻译字段和列表使用 JSON 列存储
 - **软删除**: 实体使用状态标志而非物理删除
 - **App 独立认证**: grid-app 有自己独立于管理后台的认证系统
+- **Wrapper 模式**: Controller 中不得包含转换逻辑（Request → Dto/Criteria、Dto → VO）。所有转换必须提取到独立的静态 Wrapper 类中，位于 `{controller包}/wrapper/` 包下。Wrapper 方法为 `public static`，只做纯映射。如果转换需要音频/图片等外部服务数据，Controller 负责预加载后通过参数传入 Wrapper（参考 `AppVocabWordWrapper` 模式）
 
 ## 数据库字段设计规范
 

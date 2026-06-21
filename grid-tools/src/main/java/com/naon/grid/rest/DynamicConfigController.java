@@ -4,6 +4,7 @@ import com.naon.grid.annotation.Log;
 import com.naon.grid.rest.request.DynamicConfigCreateRequest;
 import com.naon.grid.rest.request.DynamicConfigQueryRequest;
 import com.naon.grid.rest.request.DynamicConfigUpdateRequest;
+import com.naon.grid.rest.wrapper.DynamicConfigWrapper;
 import com.naon.grid.service.DynamicConfigService;
 import com.naon.grid.service.dto.DynamicConfigDto;
 import com.naon.grid.service.dto.DynamicConfigQueryCriteria;
@@ -29,7 +30,7 @@ public class DynamicConfigController {
     @ApiOperation("新增动态配置")
     @PostMapping
     public ResponseEntity<Void> create(@Valid @RequestBody DynamicConfigCreateRequest request) {
-        DynamicConfigDto dto = toDto(request);
+        DynamicConfigDto dto = DynamicConfigWrapper.toDto(request);
         dynamicConfigService.create(dto);
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
@@ -47,7 +48,7 @@ public class DynamicConfigController {
     @PutMapping("/{id}")
     public ResponseEntity<Void> update(@PathVariable Long id,
                                        @Valid @RequestBody DynamicConfigUpdateRequest request) {
-        DynamicConfigDto dto = toDto(request);
+        DynamicConfigDto dto = DynamicConfigWrapper.toDto(request);
         dynamicConfigService.update(id, dto);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
@@ -65,39 +66,8 @@ public class DynamicConfigController {
     @GetMapping
     public ResponseEntity<PageResult<DynamicConfigDto>> queryAll(
             DynamicConfigQueryRequest request, Pageable pageable) {
-        DynamicConfigQueryCriteria criteria = toCriteria(request);
+        DynamicConfigQueryCriteria criteria = DynamicConfigWrapper.toCriteria(request);
         PageResult<DynamicConfigDto> page = dynamicConfigService.queryAll(criteria, pageable);
         return ResponseEntity.ok(page);
-    }
-
-    // -- 转换方法 --
-
-    private DynamicConfigQueryCriteria toCriteria(DynamicConfigQueryRequest request) {
-        if (request == null) return null;
-        DynamicConfigQueryCriteria criteria = new DynamicConfigQueryCriteria();
-        criteria.setNamespace(request.getNamespace());
-        criteria.setName(request.getName());
-        criteria.setConfigKey(request.getConfigKey());
-        return criteria;
-    }
-
-    private DynamicConfigDto toDto(DynamicConfigCreateRequest request) {
-        DynamicConfigDto dto = new DynamicConfigDto();
-        dto.setNamespace(request.getNamespace());
-        dto.setName(request.getName());
-        dto.setConfigKey(request.getConfigKey());
-        dto.setValue(request.getValue());
-        dto.setDescription(request.getDescription());
-        return dto;
-    }
-
-    private DynamicConfigDto toDto(DynamicConfigUpdateRequest request) {
-        DynamicConfigDto dto = new DynamicConfigDto();
-        dto.setNamespace(request.getNamespace());
-        dto.setName(request.getName());
-        dto.setConfigKey(request.getConfigKey());
-        dto.setValue(request.getValue());
-        dto.setDescription(request.getDescription());
-        return dto;
     }
 }

@@ -6,10 +6,11 @@ import com.naon.grid.annotation.rest.AnonymousGetMapping;
 import com.naon.grid.annotation.rest.AnonymousPostMapping;
 import com.naon.grid.backend.rest.request.AudioResourceCreateRequest;
 import com.naon.grid.backend.rest.request.AudioResourceQueryRequest;
+import com.naon.grid.backend.rest.vo.AudioResourceCreateVO;
 import com.naon.grid.backend.rest.vo.AudioResourceVO;
+import com.naon.grid.backend.rest.wrapper.AudioResourceWrapper;
 import com.naon.grid.backend.service.resource.AudioResourceService;
 import com.naon.grid.backend.service.resource.dto.AudioResourceDto;
-import com.naon.grid.backend.service.resource.dto.AudioResourceQueryCriteria;
 import com.naon.grid.utils.PageResult;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -23,8 +24,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequiredArgsConstructor
@@ -39,7 +38,7 @@ public class AudioResourceController {
     @AnonymousPostMapping
     public ResponseEntity<AudioResourceCreateVO> create(@Valid @RequestBody AudioResourceCreateRequest request) {
         AudioResourceCreateVO vo = new AudioResourceCreateVO();
-        vo.setId(audioResourceService.create(toDto(request)));
+        vo.setId(audioResourceService.create(AudioResourceWrapper.toDto(request)));
         return new ResponseEntity<>(vo, HttpStatus.CREATED);
     }
 
@@ -47,15 +46,15 @@ public class AudioResourceController {
     @ApiOperation("根据ID查询音频资源详情")
     @AnonymousGetMapping("/{id}")
     public ResponseEntity<AudioResourceVO> findById(@PathVariable Long id) {
-        return new ResponseEntity<>(toVO(audioResourceService.findById(id)), HttpStatus.OK);
+        return new ResponseEntity<>(AudioResourceWrapper.toVO(audioResourceService.findById(id)), HttpStatus.OK);
     }
 
     @Log("查询音频资源列表")
     @ApiOperation("分页查询音频资源列表")
     @AnonymousGetMapping
     public ResponseEntity<PageResult<AudioResourceVO>> queryAll(AudioResourceQueryRequest request, Pageable pageable) {
-        PageResult<AudioResourceDto> pageResult = audioResourceService.queryAll(toCriteria(request), pageable);
-        return new ResponseEntity<>(new PageResult<>(toVOList(pageResult.getContent()), pageResult.getTotalElements()), HttpStatus.OK);
+        PageResult<AudioResourceDto> pageResult = audioResourceService.queryAll(AudioResourceWrapper.toCriteria(request), pageable);
+        return new ResponseEntity<>(new PageResult<>(AudioResourceWrapper.toVOList(pageResult.getContent()), pageResult.getTotalElements()), HttpStatus.OK);
     }
 
     @Log("删除音频资源")
@@ -64,44 +63,5 @@ public class AudioResourceController {
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         audioResourceService.delete(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-    }
-
-    private AudioResourceDto toDto(AudioResourceCreateRequest request) {
-        AudioResourceDto dto = new AudioResourceDto();
-        dto.setTextContent(request.getTextContent());
-        dto.setSourceType(request.getSourceType());
-        dto.setFileUrl(request.getFileUrl());
-        dto.setFileFormat(request.getFileFormat());
-        dto.setFileSize(request.getFileSize());
-        return dto;
-    }
-
-    private AudioResourceQueryCriteria toCriteria(AudioResourceQueryRequest request) {
-        AudioResourceQueryCriteria criteria = new AudioResourceQueryCriteria();
-        criteria.setSourceType(request.getSourceType() != null ? request.getSourceType().getCode() : null);
-        return criteria;
-    }
-
-    private List<AudioResourceVO> toVOList(List<AudioResourceDto> resources) {
-        return resources.stream().map(this::toVO).collect(Collectors.toList());
-    }
-
-    private AudioResourceVO toVO(AudioResourceDto dto) {
-        AudioResourceVO vo = new AudioResourceVO();
-        vo.setId(dto.getId());
-        vo.setTextContent(dto.getTextContent());
-        vo.setSourceType(dto.getSourceType());
-        vo.setFileUrl(dto.getFileUrl());
-        vo.setFileFormat(dto.getFileFormat());
-        vo.setFileSize(dto.getFileSize());
-        vo.setCreateTime(dto.getCreateTime());
-        vo.setUpdateTime(dto.getUpdateTime());
-        return vo;
-    }
-
-    @lombok.Getter
-    @lombok.Setter
-    public static class AudioResourceCreateVO implements java.io.Serializable {
-        private Long id;
     }
 }

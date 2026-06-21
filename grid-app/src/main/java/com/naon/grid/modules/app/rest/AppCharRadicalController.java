@@ -7,7 +7,9 @@ import com.naon.grid.backend.service.charradical.CharRadicalService;
 import com.naon.grid.backend.service.charradical.dto.CharRadicalDto;
 import com.naon.grid.modules.app.rest.vo.AppCharRadicalBaseVO;
 import com.naon.grid.modules.app.rest.vo.AppCharRadicalDetailVO;
-import com.naon.grid.modules.app.rest.vo.AppRadicalCharVO;
+import com.naon.grid.modules.app.rest.wrapper.AppCharRadicalWrapper;
+
+import java.util.List;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
@@ -22,10 +24,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.stream.Collectors;
-
 @Slf4j
 @RestController
 @RequiredArgsConstructor
@@ -39,9 +37,7 @@ public class AppCharRadicalController {
     @ApiOperation("部首列表")
     @AnonymousGetMapping
     public ResponseEntity<List<AppCharRadicalBaseVO>> list() {
-        List<CharRadicalDto> dtos = charRadicalService.findAllPublished();
-        List<AppCharRadicalBaseVO> vos = toBaseVOList(dtos);
-        return new ResponseEntity<>(vos, HttpStatus.OK);
+        return new ResponseEntity<>(AppCharRadicalWrapper.toBaseVOList(charRadicalService.findAllPublished()), HttpStatus.OK);
     }
 
     @ApiOperation("部首详情（含关联汉字分页）")
@@ -54,49 +50,6 @@ public class AppCharRadicalController {
         Page<CharCharacterDto> charPage = charCharacterService.findPublishedByRadicalId(
                 id, PageRequest.of(page, size));
 
-        AppCharRadicalDetailVO vo = toDetailVO(radicalDto, charPage);
-        return new ResponseEntity<>(vo, HttpStatus.OK);
-    }
-
-    // ==================== 转换方法 ====================
-
-    private List<AppCharRadicalBaseVO> toBaseVOList(List<CharRadicalDto> dtos) {
-        if (dtos == null) return Collections.emptyList();
-        return dtos.stream().map(this::toBaseVO).collect(Collectors.toList());
-    }
-
-    private AppCharRadicalBaseVO toBaseVO(CharRadicalDto dto) {
-        AppCharRadicalBaseVO vo = new AppCharRadicalBaseVO();
-        vo.setId(dto.getId());
-        vo.setRadical(dto.getRadical());
-        vo.setRadicalName(dto.getRadicalName());
-        vo.setStrokeNum(dto.getStrokeNum());
-        vo.setRelationId(dto.getRelationId());
-        return vo;
-    }
-
-    private AppCharRadicalDetailVO toDetailVO(CharRadicalDto radicalDto, Page<CharCharacterDto> charPage) {
-        AppCharRadicalDetailVO vo = new AppCharRadicalDetailVO();
-        vo.setId(radicalDto.getId());
-        vo.setRadical(radicalDto.getRadical());
-        vo.setRadicalName(radicalDto.getRadicalName());
-        vo.setStrokeNum(radicalDto.getStrokeNum());
-        vo.setEvolutionDesc(radicalDto.getEvolutionDesc());
-        vo.setRelationId(radicalDto.getRelationId());
-
-        List<AppRadicalCharVO> charVOs = charPage.getContent().stream().map(this::toCharVO).collect(Collectors.toList());
-        vo.setCharacters(charVOs);
-        vo.setHasNext(charPage.hasNext());
-
-        return vo;
-    }
-
-    private AppRadicalCharVO toCharVO(CharCharacterDto dto) {
-        AppRadicalCharVO vo = new AppRadicalCharVO();
-        vo.setId(dto.getId());
-        vo.setCharacter(dto.getCharacter());
-        vo.setHskLevel(dto.getHskLevel());
-        vo.setPinyin(dto.getPinyin());
-        return vo;
+        return new ResponseEntity<>(AppCharRadicalWrapper.toDetailVO(radicalDto, charPage), HttpStatus.OK);
     }
 }

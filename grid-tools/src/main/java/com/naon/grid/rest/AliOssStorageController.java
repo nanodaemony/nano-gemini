@@ -27,6 +27,7 @@ import com.naon.grid.domain.AliOssStorage;
 import com.naon.grid.domain.enums.OssBusinessType;
 import com.naon.grid.exception.BadRequestException;
 import com.naon.grid.rest.vo.AliOssStorageVO;
+import com.naon.grid.rest.wrapper.AliOssStorageWrapper;
 import com.naon.grid.service.AliOssStorageService;
 import com.naon.grid.service.dto.AliOssStorageDto;
 import com.naon.grid.service.dto.AliOssStorageQueryCriteria;
@@ -66,25 +67,7 @@ public class AliOssStorageController {
     @AnonymousGetMapping("/{id}")
     public ResponseEntity<AliOssStorageVO> getResource(@PathVariable Long id) {
         AliOssStorageDto dto = aliOssStorageService.findById(id);
-        return new ResponseEntity<>(toVO(dto), HttpStatus.OK);
-    }
-
-    private AliOssStorageVO toVO(AliOssStorageDto dto) {
-        if (dto == null) {
-            return null;
-        }
-        AliOssStorageVO vo = new AliOssStorageVO();
-        vo.setId(dto.getId());
-        vo.setFileName(dto.getFileName());
-        vo.setFileRealName(dto.getFileRealName());
-        vo.setFileSize(dto.getFileSize());
-        vo.setFileMimeType(dto.getFileMimeType());
-        vo.setFileType(dto.getFileType());
-        vo.setFileUrl(dto.getFileUrl());
-        vo.setBucketName(dto.getBucketName());
-        vo.setBusinessType(dto.getBusinessType());
-        vo.setCustomPath(dto.getCustomPath());
-        return vo;
+        return new ResponseEntity<>(AliOssStorageWrapper.toVO(dto), HttpStatus.OK);
     }
 
     @ApiOperation("导出数据")

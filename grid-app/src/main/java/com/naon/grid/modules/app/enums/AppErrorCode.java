@@ -17,6 +17,9 @@ public enum AppErrorCode {
     SUBSCRIPTION_REQUIRED(1200, "需要订阅后才能访问此内容"),
     SUBSCRIPTION_EXPIRED(1201, "订阅已过期，请续费"),
 
+    // 授权相关 1400-1499
+    FORBIDDEN(1403, "没有权限"),
+
     // 参数错误 1100-1199
     INVALID_PHONE(1100, "手机号格式错误"),
     INVALID_PASSWORD(1101, "密码格式错误"),

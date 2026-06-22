@@ -17,6 +17,11 @@
             <artifactId>grid-system</artifactId>
             <version>2.7</version>
         </dependency>
+        <dependency>
+            <groupId>com.naon.grid</groupId>
+            <artifactId>grid-billing</artifactId>
+            <version>2.7</version>
+        </dependency>
     </dependencies>
 
     <!-- 打包 -->

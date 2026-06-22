@@ -23,6 +23,11 @@
             <artifactId>grid-tools</artifactId>
             <version>2.7</version>
         </dependency>
+        <dependency>
+            <groupId>com.naon.grid</groupId>
+            <artifactId>grid-billing</artifactId>
+            <version>2.7</version>
+        </dependency>
 
         <!-- quartz -->
         <dependency>

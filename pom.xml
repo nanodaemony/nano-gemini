@@ -13,6 +13,7 @@
         <module>grid-tools</module>
         <module>grid-system</module>
         <module>grid-app</module>
+        <module>grid-billing</module>
         <module>grid-bootstrap</module>
     </modules>
 

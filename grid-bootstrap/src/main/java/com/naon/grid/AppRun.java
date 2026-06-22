@@ -40,7 +40,15 @@ import org.springframework.web.bind.annotation.RestController;
 @EnableAsync
 @RestController
 @Api(hidden = true)
-@SpringBootApplication
+@SpringBootApplication(scanBasePackages = {
+    "com.naon.grid.modules.billing",
+    "com.naon.grid.modules.app",
+    "com.naon.grid.modules.system",
+    "com.naon.grid.modules.tools",
+    "com.naon.grid.common",
+    "com.naon.grid.config",
+    "com.naon.grid.annotation"
+})
 @EnableTransactionManagement
 @EnableJpaAuditing(auditorAwareRef = "auditorAware")
 public class AppRun {

@@ -130,6 +130,14 @@ public class AppAuthServiceImpl implements AppAuthService {
             throw new BadRequestException("用户已被禁用");
         }
 
+        // Check audit status for INSTITUTION/AGENT users
+        if ("PENDING".equals(user.getRegisterAuditStatus())) {
+            throw new BadRequestException("您的账号正在审核中，审核通过后方可登录");
+        }
+        if ("REJECTED".equals(user.getRegisterAuditStatus())) {
+            throw new BadRequestException("您的账号审核未通过");
+        }
+
         String decryptedPassword;
         try {
             decryptedPassword = RsaUtils.decryptByPrivateKey(RsaProperties.privateKey, loginDTO.getPassword());

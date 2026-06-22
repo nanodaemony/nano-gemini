@@ -19,6 +19,7 @@ import lombok.RequiredArgsConstructor;
 import com.naon.grid.modules.security.security.*;
 import com.naon.grid.modules.security.service.OnlineUserService;
 import com.naon.grid.utils.AnonTagUtils;
+import com.naon.grid.config.properties.SecurityProperties;
 import com.naon.grid.utils.enums.RequestMethodEnum;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;

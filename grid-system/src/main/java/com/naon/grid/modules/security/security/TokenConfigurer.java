@@ -16,7 +16,7 @@
 package com.naon.grid.modules.security.security;
 
 import lombok.RequiredArgsConstructor;
-import com.naon.grid.modules.security.config.SecurityProperties;
+import com.naon.grid.config.properties.SecurityProperties;
 import com.naon.grid.modules.security.service.OnlineUserService;
 import com.naon.grid.modules.security.service.UserCacheManager;
 import org.springframework.security.config.annotation.SecurityConfigurerAdapter;

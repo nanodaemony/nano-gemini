@@ -16,7 +16,7 @@
 package com.naon.grid.modules.security.security;
 
 import cn.hutool.core.util.StrUtil;
-import com.naon.grid.modules.security.config.SecurityProperties;
+import com.naon.grid.config.properties.SecurityProperties;
 import com.naon.grid.modules.security.service.dto.OnlineUserDto;
 import com.naon.grid.modules.security.service.OnlineUserService;
 import org.slf4j.Logger;

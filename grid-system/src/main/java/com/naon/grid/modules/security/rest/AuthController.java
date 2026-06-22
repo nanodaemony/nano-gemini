@@ -30,7 +30,7 @@ import com.naon.grid.exception.BadRequestException;
 import com.naon.grid.modules.security.config.CaptchaConfig;
 import com.naon.grid.modules.security.config.enums.LoginCodeEnum;
 import com.naon.grid.modules.security.config.LoginProperties;
-import com.naon.grid.modules.security.config.SecurityProperties;
+import com.naon.grid.config.properties.SecurityProperties;
 import com.naon.grid.modules.security.security.TokenProvider;
 import com.naon.grid.modules.security.service.UserDetailsServiceImpl;
 import com.naon.grid.modules.security.service.dto.AuthUserDto;

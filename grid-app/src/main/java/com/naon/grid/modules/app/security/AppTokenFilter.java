@@ -1,6 +1,6 @@
 package com.naon.grid.modules.app.security;
 
-import com.naon.grid.modules.security.config.SecurityProperties;
+import com.naon.grid.config.properties.SecurityProperties;
 import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

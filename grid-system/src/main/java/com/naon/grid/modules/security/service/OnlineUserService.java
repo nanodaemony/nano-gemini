@@ -19,7 +19,7 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import com.naon.grid.modules.security.security.TokenProvider;
 import com.naon.grid.utils.PageResult;
-import com.naon.grid.modules.security.config.SecurityProperties;
+import com.naon.grid.config.properties.SecurityProperties;
 import com.naon.grid.modules.security.service.dto.JwtUserDto;
 import com.naon.grid.modules.security.service.dto.OnlineUserDto;
 import com.naon.grid.utils.*;

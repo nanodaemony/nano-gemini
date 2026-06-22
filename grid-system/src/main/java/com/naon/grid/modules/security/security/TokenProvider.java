@@ -22,7 +22,7 @@ import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;
-import com.naon.grid.modules.security.config.SecurityProperties;
+import com.naon.grid.config.properties.SecurityProperties;
 import com.naon.grid.modules.security.service.dto.JwtUserDto;
 import com.naon.grid.utils.RedisUtils;
 import org.springframework.beans.factory.InitializingBean;

@@ -2,7 +2,7 @@ package com.naon.grid.modules.app.config;
 
 import com.naon.grid.modules.app.security.AppTokenFilter;
 import com.naon.grid.modules.app.security.AppTokenProvider;
-import com.naon.grid.modules.security.config.SecurityProperties;
+import com.naon.grid.config.properties.SecurityProperties;
 import com.naon.grid.utils.AnonTagUtils;
 import com.naon.grid.utils.enums.RequestMethodEnum;
 import lombok.RequiredArgsConstructor;

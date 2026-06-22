@@ -13,4 +13,7 @@ public class AppUserDTO {
     private String avatar;
     private Integer gender;
     private List<String> roles;
+    private String userType;    // 新增
+    private String orgRole;     // 新增
+    private String region;      // 新增
 }

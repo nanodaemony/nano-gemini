@@ -23,4 +23,6 @@ public class RegisterDTO {
     private String deviceId;
 
     private String deviceName;
+
+    private String referralCode; // 新增：注册时选填推荐码
 }

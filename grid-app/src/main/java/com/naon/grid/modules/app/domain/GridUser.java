@@ -55,6 +55,28 @@ public class GridUser extends BaseEntity implements Serializable {
     @Column(name = "gender")
     private Integer gender = 0;
 
+    @Column(length = 20)
+    private String userType = "NORMAL";
+
+    private Integer orgId;
+
+    @Column(length = 20)
+    private String orgRole;
+
+    private Integer agentId;
+
+    @Column(length = 32)
+    private String referralCode;
+
+    @Column(length = 32)
+    private String referredBy;
+
+    @Column(length = 10)
+    private String region;
+
+    @Column(length = 20)
+    private String registerAuditStatus = "APPROVED";
+
     @NotNull
     @Column(name = "status", nullable = false)
     private Integer status = 1;

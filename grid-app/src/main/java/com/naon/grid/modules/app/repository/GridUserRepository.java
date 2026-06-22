@@ -42,4 +42,14 @@ public interface GridUserRepository extends JpaRepository<GridUser, Long>, JpaSp
      * 根据邮箱判断是否存在
      */
     boolean existsByEmail(String email);
+
+    /**
+     * 根据推荐码查询用户
+     */
+    Optional<GridUser> findByReferralCode(String referralCode);
+
+    /**
+     * 根据推荐码判断是否存在
+     */
+    boolean existsByReferralCode(String referralCode);
 }

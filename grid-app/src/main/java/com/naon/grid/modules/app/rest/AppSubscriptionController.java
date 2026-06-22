@@ -4,6 +4,8 @@ import com.naon.grid.modules.app.service.SubscriptionService;
 import com.naon.grid.modules.app.service.dto.AppSubscriptionVO;
 import com.naon.grid.modules.app.service.dto.CreateOrderDTO;
 import com.naon.grid.modules.app.utils.AppSecurityUtils;
+import com.naon.grid.modules.billing.service.EntitlementEngine;
+import com.naon.grid.modules.billing.service.dto.EntitlementResult;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
@@ -11,6 +13,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -21,12 +25,26 @@ import java.util.Map;
 public class AppSubscriptionController {
 
     private final SubscriptionService subscriptionService;
+    private final EntitlementEngine entitlementEngine;
 
     @ApiOperation("查询我的订阅状态")
     @GetMapping("/my")
     public ResponseEntity<AppSubscriptionVO> getMySubscription() {
         Long userId = AppSecurityUtils.getCurrentUserId();
-        AppSubscriptionVO vo = subscriptionService.getMySubscription(userId);
+        EntitlementResult result = entitlementEngine.compute(userId);
+
+        AppSubscriptionVO vo = new AppSubscriptionVO();
+        if (result.getOverallExpireAt() != null) {
+            vo.setLevel("VIP");
+            vo.setExpireTime(Date.from(
+                    result.getOverallExpireAt()
+                            .atZone(java.time.ZoneId.systemDefault())
+                            .toInstant()));
+            vo.setExpiringSoon(LocalDateTime.now()
+                    .plusDays(15).isAfter(result.getOverallExpireAt()));
+        } else {
+            vo.setLevel("NORMAL");
+        }
         return ResponseEntity.ok(vo);
     }
 

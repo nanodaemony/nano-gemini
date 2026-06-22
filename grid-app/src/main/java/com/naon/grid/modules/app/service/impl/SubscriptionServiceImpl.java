@@ -1,11 +1,14 @@
 package com.naon.grid.modules.app.service.impl;
 
 import com.naon.grid.exception.BadRequestException;
+import com.naon.grid.modules.app.domain.GridUser;
 import com.naon.grid.modules.app.domain.GridUserRole;
+import com.naon.grid.modules.app.repository.GridUserRepository;
 import com.naon.grid.modules.app.repository.GridUserRoleRepository;
 import com.naon.grid.modules.app.service.SubscriptionService;
 import com.naon.grid.modules.app.service.dto.ActivateSubscriptionDTO;
 import com.naon.grid.modules.app.service.dto.AppSubscriptionVO;
+import com.naon.grid.modules.billing.service.EntitlementEngine;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -23,6 +26,8 @@ import java.util.Optional;
 public class SubscriptionServiceImpl implements SubscriptionService {
 
     private final GridUserRoleRepository userRoleRepository;
+    private final EntitlementEngine entitlementEngine;
+    private final GridUserRepository userRepository;
 
     @Value("${app.subscription.trial-days:7}")
     private int trialDays;
@@ -109,12 +114,12 @@ public class SubscriptionServiceImpl implements SubscriptionService {
             return;
         }
 
-        GridUserRole trialRole = new GridUserRole();
-        trialRole.setUserId(userId);
-        trialRole.setRoleCode("VIP");
-        trialRole.setRoleName("VIP会员");
-        trialRole.setExpireTime(addDays(new Date(), trialDays));
-        userRoleRepository.save(trialRole);
+        // Delegate to new engine
+        String region = userRepository.findById(userId)
+                .map(GridUser::getRegion)
+                .filter(r -> r != null)
+                .orElse("C");
+        entitlementEngine.grant(userId, "TRIAL", null, "PLUS", trialDays, region);
 
         log.info("Trial granted: userId={}, days={}", userId, trialDays);
     }

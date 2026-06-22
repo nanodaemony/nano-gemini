@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -52,4 +53,9 @@ public interface GridUserRepository extends JpaRepository<GridUser, Long>, JpaSp
      * 根据推荐码判断是否存在
      */
     boolean existsByReferralCode(String referralCode);
+
+    /**
+     * 根据机构ID和角色查询用户
+     */
+    List<GridUser> findByOrgIdAndOrgRole(Integer orgId, String orgRole);
 }

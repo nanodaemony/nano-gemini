@@ -38,9 +38,7 @@ public class AgentAuditController {
     @ApiOperation("获取待审核代理商列表")
     @GetMapping("/pending")
     public ResponseEntity<List<GridAgent>> getPendingAgents() {
-        List<GridAgent> all = agentRepository.findAll();
-        // Filter for pending (simplified, could add repository method)
-        return ResponseEntity.ok(all);
+        return ResponseEntity.ok(agentRepository.findByAuditStatus("PENDING"));
     }
 
     @ApiOperation("审核通过")

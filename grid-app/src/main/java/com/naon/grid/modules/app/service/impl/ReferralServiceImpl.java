@@ -72,9 +72,9 @@ public class ReferralServiceImpl implements ReferralService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void settleReferralReward(Long referredUserId, String orderNo) {
+        // Find the most recent referral record for this referred user
         Optional<ReferralRecord> recordOpt = referralRecordRepository
-                .findByReferralCodeAndReferredId(null, referredUserId);
-        // Simplified: In production, find by order + referral relationship
+                .findFirstByReferredIdOrderByCreateTimeDesc(referredUserId);
         recordOpt.ifPresent(record -> {
             GridOrder order = orderRepository.findByOrderNo(orderNo).orElse(null);
             if (order == null || !"PENDING".equals(record.getRewardStatus())) return;

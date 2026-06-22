@@ -84,6 +84,13 @@ public class AppAuthServiceImpl implements AppAuthService {
 
         // Generate referral code
         user.setReferralCode(generateReferralCode(userRepository));
+
+        // Process referral code if provided
+        String referralCode = registerDTO.getReferralCode();
+        if (referralCode != null && !referralCode.isEmpty()) {
+            user.setReferredBy(referralCode);
+        }
+
         userRepository.save(user);
 
         GridUserRole normalRole = new GridUserRole();
@@ -92,10 +99,8 @@ public class AppAuthServiceImpl implements AppAuthService {
         normalRole.setRoleName("普通用户");
         userRoleRepository.save(normalRole);
 
-        // Process referral code if provided
-        String referralCode = registerDTO.getReferralCode();
+        // Record referral relationship (needs user ID)
         if (referralCode != null && !referralCode.isEmpty()) {
-            user.setReferredBy(referralCode);
             referralService.processReferral(referralCode, user.getId());
         }
 
@@ -138,6 +143,9 @@ public class AppAuthServiceImpl implements AppAuthService {
 
         user.setLastLoginTime(new Date());
         user.setLastLoginIp(StringUtils.getIp(request));
+        // Update region on each login (region may change if user travels)
+        String currentRegion = regionResolver.resolve(StringUtils.getIp(request));
+        user.setRegion(currentRegion);
         userRepository.save(user);
 
         return generateToken(user, loginDTO.getDeviceId(), loginDTO.getDeviceName());

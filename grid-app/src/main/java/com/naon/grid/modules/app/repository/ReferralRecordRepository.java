@@ -9,6 +9,8 @@ import java.util.Optional;
 @Repository
 public interface ReferralRecordRepository extends JpaRepository<ReferralRecord, Long> {
     Optional<ReferralRecord> findByReferralCodeAndReferredId(String referralCode, Long referredId);
+    List<ReferralRecord> findByReferredId(Long referredId);
+    Optional<ReferralRecord> findFirstByReferredIdOrderByCreateTimeDesc(Long referredId);
     List<ReferralRecord> findByReferrerId(Long referrerId);
     List<ReferralRecord> findByRewardStatus(String rewardStatus);
 }

@@ -120,8 +120,9 @@ public class OrganizationServiceImpl implements OrganizationService {
         org.setCurrentMembers(1); // Admin only for now
         organizationRepository.save(org);
 
-        // Activate admin user
-        userRepository.findByEmail(org.getContactEmail()).ifPresent(admin -> {
+        // Activate admin user (find by org ID, not by email)
+        List<GridUser> admins = userRepository.findByOrgIdAndOrgRole(orgId, "ADMIN");
+        for (GridUser admin : admins) {
             admin.setRegisterAuditStatus("APPROVED");
             userRepository.save(admin);
 
@@ -130,7 +131,7 @@ public class OrganizationServiceImpl implements OrganizationService {
                     admin.getId(), "INSTITUTION", String.valueOf(orgId),
                     "PLUS", 30, org.getRegion()
             );
-        });
+        }
     }
 
     @Override
@@ -154,8 +155,13 @@ public class OrganizationServiceImpl implements OrganizationService {
                 .map(GridUserRole::getRoleCode)
                 .collect(Collectors.toList());
 
+        Integer orgId = user.getOrgId();
         String accessToken = appTokenProvider.createToken(
-                user.getId(), user.getEmail(), deviceId, roles);
+                user.getId(), user.getEmail(), deviceId, roles,
+                user.getUserType(),
+                orgId != null ? orgId.intValue() : null,
+                user.getOrgRole(),
+                user.getRegion());
 
         String refreshToken = IdUtil.simpleUUID();
         Date expireTime = new Date(System.currentTimeMillis() + 2592000L * 1000);

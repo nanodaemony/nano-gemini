@@ -106,6 +106,12 @@ public class AgentServiceImpl implements AgentService {
                 .orElseThrow(() -> new BadRequestException("代理商不存在"));
         agent.setAuditStatus("APPROVED");
         agentRepository.save(agent);
+
+        // Activate agent user account
+        userRepository.findByEmail(agent.getContactEmail()).ifPresent(user -> {
+            user.setRegisterAuditStatus("APPROVED");
+            userRepository.save(user);
+        });
         log.info("Agent approved: agentId={}", agentId);
     }
 
@@ -125,7 +131,8 @@ public class AgentServiceImpl implements AgentService {
                 .collect(Collectors.toList());
 
         String accessToken = appTokenProvider.createToken(
-                user.getId(), user.getEmail(), deviceId, roles);
+                user.getId(), user.getEmail(), deviceId, roles,
+                user.getUserType(), null, user.getOrgRole(), user.getRegion());
 
         String refreshToken = IdUtil.simpleUUID();
         Date expireTime = new Date(System.currentTimeMillis() + 2592000L * 1000);

@@ -24,6 +24,10 @@ public class AppTokenProvider implements InitializingBean {
     public static final String ROLES_KEY = "roles";
     public static final String TOKEN_TYPE_KEY = "type";
     public static final String TOKEN_TYPE_ACCESS = "access";
+    public static final String USER_TYPE_KEY = "userType";
+    public static final String ORG_ID_KEY = "orgId";
+    public static final String ORG_ROLE_KEY = "orgRole";
+    public static final String REGION_KEY = "region";
 
     private Key signingKey;
     private JwtParser jwtParser;
@@ -46,11 +50,21 @@ public class AppTokenProvider implements InitializingBean {
     }
 
     public String createToken(Long userId, String username, String deviceId, List<String> roles) {
+        return createToken(userId, username, deviceId, roles, null, null, null, null);
+    }
+
+    public String createToken(Long userId, String username, String deviceId,
+                               List<String> roles, String userType,
+                               Integer orgId, String orgRole, String region) {
         Map<String, Object> claims = new HashMap<>();
         claims.put(AUTHORITIES_UID_KEY, userId);
         claims.put(DEVICE_ID_KEY, deviceId);
         claims.put(ROLES_KEY, roles);
         claims.put(TOKEN_TYPE_KEY, TOKEN_TYPE_ACCESS);
+        claims.put(USER_TYPE_KEY, userType);
+        if (orgId != null) claims.put(ORG_ID_KEY, orgId);
+        if (orgRole != null) claims.put(ORG_ROLE_KEY, orgRole);
+        if (region != null) claims.put(REGION_KEY, region);
 
         long now = System.currentTimeMillis();
         Date validity = new Date(now + tokenExpireSeconds * 1000);

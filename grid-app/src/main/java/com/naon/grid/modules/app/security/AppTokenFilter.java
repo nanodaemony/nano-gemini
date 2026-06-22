@@ -1,6 +1,7 @@
 package com.naon.grid.modules.app.security;
 
 import com.naon.grid.modules.security.config.SecurityProperties;
+import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -33,8 +34,13 @@ public class AppTokenFilter extends GenericFilterBean {
             String username = appTokenProvider.getClaims(token).getSubject();
             String deviceId = appTokenProvider.getDeviceIdFromToken(token);
             List<String> roles = appTokenProvider.getRolesFromToken(token);
+            Claims claims = appTokenProvider.getClaims(token);
+            String userType = claims.get(AppTokenProvider.USER_TYPE_KEY, String.class);
+            Integer orgId = claims.get(AppTokenProvider.ORG_ID_KEY, Integer.class);
+            String orgRole = claims.get(AppTokenProvider.ORG_ROLE_KEY, String.class);
+            String region = claims.get(AppTokenProvider.REGION_KEY, String.class);
 
-            AppAuthenticationToken authentication = new AppAuthenticationToken(userId, username, deviceId, roles);
+            AppAuthenticationToken authentication = new AppAuthenticationToken(userId, username, deviceId, roles, userType, orgId, orgRole, region);
             SecurityContextHolder.getContext().setAuthentication(authentication);
         }
 

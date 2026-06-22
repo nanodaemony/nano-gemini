@@ -12,7 +12,10 @@ import com.naon.grid.modules.app.repository.GridUserTokenRepository;
 import com.naon.grid.modules.app.security.AppTokenProvider;
 import com.naon.grid.modules.app.security.DeviceManager;
 import com.naon.grid.modules.app.service.AppAuthService;
+import com.naon.grid.modules.app.service.ReferralService;
+import com.naon.grid.modules.app.service.RegionResolver;
 import com.naon.grid.modules.app.service.SubscriptionService;
+import com.naon.grid.modules.billing.service.EntitlementEngine;
 import com.naon.grid.modules.app.service.dto.*;
 import com.naon.grid.utils.RsaUtils;
 import com.naon.grid.utils.StringUtils;
@@ -41,6 +44,9 @@ public class AppAuthServiceImpl implements AppAuthService {
     private final AppTokenProvider appTokenProvider;
     private final DeviceManager deviceManager;
     private final SubscriptionService subscriptionService;
+    private final EntitlementEngine entitlementEngine;
+    private final ReferralService referralService;
+    private final RegionResolver regionResolver;
 
     @Value("${app.auth.token-expire-seconds:604800}")
     private long tokenExpireSeconds;
@@ -62,14 +68,23 @@ public class AppAuthServiceImpl implements AppAuthService {
             throw new BadRequestException("密码解密失败");
         }
 
+        String ip = StringUtils.getIp(request);
+        String region = regionResolver.resolve(ip);
+
         GridUser user = new GridUser();
         user.setEmail(registerDTO.getEmail());
         user.setPassword(passwordEncoder.encode(decryptedPassword));
         user.setNickname(registerDTO.getNickname() != null ? registerDTO.getNickname() : registerDTO.getEmail().split("@")[0]);
         user.setGender(0);
         user.setStatus(1);
-        user.setRegisterIp(StringUtils.getIp(request));
-        user = userRepository.save(user);
+        user.setUserType("NORMAL");
+        user.setRegion(region);
+        user.setRegisterIp(ip);
+        user.setRegisterAuditStatus("APPROVED");
+
+        // Generate referral code
+        user.setReferralCode(generateReferralCode(userRepository));
+        userRepository.save(user);
 
         GridUserRole normalRole = new GridUserRole();
         normalRole.setUserId(user.getId());
@@ -77,8 +92,25 @@ public class AppAuthServiceImpl implements AppAuthService {
         normalRole.setRoleName("普通用户");
         userRoleRepository.save(normalRole);
 
-        // 注册自动送试用
-        subscriptionService.grantTrial(user.getId());
+        // Process referral code if provided
+        String referralCode = registerDTO.getReferralCode();
+        if (referralCode != null && !referralCode.isEmpty()) {
+            user.setReferredBy(referralCode);
+            referralService.processReferral(referralCode, user.getId());
+        }
+
+        // Grant trial
+        try {
+            entitlementEngine.grant(user.getId(), "TRIAL", null, "PLUS", 7, region);
+        } catch (Exception e) {
+            log.error("Failed to grant trial for userId={}", user.getId(), e);
+            // Fallback: try old subscription service
+            try {
+                subscriptionService.grantTrial(user.getId());
+            } catch (Exception ex) {
+                log.error("Fallback grantTrial also failed for userId={}", user.getId(), ex);
+            }
+        }
 
         return generateToken(user, registerDTO.getDeviceId(), registerDTO.getDeviceName());
     }
@@ -144,7 +176,13 @@ public class AppAuthServiceImpl implements AppAuthService {
                 .map(GridUserRole::getRoleCode)
                 .collect(Collectors.toList());
 
-        String accessToken = appTokenProvider.createToken(user.getId(), user.getEmail(), deviceId, roles);
+        Integer orgId = user.getOrgId();
+        String accessToken = appTokenProvider.createToken(
+                user.getId(), user.getEmail(), deviceId, roles,
+                user.getUserType(),
+                orgId != null ? orgId.intValue() : null,
+                user.getOrgRole(),
+                user.getRegion());
         String refreshToken = IdUtil.simpleUUID();
 
         Date expireTime = new Date(System.currentTimeMillis() + refreshTokenExpireSeconds * 1000);
@@ -167,6 +205,18 @@ public class AppAuthServiceImpl implements AppAuthService {
         dto.setAvatar(user.getAvatar());
         dto.setGender(user.getGender());
         dto.setRoles(roles);
+        dto.setUserType(user.getUserType());
+        dto.setOrgRole(user.getOrgRole());
+        dto.setRegion(user.getRegion());
         return dto;
+    }
+
+    private String generateReferralCode(GridUserRepository userRepository) {
+        String code;
+        do {
+            String random = IdUtil.fastSimpleUUID().substring(0, 6).toUpperCase();
+            code = "UR" + random;
+        } while (userRepository.existsByReferralCode(code));
+        return code;
     }
 }

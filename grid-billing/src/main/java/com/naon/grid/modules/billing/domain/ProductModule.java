@@ -8,7 +8,7 @@ import javax.persistence.*;
 @Getter
 @Setter
 @Table(name = "product_module", uniqueConstraints = {
-    @UniqueConstraint(columnNames = {"productId", "moduleCode"})
+    @UniqueConstraint(columnNames = {"product_id", "moduleCode"})
 })
 public class ProductModule {
     @Id

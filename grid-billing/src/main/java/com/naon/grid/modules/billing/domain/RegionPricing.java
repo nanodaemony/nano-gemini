@@ -10,7 +10,7 @@ import java.math.BigDecimal;
 @Getter
 @Setter
 @Table(name = "region_pricing", uniqueConstraints = {
-    @UniqueConstraint(columnNames = {"productId", "region", "billingCycle"})
+    @UniqueConstraint(columnNames = {"product_id", "region", "billingCycle"})
 })
 public class RegionPricing extends BaseEntity {
     @Id

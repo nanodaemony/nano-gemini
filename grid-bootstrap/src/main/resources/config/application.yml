@@ -96,6 +96,28 @@ volcengine:
     api-resource-id: seed-tts-2.0
     base-url: https://openspeech.bytedance.com/api/v3/tts/unidirectional
 
+# ─── 海外支付 ───
+billing:
+  payment:
+    gateway: photonpay
+
+  photonpay:
+    api-key: "${PHOTONPAY_API_KEY}"
+    api-secret: "${PHOTONPAY_API_SECRET}"
+    webhook-secret: "${PHOTONPAY_WEBHOOK_SECRET}"
+    base-url: "https://sandbox.photonpay.com"
+    merchant-display-name: "YourRoad 有路中文"
+    return-url: "https://yourroad.com/payment/return"
+    cancel-url: "https://yourroad.com/payment/cancel"
+    webhook-url: "https://yourroad.com/api/app/payments/webhook/photonpay"
+
+  subscription:
+    auto-renewal: true
+    renewal-reminder-days: 7
+
+  tax:
+    enabled: false
+
 # 大模型 Chat 配置
 chat:
   aliyun:

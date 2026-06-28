@@ -49,4 +49,16 @@ public class GridOrder {
     private LocalDateTime expireAt;
 
     private LocalDateTime createTime;
+
+    @Column(length = 30)
+    private String channel;
+
+    @Column(length = 200)
+    private String channelOrderId;
+
+    @Column(length = 200)
+    private String channelSubId;
+
+    @Column(length = 64)
+    private String invoiceNo;
 }

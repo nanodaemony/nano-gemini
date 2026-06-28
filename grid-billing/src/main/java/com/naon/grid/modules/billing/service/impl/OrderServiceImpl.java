@@ -1,37 +1,41 @@
 package com.naon.grid.modules.billing.service.impl;
 
 import cn.hutool.core.util.IdUtil;
-import com.naon.grid.modules.billing.domain.GridProduct;
 import com.naon.grid.modules.billing.domain.GridOrder;
+import com.naon.grid.modules.billing.domain.GridProduct;
 import com.naon.grid.modules.billing.domain.RegionPricing;
 import com.naon.grid.modules.billing.repository.GridOrderRepository;
 import com.naon.grid.modules.billing.repository.RegionPricingRepository;
 import com.naon.grid.modules.billing.service.OrderService;
+import com.naon.grid.modules.billing.service.PaymentGateway;
 import com.naon.grid.modules.billing.service.ProductService;
-import com.naon.grid.modules.billing.service.dto.OrderCreateRequest;
-import com.naon.grid.modules.billing.service.dto.OrderCreateResponse;
+import com.naon.grid.modules.billing.service.dto.*;
 import com.naon.grid.exception.BadRequestException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.Optional;
+import java.util.*;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class OrderServiceImpl implements OrderService {
     private final GridOrderRepository orderRepository;
     private final RegionPricingRepository pricingRepository;
     private final ProductService productService;
+    private final PaymentGateway paymentGateway;
+
+    private static final Set<String> SUBSCRIPTION_CYCLES = Collections.unmodifiableSet(
+            new HashSet<>(Arrays.asList("MONTHLY", "QUARTERLY", "YEARLY")));
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public OrderCreateResponse createOrder(Long userId, OrderCreateRequest request, String region) {
         request.setRegion(region);
 
-        // Find product and pricing
         GridProduct product = productService.findByCode(request.getProductCode())
                 .orElseThrow(() -> new BadRequestException("产品不存在: " + request.getProductCode()));
 
@@ -40,7 +44,6 @@ public class OrderServiceImpl implements OrderService {
                 .orElseThrow(() -> new BadRequestException(
                         "该产品在" + region + "区没有" + request.getBillingCycle() + "定价"));
 
-        // Create order
         GridOrder order = new GridOrder();
         order.setOrderNo(generateOrderNo());
         order.setUserId(userId);
@@ -50,9 +53,44 @@ public class OrderServiceImpl implements OrderService {
         order.setBillingCycle(request.getBillingCycle());
         order.setAmount(pricing.getPrice());
         order.setCurrency(pricing.getCurrency());
+        order.setChannel("PHOTONPAY");
         order.setStatus("PENDING");
         order.setCreateTime(LocalDateTime.now());
         orderRepository.save(order);
+
+        String redirectUrl;
+        if (isSubscriptionBilling(request.getBillingCycle())) {
+            SubscriptionCreateResponse subResp = paymentGateway.createSubscription(
+                    SubscriptionCreateRequest.builder()
+                            .orderNo(order.getOrderNo())
+                            .productCode(order.getProductCode())
+                            .amount(order.getAmount())
+                            .currency(order.getCurrency())
+                            .billingCycle(order.getBillingCycle())
+                            .description(product.getName())
+                            .build()
+            );
+            order.setChannelSubId(subResp.getSubscriptionId());
+            order.setChannelOrderId(subResp.getInitialOrderId());
+            redirectUrl = subResp.getPaymentUrl();
+        } else {
+            PaymentCreateResponse payResp = paymentGateway.createPayment(
+                    PaymentCreateRequest.builder()
+                            .orderNo(order.getOrderNo())
+                            .productCode(order.getProductCode())
+                            .amount(order.getAmount())
+                            .currency(order.getCurrency())
+                            .description(product.getName())
+                            .build()
+            );
+            order.setChannelOrderId(payResp.getTransactionId());
+            redirectUrl = payResp.getPaymentUrl();
+        }
+
+        orderRepository.save(order);
+        log.info("Order created: orderNo={}, userId={}, product={}, amount={} {}",
+                order.getOrderNo(), userId, request.getProductCode(),
+                order.getAmount(), order.getCurrency());
 
         return OrderCreateResponse.builder()
                 .orderNo(order.getOrderNo())
@@ -61,8 +99,12 @@ public class OrderServiceImpl implements OrderService {
                 .amount(order.getAmount())
                 .currency(order.getCurrency())
                 .status(order.getStatus())
-                .redirectUrl(null) // Phase 1: no real payment
+                .redirectUrl(redirectUrl)
                 .build();
+    }
+
+    private boolean isSubscriptionBilling(String billingCycle) {
+        return billingCycle != null && SUBSCRIPTION_CYCLES.contains(billingCycle.toUpperCase());
     }
 
     @Override

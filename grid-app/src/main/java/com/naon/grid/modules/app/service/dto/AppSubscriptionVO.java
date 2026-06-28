@@ -15,4 +15,10 @@ public class AppSubscriptionVO {
     private Date expireTime;
     /** 是否即将到期（15天内） */
     private boolean expiringSoon;
+
+    /** 订阅渠道: null=非订阅, PHOTONPAY=光子易 */
+    private String subscriptionChannel;
+
+    /** 是否开启自动续费 */
+    private Boolean autoRenew;
 }

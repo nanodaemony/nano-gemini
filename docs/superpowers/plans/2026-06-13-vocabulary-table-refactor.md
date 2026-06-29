@@ -846,7 +846,7 @@ import com.naon.grid.backend.rest.request.TextTranslationRequest;
 import com.naon.grid.backend.rest.vo.ExerciseOptionVO;
 import com.naon.grid.backend.rest.vo.TextTranslationVO;
 import com.naon.grid.backend.rest.vo.VocabOutlineRecordVO;
-import com.naon.grid.domain.common.ExerciseOption;
+import com.naon.grid.domain.common.QuestionOption;
 import com.naon.grid.backend.service.vocabulary.dto.VocabExampleDto;
 import com.naon.grid.backend.service.vocabulary.dto.VocabExerciseDto;
 // ... 和其他已经不用的
@@ -1538,7 +1538,7 @@ public class VocabStructureDto extends BaseDTO implements Serializable {
 import com.naon.grid.backend.rest.request.ExerciseOptionRequest;
 import com.naon.grid.backend.rest.vo.ExerciseOptionVO;
 import com.naon.grid.backend.rest.vo.VocabOutlineRecordVO;
-import com.naon.grid.domain.common.ExerciseOption;
+import com.naon.grid.domain.common.QuestionOption;
 import com.naon.grid.backend.service.vocabulary.dto.VocabExampleDto;
 import com.naon.grid.backend.service.vocabulary.dto.VocabExerciseDto;
 ```

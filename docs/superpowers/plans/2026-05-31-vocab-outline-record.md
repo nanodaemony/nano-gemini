@@ -593,7 +593,7 @@ import com.naon.grid.backend.service.vocabulary.dto.VocabStructureDto;
 import com.naon.grid.backend.service.vocabulary.dto.VocabWordDto;
 import com.naon.grid.backend.service.vocabulary.dto.VocabWordQueryCriteria;
 import com.naon.grid.backend.service.vocabulary.mapstruct.VocabOutlineRecordMapper;
-import com.naon.grid.domain.common.ExerciseOption;
+import com.naon.grid.domain.common.QuestionOption;
 import com.naon.grid.domain.common.TextTranslation;
 import com.naon.grid.utils.PageResult;
 import io.swagger.annotations.Api;
@@ -1296,14 +1296,14 @@ public class AppVocabWordController {
         return vo;
     }
 
-    private List<ExerciseOptionVO> toExerciseOptionVOList(List<com.naon.grid.domain.common.ExerciseOption> options) {
+    private List<ExerciseOptionVO> toExerciseOptionVOList(List<com.naon.grid.domain.common.QuestionOption> options) {
         if (options == null) {
             return Collections.emptyList();
         }
         return options.stream().map(this::toExerciseOptionVO).collect(Collectors.toList());
     }
 
-    private ExerciseOptionVO toExerciseOptionVO(com.naon.grid.domain.common.ExerciseOption option) {
+    private ExerciseOptionVO toExerciseOptionVO(com.naon.grid.domain.common.QuestionOption option) {
         if (option == null) {
             return null;
         }

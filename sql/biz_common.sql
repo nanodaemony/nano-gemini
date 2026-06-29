@@ -25,18 +25,23 @@ CREATE TABLE `exercise_question` (
 
   `parent_id` bigint NOT NULL DEFAULT 0 COMMENT '父题ID（大题的父题ID=0）',
   `question_type` varchar(32) NOT NULL COMMENT '题目类型, 参考枚举：QuestionTypeEnum',
-  `stem` varchar(32) DEFAULT NULL COMMENT '题干',
-  `material` varchar(32) DEFAULT NULL COMMENT '材料',
-  `options` varchar(32) DEFAULT NULL COMMENT '选项列表',
-  `answer` varchar(32) DEFAULT NULL COMMENT '答案列表',
-  `explanation` varchar(32) DEFAULT NULL COMMENT '解析',
+  `stem` varchar(512) DEFAULT NULL COMMENT '题干',
+  `content` varchar(4096) DEFAULT NULL COMMENT '题目内容材料(题目内容信息, 可能是文本也可能是图片链接), JSON参考：QuestionContent',
+  `options` varchar(2048) DEFAULT NULL COMMENT '选项列表, JSON列表, List<QuestionOption>',
+  `answer` varchar(512) DEFAULT NULL COMMENT '答案列表, JSON列表, List<String>',
+  `explanation` varchar(1024) DEFAULT NULL COMMENT '解析',
   `audio_id` bigint DEFAULT NULL COMMENT '听力音频ID',
   `sort` int DEFAULT '0' COMMENT '排序号（值越大越靠前）',
 
-  `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-  `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
-  `status` tinyint NOT NULL DEFAULT 1 COMMENT '有效状态, 1:有效 0:无效',
+  `draft_content` text COMMENT '草稿内容（JSON结构）',
+    `edit_status` VARCHAR(20) NOT NULL DEFAULT 'draft' COMMENT '编辑状态：draft-草稿 reviewing-审核中',
+    `publish_status` VARCHAR(20) NOT NULL DEFAULT 'unpublished' COMMENT '发布状态：unpublished-未发布 published-已发布',
+    `create_by` VARCHAR(255) DEFAULT NULL COMMENT '创建人',
+    `update_by` VARCHAR(255) DEFAULT NULL COMMENT '更新人',
+    `create_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `update_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    `status` TINYINT NOT NULL DEFAULT 1 COMMENT '有效状态：1-有效，0-无效',
   PRIMARY KEY (`id`) USING BTREE,
-  INDEX `idx_type` (`type`)
+  INDEX `idx_question_type` (`question_type`)
 ) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '练习题目表';
 

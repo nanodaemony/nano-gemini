@@ -759,14 +759,14 @@ public class AppVocabWordController {
         return vo;
     }
 
-    private List<ExerciseOptionVO> toExerciseOptionVOList(List<com.naon.grid.domain.common.ExerciseOption> options) {
+    private List<ExerciseOptionVO> toExerciseOptionVOList(List<com.naon.grid.domain.common.QuestionOption> options) {
         if (options == null) {
             return Collections.emptyList();
         }
         return options.stream().map(this::toExerciseOptionVO).collect(Collectors.toList());
     }
 
-    private ExerciseOptionVO toExerciseOptionVO(com.naon.grid.domain.common.ExerciseOption option) {
+    private ExerciseOptionVO toExerciseOptionVO(com.naon.grid.domain.common.QuestionOption option) {
         if (option == null) {
             return null;
         }

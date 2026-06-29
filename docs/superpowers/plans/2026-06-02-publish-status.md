@@ -146,7 +146,7 @@ git commit -m "feat: add edit status enum"
 package com.naon.grid.utils;
 
 import com.alibaba.fastjson2.JSON;
-import com.naon.grid.domain.common.ExerciseOption;
+import com.naon.grid.domain.common.QuestionOption;
 import com.naon.grid.domain.common.TextTranslation;
 
 import java.util.Collections;

@@ -6,7 +6,8 @@ import lombok.Data;
  * 练习题选项
  */
 @Data
-public class ExerciseOption {
+public class QuestionOption {
+
     /**
      * 选项标识，如 "A", "B", "C", "D"
      */
@@ -15,5 +16,11 @@ public class ExerciseOption {
     /**
      * 选项文案
      */
-    private String text;
+    private String optionText;
+
+    /**
+     * 选项图片
+     */
+    private String optionImage;
+
 }

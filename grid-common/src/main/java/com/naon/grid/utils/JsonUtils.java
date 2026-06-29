@@ -1,7 +1,7 @@
 package com.naon.grid.utils;
 
 import com.alibaba.fastjson2.JSON;
-import com.naon.grid.domain.common.ExerciseOption;
+import com.naon.grid.domain.common.QuestionOption;
 import com.naon.grid.domain.common.TextTranslation;
 
 import java.util.Collections;
@@ -136,12 +136,12 @@ public class JsonUtils {
      * @param list 选项列表
      * @return JSON 字符串，null 或空列表返回 null
      */
-    public static String toExerciseOptionListJson(List<ExerciseOption> list) {
+    public static String toExerciseOptionListJson(List<QuestionOption> list) {
         if (list == null || list.isEmpty()) {
             return null;
         }
         // 过滤掉空对象
-        List<ExerciseOption> filteredList = list.stream()
+        List<QuestionOption> filteredList = list.stream()
                 .filter(item -> !isEmptyExerciseOption(item))
                 .collect(Collectors.toList());
         if (filteredList.isEmpty()) {
@@ -156,11 +156,11 @@ public class JsonUtils {
      * @param json JSON 字符串
      * @return 选项列表，null 或空白字符串返回空列表，会过滤掉空对象
      */
-    public static List<ExerciseOption> parseExerciseOptionList(String json) {
+    public static List<QuestionOption> parseExerciseOptionList(String json) {
         if (StringUtils.isBlank(json)) {
             return Collections.emptyList();
         }
-        List<ExerciseOption> list = JSON.parseArray(json, ExerciseOption.class);
+        List<QuestionOption> list = JSON.parseArray(json, QuestionOption.class);
         if (list == null || list.isEmpty()) {
             return Collections.emptyList();
         }
@@ -173,10 +173,10 @@ public class JsonUtils {
     /**
      * 判断是否为空的 ExerciseOption 对象
      */
-    private static boolean isEmptyExerciseOption(ExerciseOption item) {
+    private static boolean isEmptyExerciseOption(QuestionOption item) {
         if (item == null) {
             return true;
         }
-        return StringUtils.isBlank(item.getOption()) && StringUtils.isBlank(item.getText());
+        return StringUtils.isBlank(item.getOption()) && StringUtils.isBlank(item.getOptionText());
     }
 }

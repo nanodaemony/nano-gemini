@@ -216,9 +216,6 @@ public class ExerciseQuestionServiceImpl implements ExerciseQuestionService {
     public void delete(Long id) {
         ExerciseQuestion entity = exerciseQuestionRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException(ExerciseQuestion.class, "id", String.valueOf(id)));
-        if (entity.getId() == null) {
-            throw new EntityNotFoundException(ExerciseQuestion.class, "id", String.valueOf(id));
-        }
         entity.setStatus(StatusEnum.DISABLED.getCode());
         exerciseQuestionRepository.save(entity);
 

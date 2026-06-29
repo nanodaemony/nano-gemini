@@ -14,8 +14,8 @@ public class QuestionContent {
     private String contentText;
 
     /**
-     * 内容图片
+     * 内容图片ID
      */
-    private String contentImage;
+    private String contentImageId;
 
 }

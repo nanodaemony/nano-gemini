@@ -19,8 +19,8 @@ public class QuestionOption {
     private String optionText;
 
     /**
-     * 选项图片
+     * 选项图片ID
      */
-    private String optionImage;
+    private String optionImageId;
 
 }

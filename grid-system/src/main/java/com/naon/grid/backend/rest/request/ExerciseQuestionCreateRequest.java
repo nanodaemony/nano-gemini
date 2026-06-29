@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import javax.validation.Valid;
+import javax.validation.constraints.NotBlank;
 import java.io.Serializable;
 import java.util.List;
 
@@ -12,6 +13,7 @@ import java.util.List;
 @Setter
 public class ExerciseQuestionCreateRequest implements Serializable {
 
+    @NotBlank
     @ApiModelProperty(value = "题目类型，参考枚举：QuestionTypeEnum", required = true)
     private String questionType;
 

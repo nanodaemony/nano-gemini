@@ -216,6 +216,9 @@ public class ExerciseQuestionServiceImpl implements ExerciseQuestionService {
     public void delete(Long id) {
         ExerciseQuestion entity = exerciseQuestionRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException(ExerciseQuestion.class, "id", String.valueOf(id)));
+        if (StatusEnum.DISABLED.getCode().equals(entity.getStatus())) {
+            throw new EntityNotFoundException(ExerciseQuestion.class, "id", String.valueOf(id));
+        }
         entity.setStatus(StatusEnum.DISABLED.getCode());
         exerciseQuestionRepository.save(entity);
 
@@ -299,6 +302,10 @@ public class ExerciseQuestionServiceImpl implements ExerciseQuestionService {
         List<ExerciseQuestion> toSave = new ArrayList<>();
 
         for (ExerciseQuestionDto dto : submitted) {
+            // Validate max 2 levels: children must not have their own children
+            if (dto.getChildren() != null && !dto.getChildren().isEmpty()) {
+                throw new BadRequestException("子题不能包含自身的子题");
+            }
             ExerciseQuestion childEntity;
             if (dto.getId() != null && dto.getId() > 0) {
                 if (!submittedIds.add(dto.getId())) {

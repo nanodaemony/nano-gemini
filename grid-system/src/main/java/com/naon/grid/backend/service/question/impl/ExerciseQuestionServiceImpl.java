@@ -38,6 +38,7 @@ public class ExerciseQuestionServiceImpl implements ExerciseQuestionService {
     private final ExerciseQuestionRepository exerciseQuestionRepository;
 
     @Override
+    @Transactional(readOnly = true, rollbackFor = Exception.class)
     public PageResult<ExerciseQuestionDto> queryAll(ExerciseQuestionQueryCriteria criteria, Pageable pageable) {
         Page<ExerciseQuestion> page = exerciseQuestionRepository.findAll((root, criteriaQuery, criteriaBuilder) -> {
             Predicate basePredicate = QueryHelp.getPredicate(root, criteria, criteriaBuilder);
@@ -267,6 +268,9 @@ public class ExerciseQuestionServiceImpl implements ExerciseQuestionService {
         ExerciseQuestionDto draftDto = JsonUtils.fromJson(entity.getDraftContent(), ExerciseQuestionDto.class);
 
         // Write back parent business fields
+        if (draftDto.getQuestionType() == null) {
+            throw new BadRequestException("题目类型不能为空");
+        }
         entity.setQuestionType(draftDto.getQuestionType());
         entity.setStem(draftDto.getStem());
         entity.setContent(JsonUtils.toJson(draftDto.getContent()));
@@ -274,7 +278,7 @@ public class ExerciseQuestionServiceImpl implements ExerciseQuestionService {
         entity.setAnswer(JsonUtils.toStringListJson(draftDto.getAnswer()));
         entity.setExplanation(draftDto.getExplanation());
         entity.setAudioId(draftDto.getAudioId());
-        entity.setSort(draftDto.getSort() != null ? draftDto.getSort() : 0);
+        entity.setSort(draftDto.getSort());
 
         // Sync children
         syncChildren(id, draftDto.getChildren());
@@ -323,6 +327,9 @@ public class ExerciseQuestionServiceImpl implements ExerciseQuestionService {
                 childEntity.setEditStatus(EditStatusEnum.PUBLISHED.getCode());
             }
             // Copy fields
+            if (dto.getQuestionType() == null) {
+                throw new BadRequestException("子题题目类型不能为空");
+            }
             childEntity.setQuestionType(dto.getQuestionType());
             childEntity.setStem(dto.getStem());
             childEntity.setContent(JsonUtils.toJson(dto.getContent()));
@@ -330,7 +337,7 @@ public class ExerciseQuestionServiceImpl implements ExerciseQuestionService {
             childEntity.setAnswer(JsonUtils.toStringListJson(dto.getAnswer()));
             childEntity.setExplanation(dto.getExplanation());
             childEntity.setAudioId(dto.getAudioId());
-            childEntity.setSort(dto.getSort() != null ? dto.getSort() : 0);
+            childEntity.setSort(dto.getSort());
             toSave.add(childEntity);
         }
 

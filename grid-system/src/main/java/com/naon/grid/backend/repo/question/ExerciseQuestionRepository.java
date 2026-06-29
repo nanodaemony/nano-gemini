@@ -12,5 +12,5 @@ public interface ExerciseQuestionRepository extends JpaRepository<ExerciseQuesti
 
     List<ExerciseQuestion> findByParentIdAndStatus(Long parentId, Integer status);
 
-List<ExerciseQuestion> findByParentIdInAndStatus(List<Long> parentIds, Integer status);
+    List<ExerciseQuestion> findByParentIdInAndStatus(List<Long> parentIds, Integer status);
 }

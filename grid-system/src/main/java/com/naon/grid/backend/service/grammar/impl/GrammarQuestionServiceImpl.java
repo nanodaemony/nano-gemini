@@ -52,6 +52,7 @@ public class GrammarQuestionServiceImpl implements GrammarQuestionService {
                 .findByGrammarIdAndStatus(grammarId, StatusEnum.ENABLED.getCode());
         for (GrammarQuestion record : existing) {
             record.setStatus(StatusEnum.DISABLED.getCode());
+            grammarQuestionRepository.save(record);
         }
 
         // Create new record if questionIds is non-empty

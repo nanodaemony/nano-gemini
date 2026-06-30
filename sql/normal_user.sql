@@ -72,3 +72,48 @@ CREATE TABLE `grid_user_token` (
     KEY `idx_refresh_token` (`refresh_token`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='APP用户Token表';
 
+
+-- 机构表
+CREATE TABLE `grid_organization` (
+  `id`              INT AUTO_INCREMENT COMMENT '主键ID',
+  `name`            VARCHAR(200) NOT NULL COMMENT '机构名称',
+  `name_en`         VARCHAR(200) COMMENT '机构英文名',
+  `org_type`        VARCHAR(20)  NOT NULL COMMENT 'UNIVERSITY/SCHOOL/TRAINING/OTHER',
+  `contact_name`    VARCHAR(100) COMMENT '联系人姓名',
+  `contact_email`   VARCHAR(255) COMMENT '联系邮箱',
+  `contact_phone`   VARCHAR(50)  COMMENT '联系电话',
+  `country`         VARCHAR(100) COMMENT '所在国家',
+  `region`          VARCHAR(10)  COMMENT 'A/B/C/D/E',
+  `status`          INT NOT NULL DEFAULT 1,
+  `audit_status`    VARCHAR(20)  NOT NULL DEFAULT 'PENDING' COMMENT 'PENDING/APPROVED/REJECTED',
+  `max_members`     INT NOT NULL DEFAULT 0 COMMENT '最大成员数',
+  `max_admins`      INT NOT NULL DEFAULT 0 COMMENT '最大管理员数',
+  `current_members` INT NOT NULL DEFAULT 0 COMMENT '当前成员数',
+  `expire_time`     DATETIME COMMENT '机构有效到期时间',
+  `create_by`       VARCHAR(50), `update_by` VARCHAR(50),
+  `create_time`     DATETIME DEFAULT CURRENT_TIMESTAMP,
+  `update_time`     DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_audit_status` (`audit_status`),
+  KEY `idx_region` (`region`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='机构表';
+
+-- 代理商表
+CREATE TABLE `grid_agent` (
+  `id`              INT AUTO_INCREMENT COMMENT '主键ID',
+  `name`            VARCHAR(200) NOT NULL COMMENT '代理商名称',
+  `contact_name`    VARCHAR(100) COMMENT '联系人姓名',
+  `contact_email`   VARCHAR(255) COMMENT '联系邮箱',
+  `contact_phone`   VARCHAR(50)  COMMENT '联系电话',
+  `commission_rate` DECIMAL(5,2) NOT NULL DEFAULT 0 COMMENT '返现比例 %',
+  `referral_code`   VARCHAR(32)  NOT NULL COMMENT '代理专用推荐码',
+  `status`          INT NOT NULL DEFAULT 1,
+  `audit_status`    VARCHAR(20)  NOT NULL DEFAULT 'PENDING' COMMENT 'PENDING/APPROVED/REJECTED',
+  `create_by`       VARCHAR(50), `update_by` VARCHAR(50),
+  `create_time`     DATETIME DEFAULT CURRENT_TIMESTAMP,
+  `update_time`     DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_referral_code` (`referral_code`),
+  KEY `idx_audit_status` (`audit_status`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='代理商表';
+

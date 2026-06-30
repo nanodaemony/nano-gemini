@@ -7,6 +7,7 @@ import com.naon.grid.annotation.rest.AnonymousPostMapping;
 import com.naon.grid.annotation.rest.AnonymousPutMapping;
 import com.naon.grid.backend.rest.request.ExerciseQuestionCreateRequest;
 import com.naon.grid.backend.rest.request.ExerciseQuestionQueryRequest;
+import com.naon.grid.backend.rest.request.ExerciseQuestionSearchRequest;
 import com.naon.grid.backend.rest.vo.ExerciseQuestionBaseVO;
 import com.naon.grid.backend.rest.vo.ExerciseQuestionCreateVO;
 import com.naon.grid.backend.rest.vo.ExerciseQuestionVO;
@@ -84,6 +85,20 @@ public class ExerciseQuestionController {
         return new ResponseEntity<>(
                 new PageResult<>(ExerciseQuestionWrapper.toBaseVOList(pageResult.getContent()), pageResult.getTotalElements()),
                 HttpStatus.OK);
+    }
+
+    @Log("搜索题目（供语法点关联选择用）")
+    @ApiOperation("搜索题目（供语法点关联选择用，支持题干模糊搜索）")
+    @AnonymousPostMapping("/search")
+    public ResponseEntity<PageResult<ExerciseQuestionBaseVO>> search(@RequestBody ExerciseQuestionSearchRequest request,
+                                                                     Pageable pageable) {
+        ExerciseQuestionQueryRequest req = new ExerciseQuestionQueryRequest();
+        req.setBlurry(request.getKeyword());
+        req.setQuestionType(request.getQuestionType());
+        PageResult<ExerciseQuestionDto> pageResult = exerciseQuestionService.queryAll(
+                ExerciseQuestionWrapper.toCriteria(req), pageable);
+        return ResponseEntity.ok(
+                new PageResult<>(ExerciseQuestionWrapper.toBaseVOList(pageResult.getContent()), pageResult.getTotalElements()));
     }
 
     @Log("删除题目")

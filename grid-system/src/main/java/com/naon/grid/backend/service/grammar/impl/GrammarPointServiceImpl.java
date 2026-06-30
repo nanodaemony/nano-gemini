@@ -11,6 +11,7 @@ import com.naon.grid.backend.repo.grammar.GrammarNoticeRepository;
 import com.naon.grid.backend.repo.grammar.GrammarPointRepository;
 import com.naon.grid.backend.repo.grammar.GrammarStructureRepository;
 import com.naon.grid.backend.service.grammar.GrammarPointService;
+import com.naon.grid.backend.service.grammar.GrammarQuestionService;
 import com.naon.grid.backend.service.grammar.dto.GrammarErrorDto;
 import com.naon.grid.backend.service.grammar.dto.GrammarMeaningDto;
 import com.naon.grid.backend.service.grammar.dto.GrammarNoticeDto;
@@ -59,6 +60,7 @@ public class GrammarPointServiceImpl implements GrammarPointService {
     private final GrammarErrorRepository grammarErrorRepository;
     private final GrammarPointMapper grammarPointMapper;
     private final ExampleSentenceService exampleSentenceService;
+    private final GrammarQuestionService grammarQuestionService;
 
     @Override
     public PageResult<GrammarPointDto> queryAll(GrammarPointQueryCriteria criteria, Pageable pageable) {
@@ -109,6 +111,8 @@ public class GrammarPointServiceImpl implements GrammarPointService {
                         row -> (Long) row[1]
                 ));
 
+        Map<Long, List<Long>> questionIdsMap = grammarQuestionService.findByGrammarIds(ids);
+
         for (GrammarPointDto dto : dtos) {
             if (dto.getMeaningCount() == null)
                 dto.setMeaningCount(meaningCountMap.getOrDefault(dto.getId(), 0L).intValue());
@@ -118,6 +122,9 @@ public class GrammarPointServiceImpl implements GrammarPointService {
                 dto.setNoticeCount(noticeCountMap.getOrDefault(dto.getId(), 0L).intValue());
             if (dto.getErrorCount() == null)
                 dto.setErrorCount(errorCountMap.getOrDefault(dto.getId(), 0L).intValue());
+            if (dto.getQuestionIds() == null) {
+                dto.setQuestionIds(questionIdsMap.getOrDefault(dto.getId(), Collections.emptyList()));
+            }
         }
     }
 
@@ -169,6 +176,9 @@ public class GrammarPointServiceImpl implements GrammarPointService {
         if (draft.getErrors() != null) {
             dto.setErrorCount(draft.getErrors().size());
         }
+        if (draft.getQuestionIds() != null) {
+            dto.setQuestionIds(draft.getQuestionIds());
+        }
     }
 
     @Override
@@ -217,6 +227,7 @@ public class GrammarPointServiceImpl implements GrammarPointService {
                 grammarNoticeRepository.findByGrammarIdAndStatus(id, StatusEnum.ENABLED.getCode())))));
         dto.setErrors(sortErrorsDesc(convertToErrorDtos(
                 grammarErrorRepository.findByGrammarIdAndStatus(id, StatusEnum.ENABLED.getCode()))));
+        dto.setQuestionIds(grammarQuestionService.findByGrammarId(id));
         return dto;
     }
 
@@ -411,6 +422,7 @@ public class GrammarPointServiceImpl implements GrammarPointService {
         syncStructures(grammarPoint.getId(), draftDto.getStructures());
         syncNotices(grammarPoint.getId(), draftDto.getNotices());
         syncErrors(grammarPoint.getId(), draftDto.getErrors());
+        syncQuestions(grammarPoint.getId(), draftDto.getQuestionIds());
 
         // Update status
         grammarPoint.setPublishStatus(PublishStatusEnum.PUBLISHED.getCode());
@@ -646,6 +658,10 @@ public class GrammarPointServiceImpl implements GrammarPointService {
         }
 
         grammarErrorRepository.saveAll(toSave);
+    }
+
+    private void syncQuestions(Long grammarId, List<Long> questionIds) {
+        grammarQuestionService.syncFromDraft(grammarId, questionIds);
     }
 
     // ===== Example sentence helpers =====

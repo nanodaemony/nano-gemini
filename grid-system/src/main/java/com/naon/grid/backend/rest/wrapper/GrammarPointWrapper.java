@@ -46,6 +46,7 @@ public class GrammarPointWrapper {
         dto.setStructures(toStructureDtoList(request.getStructures()));
         dto.setNotices(toNoticeDtoList(request.getNotices()));
         dto.setErrors(toErrorDtoList(request.getErrors()));
+        dto.setQuestionIds(request.getQuestionIds());
         return dto;
     }
 
@@ -69,6 +70,7 @@ public class GrammarPointWrapper {
         vo.setStructures(toStructureVOList(dto.getStructures()));
         vo.setNotices(toNoticeVOList(dto.getNotices()));
         vo.setErrors(toErrorVOList(dto.getErrors()));
+        vo.setQuestionIds(dto.getQuestionIds());
         return vo;
     }
 
@@ -96,6 +98,7 @@ public class GrammarPointWrapper {
         vo.setStructureCount(dto.getStructureCount());
         vo.setNoticeCount(dto.getNoticeCount());
         vo.setErrorCount(dto.getErrorCount());
+        vo.setQuestionIds(dto.getQuestionIds());
         return vo;
     }
 

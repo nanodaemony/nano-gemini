@@ -102,6 +102,7 @@ public class ExerciseQuestionServiceImpl implements ExerciseQuestionService {
         if (draft.getAnswer() != null) dto.setAnswer(draft.getAnswer());
         if (draft.getExplanation() != null) dto.setExplanation(draft.getExplanation());
         if (draft.getAudioId() != null) dto.setAudioId(draft.getAudioId());
+        if (draft.getAudioText() != null) dto.setAudioText(draft.getAudioText());
         if (draft.getSort() != null) dto.setSort(draft.getSort());
 
         // childCount from draft children size
@@ -278,6 +279,7 @@ public class ExerciseQuestionServiceImpl implements ExerciseQuestionService {
         entity.setAnswer(JsonUtils.toStringListJson(draftDto.getAnswer()));
         entity.setExplanation(draftDto.getExplanation());
         entity.setAudioId(draftDto.getAudioId());
+        entity.setAudioText(draftDto.getAudioText());
         entity.setSort(draftDto.getSort());
 
         // Sync children
@@ -337,6 +339,7 @@ public class ExerciseQuestionServiceImpl implements ExerciseQuestionService {
             childEntity.setAnswer(JsonUtils.toStringListJson(dto.getAnswer()));
             childEntity.setExplanation(dto.getExplanation());
             childEntity.setAudioId(dto.getAudioId());
+            childEntity.setAudioText(dto.getAudioText());
             childEntity.setSort(dto.getSort());
             toSave.add(childEntity);
         }
@@ -375,6 +378,7 @@ public class ExerciseQuestionServiceImpl implements ExerciseQuestionService {
         dto.setAnswer(JsonUtils.parseStringList(entity.getAnswer()));
         dto.setExplanation(entity.getExplanation());
         dto.setAudioId(entity.getAudioId());
+        dto.setAudioText(entity.getAudioText());
         dto.setSort(entity.getSort());
         dto.setEditStatus(entity.getEditStatus());
         dto.setPublishStatus(entity.getPublishStatus());

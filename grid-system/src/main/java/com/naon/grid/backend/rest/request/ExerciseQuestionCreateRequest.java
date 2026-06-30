@@ -36,6 +36,9 @@ public class ExerciseQuestionCreateRequest implements Serializable {
     @ApiModelProperty(value = "听力音频ID")
     private Long audioId;
 
+    @ApiModelProperty(value = "听力文本（音频对应的文本内容）")
+    private String audioText;
+
     @ApiModelProperty(value = "排序号（值越大越靠前）")
     private Integer sort;
 

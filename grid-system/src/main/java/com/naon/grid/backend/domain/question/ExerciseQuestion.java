@@ -45,6 +45,9 @@ public class ExerciseQuestion extends BaseEntity implements Serializable {
     @Column(name = "audio_id")
     private Long audioId;
 
+    @Column(name = "audio_text", length = 4096)
+    private String audioText;
+
     @Column(name = "sort")
     private Integer sort = 0;
 

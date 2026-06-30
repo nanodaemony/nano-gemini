@@ -31,6 +31,7 @@ CREATE TABLE `exercise_question` (
   `answer` varchar(512) DEFAULT NULL COMMENT '答案列表, JSON列表, List<String>',
   `explanation` varchar(1024) DEFAULT NULL COMMENT '解析',
   `audio_id` bigint DEFAULT NULL COMMENT '听力音频ID',
+  `audio_text` varchar(4096) DEFAULT NULL COMMENT '听力音频对应的文本内容',
   `sort` int DEFAULT '0' COMMENT '排序号（值越大越靠前）',
 
   `draft_content` text COMMENT '草稿内容（JSON结构）',

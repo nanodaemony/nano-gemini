@@ -24,6 +24,9 @@ public class ExerciseQuestionBaseVO implements Serializable {
     @ApiModelProperty(value = "听力音频ID")
     private Long audioId;
 
+    @ApiModelProperty(value = "听力文本")
+    private String audioText;
+
     @ApiModelProperty(value = "排序号（值越大越靠前）")
     private Integer sort;
 

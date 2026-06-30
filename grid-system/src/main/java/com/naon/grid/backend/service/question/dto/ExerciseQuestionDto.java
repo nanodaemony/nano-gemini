@@ -21,6 +21,7 @@ public class ExerciseQuestionDto extends BaseDTO {
     private List<String> answer;
     private String explanation;
     private Long audioId;
+    private String audioText;
     private Integer sort;
 
     private String editStatus;

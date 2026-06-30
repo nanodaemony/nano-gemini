@@ -91,4 +91,17 @@ CREATE TABLE `grammar_error` (
     INDEX `idx_status` (`status`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='语法偏误表';
 
+-- 语法点题目表
+CREATE TABLE `grammar_question` (
+    `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '语法偏误ID',
+    `grammar_id` BIGINT NOT NULL COMMENT '语法点ID',
+    `question_ids` varchar(1024) NOT NULL COMMENT '语法题目ID列表, JSON格式',
+    `order` INT NOT NULL DEFAULT 0 COMMENT '排序权重(值大的排前面)',
+    `create_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `update_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    `status` TINYINT NOT NULL DEFAULT 1 COMMENT '有效状态：1-有效，0-无效',
+    PRIMARY KEY (`id`),
+    INDEX `idx_grammar_id` (`grammar_id`),
+    INDEX `idx_status_order` (`status`, `order`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='语法点题目表';
 

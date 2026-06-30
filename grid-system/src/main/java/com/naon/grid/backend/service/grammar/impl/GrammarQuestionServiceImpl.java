@@ -39,7 +39,8 @@ public class GrammarQuestionServiceImpl implements GrammarQuestionService {
         return records.stream()
                 .collect(Collectors.toMap(
                         GrammarQuestion::getGrammarId,
-                        r -> parseQuestionIds(r.getQuestionIds())
+                        r -> parseQuestionIds(r.getQuestionIds()),
+                        (a, b) -> a
                 ));
     }
 
@@ -51,7 +52,6 @@ public class GrammarQuestionServiceImpl implements GrammarQuestionService {
                 .findByGrammarIdAndStatus(grammarId, StatusEnum.ENABLED.getCode());
         for (GrammarQuestion record : existing) {
             record.setStatus(StatusEnum.DISABLED.getCode());
-            grammarQuestionRepository.save(record);
         }
 
         // Create new record if questionIds is non-empty

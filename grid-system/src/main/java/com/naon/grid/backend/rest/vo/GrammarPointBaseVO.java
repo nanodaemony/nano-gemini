@@ -7,6 +7,7 @@ import lombok.Setter;
 
 import java.io.Serializable;
 import java.sql.Timestamp;
+import java.util.List;
 
 @Getter
 @Setter
@@ -61,4 +62,7 @@ public class GrammarPointBaseVO implements Serializable {
 
     @ApiModelProperty(value = "偏误个数")
     private Integer errorCount;
+
+    @ApiModelProperty(value = "语法题目ID列表")
+    private List<Long> questionIds;
 }

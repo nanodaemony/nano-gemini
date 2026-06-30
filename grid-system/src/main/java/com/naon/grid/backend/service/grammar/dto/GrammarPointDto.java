@@ -42,6 +42,9 @@ public class GrammarPointDto extends BaseDTO implements Serializable {
     @ApiModelProperty(value = "语法偏误列表")
     private List<GrammarErrorDto> errors;
 
+    @ApiModelProperty(value = "语法题目ID列表")
+    private List<Long> questionIds;
+
     @ApiModelProperty(value = "状态: 1=可用, 0=不可用")
     private Integer status;
 

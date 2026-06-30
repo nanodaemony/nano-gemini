@@ -45,6 +45,9 @@ public class GrammarPointCreateRequest implements Serializable {
     @ApiModelProperty(value = "语法偏误列表")
     private List<GrammarErrorRequest> errors;
 
+    @ApiModelProperty(value = "语法题目ID列表")
+    private List<Long> questionIds;
+
     @Getter
     @Setter
     public static class GrammarMeaningRequest implements Serializable {

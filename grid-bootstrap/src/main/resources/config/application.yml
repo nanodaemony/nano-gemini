@@ -55,6 +55,16 @@ spring:
         # 连接池中的最小空闲连接数
         min-idle: 1
 
+  # ─── 邮件服务 ───
+  mail:
+    host: ${MAIL_HOST:smtp.example.com}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME:noreply@yourroad.com}
+    password: ${MAIL_PASSWORD:}
+    properties:
+      mail.smtp.auth: true
+      mail.smtp.starttls.enable: true
+
 task:
   pool:
     # 核心线程池大小

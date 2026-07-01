@@ -18,13 +18,18 @@ package com.naon.grid.modules.system.rest;
 import com.naon.grid.modules.system.domain.GridOrganization;
 import com.naon.grid.modules.system.repository.GridOrganizationRepository;
 import com.naon.grid.modules.system.service.OrganizationService;
+import com.naon.grid.utils.PageResult;
+import com.naon.grid.utils.PageUtil;
+import com.naon.grid.utils.QueryHelp;
+import com.naon.grid.backend.service.dto.OrganizationQueryCriteria;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -35,14 +40,29 @@ public class InstitutionAuditController {
     private final OrganizationService organizationService;
     private final GridOrganizationRepository organizationRepository;
 
-    @ApiOperation("获取待审核机构列表")
-    @GetMapping("/pending")
-    public ResponseEntity<List<GridOrganization>> getPendingInstitutions() {
-        return ResponseEntity.ok(organizationRepository.findByAuditStatus("PENDING"));
+    @ApiOperation("分页查询机构列表")
+    @GetMapping
+    @PreAuthorize("@el.check('institution:list')")
+    public ResponseEntity<PageResult<GridOrganization>> queryAll(
+            OrganizationQueryCriteria criteria, Pageable pageable) {
+        Page<GridOrganization> page = organizationRepository.findAll(
+                (root, query, cb) -> QueryHelp.getPredicate(root, criteria, cb),
+                pageable);
+        return ResponseEntity.ok(PageUtil.toPage(page));
+    }
+
+    @ApiOperation("获取机构详情")
+    @GetMapping("/{id}")
+    @PreAuthorize("@el.check('institution:list')")
+    public ResponseEntity<GridOrganization> getDetail(@PathVariable Integer id) {
+        GridOrganization org = organizationService.findById(id);
+        org.setAdminPassword(null); // 不返回密码
+        return ResponseEntity.ok(org);
     }
 
     @ApiOperation("审核通过")
     @PostMapping("/{id}/approve")
+    @PreAuthorize("@el.check('institution:approve')")
     public ResponseEntity<Void> approve(@PathVariable Integer id,
                                          @RequestParam String plan) {
         organizationService.approve(id, plan);
@@ -51,6 +71,7 @@ public class InstitutionAuditController {
 
     @ApiOperation("审核驳回")
     @PostMapping("/{id}/reject")
+    @PreAuthorize("@el.check('institution:reject')")
     public ResponseEntity<Void> reject(@PathVariable Integer id,
                                         @RequestParam String reason) {
         organizationService.reject(id, reason);

@@ -1,4 +1,4 @@
-package com.naon.grid.modules.app.service.dto;
+package com.naon.grid.modules.system.service.dto;
 
 import lombok.Data;
 
@@ -13,7 +13,7 @@ public class AppUserDTO {
     private String avatar;
     private Integer gender;
     private List<String> roles;
-    private String userType;    // 新增
-    private String orgRole;     // 新增
-    private String region;      // 新增
+    private String userType;
+    private String orgRole;
+    private String region;
 }

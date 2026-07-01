@@ -1,4 +1,4 @@
-package com.naon.grid.modules.app.service.dto;
+package com.naon.grid.modules.system.service.dto;
 
 import lombok.Data;
 

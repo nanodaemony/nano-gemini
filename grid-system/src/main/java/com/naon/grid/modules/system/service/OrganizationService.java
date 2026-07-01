@@ -1,8 +1,8 @@
-package com.naon.grid.modules.app.service;
+package com.naon.grid.modules.system.service;
 
-import com.naon.grid.modules.app.domain.GridOrganization;
-import com.naon.grid.modules.app.service.dto.InstitutionRegisterDTO;
-import com.naon.grid.modules.app.service.dto.TokenDTO;
+import com.naon.grid.modules.system.domain.GridOrganization;
+import com.naon.grid.modules.system.service.dto.InstitutionRegisterDTO;
+import com.naon.grid.modules.system.service.dto.TokenDTO;
 import javax.servlet.http.HttpServletRequest;
 
 public interface OrganizationService {

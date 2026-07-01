@@ -2,7 +2,7 @@ package com.naon.grid.modules.app.service;
 
 import com.naon.grid.modules.app.service.dto.LoginDTO;
 import com.naon.grid.modules.app.service.dto.RegisterDTO;
-import com.naon.grid.modules.app.service.dto.TokenDTO;
+import com.naon.grid.modules.system.service.dto.TokenDTO;
 
 import javax.servlet.http.HttpServletRequest;
 

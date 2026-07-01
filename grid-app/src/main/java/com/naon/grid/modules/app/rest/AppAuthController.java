@@ -8,7 +8,7 @@ import com.naon.grid.modules.app.service.AppAuthService;
 import com.naon.grid.modules.app.service.dto.LoginDTO;
 import com.naon.grid.modules.app.service.dto.RefreshTokenDTO;
 import com.naon.grid.modules.app.service.dto.RegisterDTO;
-import com.naon.grid.modules.app.service.dto.TokenDTO;
+import com.naon.grid.modules.system.service.dto.TokenDTO;
 import com.naon.grid.modules.app.utils.AppSecurityUtils;
 import com.naon.grid.utils.RsaUtils;
 import io.swagger.annotations.Api;

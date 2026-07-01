@@ -15,9 +15,9 @@
  */
 package com.naon.grid.modules.system.rest;
 
-import com.naon.grid.modules.app.domain.GridOrganization;
-import com.naon.grid.modules.app.repository.GridOrganizationRepository;
-import com.naon.grid.modules.app.service.OrganizationService;
+import com.naon.grid.modules.system.domain.GridOrganization;
+import com.naon.grid.modules.system.repository.GridOrganizationRepository;
+import com.naon.grid.modules.system.service.OrganizationService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;

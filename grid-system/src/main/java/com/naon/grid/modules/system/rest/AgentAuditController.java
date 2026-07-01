@@ -15,9 +15,9 @@
  */
 package com.naon.grid.modules.system.rest;
 
-import com.naon.grid.modules.app.domain.GridAgent;
-import com.naon.grid.modules.app.repository.GridAgentRepository;
-import com.naon.grid.modules.app.service.AgentService;
+import com.naon.grid.modules.system.domain.GridAgent;
+import com.naon.grid.modules.system.repository.GridAgentRepository;
+import com.naon.grid.modules.system.service.AgentService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;

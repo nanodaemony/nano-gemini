@@ -1,6 +1,6 @@
-package com.naon.grid.modules.app.repository;
+package com.naon.grid.modules.system.repository;
 
-import com.naon.grid.modules.app.domain.GridAgent;
+import com.naon.grid.modules.system.domain.GridAgent;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;

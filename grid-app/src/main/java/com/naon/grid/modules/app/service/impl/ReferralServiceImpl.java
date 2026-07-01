@@ -1,9 +1,9 @@
 package com.naon.grid.modules.app.service.impl;
 
-import com.naon.grid.modules.app.domain.GridAgent;
 import com.naon.grid.modules.app.domain.GridUser;
 import com.naon.grid.modules.app.domain.ReferralRecord;
-import com.naon.grid.modules.app.repository.GridAgentRepository;
+import com.naon.grid.modules.system.domain.GridAgent;
+import com.naon.grid.modules.system.repository.GridAgentRepository;
 import com.naon.grid.modules.app.repository.GridUserRepository;
 import com.naon.grid.modules.app.repository.ReferralRecordRepository;
 import com.naon.grid.modules.app.service.ReferralService;

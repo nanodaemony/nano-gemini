@@ -1,9 +1,9 @@
 package com.naon.grid.modules.app.rest;
 
 import com.naon.grid.annotation.rest.AnonymousPostMapping;
-import com.naon.grid.modules.app.service.AgentService;
-import com.naon.grid.modules.app.service.dto.AgentRegisterDTO;
-import com.naon.grid.modules.app.service.dto.TokenDTO;
+import com.naon.grid.modules.system.service.AgentService;
+import com.naon.grid.modules.system.service.dto.AgentRegisterDTO;
+import com.naon.grid.modules.system.service.dto.TokenDTO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;

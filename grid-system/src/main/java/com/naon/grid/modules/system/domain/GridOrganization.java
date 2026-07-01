@@ -1,4 +1,4 @@
-package com.naon.grid.modules.app.domain;
+package com.naon.grid.modules.system.domain;
 
 import com.naon.grid.base.BaseEntity;
 import lombok.Getter;

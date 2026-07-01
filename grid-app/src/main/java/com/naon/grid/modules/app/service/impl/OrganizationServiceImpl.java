@@ -150,20 +150,20 @@ public class OrganizationServiceImpl implements OrganizationService {
             throw new BadRequestException("当前状态不允许重新提交");
         }
 
+        // 验证当前密码
+        String decryptedPassword;
+        try {
+            decryptedPassword = RsaUtils.decryptByPrivateKey(
+                    RsaProperties.privateKey, dto.getAdminPassword());
+        } catch (Exception e) {
+            throw new BadRequestException("密码解密失败");
+        }
+        if (!passwordEncoder.matches(decryptedPassword, org.getAdminPassword())) {
+            throw new BadRequestException("邮箱或密码不正确");
+        }
+
         String ip = StringUtils.getIp(request);
         String region = regionResolver.resolve(ip);
-
-        // 重新加密密码（如果提供了新密码）
-        if (dto.getAdminPassword() != null && !dto.getAdminPassword().isEmpty()) {
-            try {
-                String decryptedPassword = RsaUtils.decryptByPrivateKey(
-                        RsaProperties.privateKey, dto.getAdminPassword());
-                String encryptedPassword = passwordEncoder.encode(decryptedPassword);
-                org.setAdminPassword(encryptedPassword);
-            } catch (Exception e) {
-                throw new BadRequestException("密码解密失败");
-            }
-        }
 
         // 更新字段
         org.setName(dto.getName());
@@ -255,6 +255,10 @@ public class OrganizationServiceImpl implements OrganizationService {
     public void reject(Integer orgId, String reason) {
         GridOrganization org = organizationRepository.findById(orgId)
                 .orElseThrow(() -> new BadRequestException("机构不存在"));
+
+        if (!"PENDING".equals(org.getAuditStatus())) {
+            throw new BadRequestException("当前状态不允许驳回");
+        }
 
         org.setAuditStatus("REJECTED");
         org.setRejectReason(reason);

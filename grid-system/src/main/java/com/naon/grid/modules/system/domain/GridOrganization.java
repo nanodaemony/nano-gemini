@@ -33,6 +33,7 @@ public class GridOrganization extends BaseEntity {
     @Column(length = 50)
     private String contactPhone;
 
+    @com.fasterxml.jackson.annotation.JsonIgnore
     @Column(length = 100)
     private String adminPassword;
 

@@ -95,17 +95,19 @@ public class OrganizationServiceImpl implements OrganizationService {
             return result;
         }
 
-        // 验证密码
-        String decryptedPassword;
-        try {
-            decryptedPassword = RsaUtils.decryptByPrivateKey(
-                    RsaProperties.privateKey, dto.getPassword());
-        } catch (Exception e) {
-            throw new BadRequestException("密码解密失败");
-        }
+        // 如果密码已清空（如审批通过后），跳过密码验证
+        if (org.getAdminPassword() != null) {
+            String decryptedPassword;
+            try {
+                decryptedPassword = RsaUtils.decryptByPrivateKey(
+                        RsaProperties.privateKey, dto.getPassword());
+            } catch (Exception e) {
+                throw new BadRequestException("密码解密失败");
+            }
 
-        if (!passwordEncoder.matches(decryptedPassword, org.getAdminPassword())) {
-            throw new BadRequestException("邮箱或密码不正确");
+            if (!passwordEncoder.matches(decryptedPassword, org.getAdminPassword())) {
+                throw new BadRequestException("邮箱或密码不正确");
+            }
         }
 
         Map<String, Object> result = new HashMap<>();

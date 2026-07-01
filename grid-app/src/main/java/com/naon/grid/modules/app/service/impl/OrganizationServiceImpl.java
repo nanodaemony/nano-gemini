@@ -7,16 +7,14 @@ import com.naon.grid.modules.app.domain.GridUser;
 import com.naon.grid.modules.app.domain.GridUserRole;
 import com.naon.grid.modules.app.repository.GridUserRepository;
 import com.naon.grid.modules.app.repository.GridUserRoleRepository;
-import com.naon.grid.modules.app.security.AppTokenProvider;
-import com.naon.grid.modules.app.security.DeviceManager;
+import com.naon.grid.modules.app.service.ReferralService;
 import com.naon.grid.modules.app.service.RegionResolver;
 import com.naon.grid.modules.system.domain.GridOrganization;
 import com.naon.grid.modules.system.repository.GridOrganizationRepository;
 import com.naon.grid.modules.system.service.OrganizationService;
-import com.naon.grid.modules.system.service.dto.AppUserDTO;
+import com.naon.grid.modules.system.service.dto.ApplicationQueryDTO;
 import com.naon.grid.modules.system.service.dto.InstitutionRegisterDTO;
-import com.naon.grid.modules.system.service.dto.TokenDTO;
-import com.naon.grid.modules.billing.service.EntitlementEngine;
+import com.naon.grid.service.EmailService;
 import com.naon.grid.utils.RsaUtils;
 import com.naon.grid.utils.StringUtils;
 import lombok.RequiredArgsConstructor;
@@ -26,9 +24,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.Date;
-import java.util.List;
-import java.util.stream.Collectors;
+import java.util.HashMap;
+import java.util.Map;
 
 @Slf4j
 @Service
@@ -38,63 +35,147 @@ public class OrganizationServiceImpl implements OrganizationService {
     private final GridUserRepository userRepository;
     private final GridUserRoleRepository userRoleRepository;
     private final PasswordEncoder passwordEncoder;
-    private final AppTokenProvider appTokenProvider;
-    private final DeviceManager deviceManager;
     private final RegionResolver regionResolver;
-    private final EntitlementEngine entitlementEngine;
+    private final EmailService emailService;
+    private final ReferralService referralService;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public TokenDTO register(InstitutionRegisterDTO dto, HttpServletRequest request) {
-        if (userRepository.existsByEmail(dto.getAdminEmail())) {
-            throw new BadRequestException("管理员邮箱已被注册");
+    public void register(InstitutionRegisterDTO dto, HttpServletRequest request) {
+        // 检查邮箱是否已被注册（包括已审核通过的机构用户）
+        if (userRepository.findByEmail(dto.getAdminEmail()).isPresent()) {
+            throw new BadRequestException("该邮箱已被注册");
         }
+
+        // 检查是否有 PENDING 或 APPROVED 的申请记录
+        organizationRepository.findByContactEmail(dto.getAdminEmail())
+                .filter(org -> !"REJECTED".equals(org.getAuditStatus()))
+                .ifPresent(org -> {
+                    throw new BadRequestException("该邮箱已提交过申请");
+                });
 
         String ip = StringUtils.getIp(request);
         String region = regionResolver.resolve(ip);
 
-        // Create organization (PENDING audit)
+        // 加密密码（解密 RSA + BCrypt 加密）
+        String encryptedPassword;
+        try {
+            String decryptedPassword = RsaUtils.decryptByPrivateKey(
+                    RsaProperties.privateKey, dto.getAdminPassword());
+            encryptedPassword = passwordEncoder.encode(decryptedPassword);
+        } catch (Exception e) {
+            throw new BadRequestException("密码解密失败");
+        }
+
+        // 创建机构申请记录（PENDING）
         GridOrganization org = new GridOrganization();
         org.setName(dto.getName());
         org.setNameEn(dto.getNameEn());
         org.setOrgType(dto.getOrgType());
         org.setContactName(dto.getContactName());
-        org.setContactEmail(dto.getContactEmail());
+        org.setContactPhone(dto.getContactPhone());
+        org.setContactEmail(dto.getAdminEmail());  // adminEmail 作为联系邮箱
+        org.setReferredBy(dto.getReferredBy());
+        org.setAdminPassword(encryptedPassword);
         org.setRegion(region);
         org.setAuditStatus("PENDING");
         organizationRepository.save(org);
+    }
 
-        // Create admin user
+    @Override
+    public Map<String, Object> queryApplication(ApplicationQueryDTO dto) {
+        GridOrganization org = organizationRepository
+                .findByContactEmail(dto.getEmail())
+                .orElse(null);
+
+        if (org == null) {
+            Map<String, Object> result = new HashMap<>();
+            result.put("status", "NOT_FOUND");
+            result.put("message", "未找到申请记录");
+            return result;
+        }
+
+        // 验证密码
         String decryptedPassword;
         try {
-            decryptedPassword = RsaUtils.decryptByPrivateKey(RsaProperties.privateKey, dto.getAdminPassword());
+            decryptedPassword = RsaUtils.decryptByPrivateKey(
+                    RsaProperties.privateKey, dto.getPassword());
         } catch (Exception e) {
             throw new BadRequestException("密码解密失败");
         }
 
-        GridUser user = new GridUser();
-        user.setEmail(dto.getAdminEmail());
-        user.setPassword(passwordEncoder.encode(decryptedPassword));
-        user.setNickname(dto.getContactName());
-        user.setGender(0);
-        user.setStatus(1);
-        user.setUserType("INSTITUTION");
-        user.setOrgId(org.getId());
-        user.setOrgRole("ADMIN");
-        user.setRegisterAuditStatus("PENDING");
-        user.setRegion(region);
-        user.setRegisterIp(ip);
-        userRepository.save(user);
+        if (!passwordEncoder.matches(decryptedPassword, org.getAdminPassword())) {
+            throw new BadRequestException("邮箱或密码不正确");
+        }
 
-        // Create NORMAL role
-        GridUserRole normalRole = new GridUserRole();
-        normalRole.setUserId(user.getId());
-        normalRole.setRoleCode("NORMAL");
-        normalRole.setRoleName("普通用户");
-        userRoleRepository.save(normalRole);
+        Map<String, Object> result = new HashMap<>();
 
-        // Generate token
-        return generateToken(user, dto.getDeviceId(), dto.getDeviceName());
+        switch (org.getAuditStatus()) {
+            case "PENDING":
+                result.put("status", "PENDING");
+                result.put("message", "您的申请正在审核中，请耐心等待");
+                break;
+            case "APPROVED":
+                result.put("status", "APPROVED");
+                result.put("message", "审核已通过，请登录");
+                break;
+            case "REJECTED":
+                Map<String, Object> data = new HashMap<>();
+                data.put("name", org.getName());
+                data.put("nameEn", org.getNameEn());
+                data.put("orgType", org.getOrgType());
+                data.put("contactName", org.getContactName());
+                data.put("contactPhone", org.getContactPhone());
+                data.put("rejectReason", org.getRejectReason());
+                result.put("status", "REJECTED");
+                result.put("message", "审核未通过");
+                result.put("data", data);
+                break;
+            default:
+                result.put("status", "ERROR");
+                result.put("message", "状态异常");
+        }
+
+        return result;
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void resubmit(InstitutionRegisterDTO dto, HttpServletRequest request) {
+        GridOrganization org = organizationRepository
+                .findByContactEmail(dto.getAdminEmail())
+                .orElseThrow(() -> new BadRequestException("未找到申请记录"));
+
+        if (!"REJECTED".equals(org.getAuditStatus())) {
+            throw new BadRequestException("当前状态不允许重新提交");
+        }
+
+        String ip = StringUtils.getIp(request);
+        String region = regionResolver.resolve(ip);
+
+        // 重新加密密码（如果提供了新密码）
+        if (dto.getAdminPassword() != null && !dto.getAdminPassword().isEmpty()) {
+            try {
+                String decryptedPassword = RsaUtils.decryptByPrivateKey(
+                        RsaProperties.privateKey, dto.getAdminPassword());
+                String encryptedPassword = passwordEncoder.encode(decryptedPassword);
+                org.setAdminPassword(encryptedPassword);
+            } catch (Exception e) {
+                throw new BadRequestException("密码解密失败");
+            }
+        }
+
+        // 更新字段
+        org.setName(dto.getName());
+        org.setNameEn(dto.getNameEn());
+        org.setOrgType(dto.getOrgType());
+        org.setContactName(dto.getContactName());
+        org.setContactPhone(dto.getContactPhone());
+        org.setReferredBy(dto.getReferredBy());
+        org.setRegion(region);
+        org.setAuditStatus("PENDING");
+        org.setRejectReason(null);  // 清除驳回原因
+        organizationRepository.save(org);
     }
 
     @Override
@@ -102,8 +183,12 @@ public class OrganizationServiceImpl implements OrganizationService {
     public void approve(Integer orgId, String planProductCode) {
         GridOrganization org = organizationRepository.findById(orgId)
                 .orElseThrow(() -> new BadRequestException("机构不存在"));
-        org.setAuditStatus("APPROVED");
-        // Set default limits based on plan product code
+
+        if (!"PENDING".equals(org.getAuditStatus())) {
+            throw new BadRequestException("当前状态不允许审核通过");
+        }
+
+        // 设置机构套餐限制
         if ("INST_STARTER".equals(planProductCode)) {
             org.setMaxMembers(30);
             org.setMaxAdmins(1);
@@ -117,21 +202,52 @@ public class OrganizationServiceImpl implements OrganizationService {
             org.setMaxMembers(30);
             org.setMaxAdmins(1);
         }
-        org.setCurrentMembers(1); // Admin only for now
+
+        org.setCurrentMembers(1);
+        org.setAuditStatus("APPROVED");
         organizationRepository.save(org);
 
-        // Activate admin user (find by org ID, not by email)
-        List<GridUser> admins = userRepository.findByOrgIdAndOrgRole(orgId, "ADMIN");
-        for (GridUser admin : admins) {
-            admin.setRegisterAuditStatus("APPROVED");
-            userRepository.save(admin);
-
-            // Grant 30-day trial
-            entitlementEngine.grant(
-                    admin.getId(), "INSTITUTION", String.valueOf(orgId),
-                    "PLUS", 30, org.getRegion()
-            );
+        // 创建管理员用户
+        String encryptedPassword = org.getAdminPassword();
+        if (encryptedPassword == null) {
+            throw new BadRequestException("管理员密码缺失，请联系技术支持");
         }
+
+        GridUser admin = new GridUser();
+        admin.setEmail(org.getContactEmail());
+        admin.setPassword(encryptedPassword);
+        admin.setNickname(org.getContactName());
+        admin.setGender(0);
+        admin.setUserType("INSTITUTION");
+        admin.setOrgId(org.getId());
+        admin.setOrgRole("ADMIN");
+        admin.setRegisterAuditStatus("APPROVED");
+        admin.setRegion(org.getRegion());
+        admin.setStatus(1);
+
+        // 生成机构邀请码
+        String referralCode = "UR" + IdUtil.fastSimpleUUID().substring(0, 8).toUpperCase();
+        admin.setReferralCode(referralCode);
+        userRepository.save(admin);
+
+        // 创建 NORMAL 角色
+        GridUserRole normalRole = new GridUserRole();
+        normalRole.setUserId(admin.getId());
+        normalRole.setRoleCode("NORMAL");
+        normalRole.setRoleName("普通用户");
+        userRoleRepository.save(normalRole);
+
+        // 处理邀请码溯源（如果申请时填了推荐码）
+        if (org.getReferredBy() != null && !org.getReferredBy().isEmpty()) {
+            referralService.processReferral(org.getReferredBy(), admin.getId());
+        }
+
+        // 清空 admin_password
+        org.setAdminPassword(null);
+        organizationRepository.save(org);
+
+        // 发送审核通过邮件
+        sendApprovalEmail(org, admin);
     }
 
     @Override
@@ -139,9 +255,15 @@ public class OrganizationServiceImpl implements OrganizationService {
     public void reject(Integer orgId, String reason) {
         GridOrganization org = organizationRepository.findById(orgId)
                 .orElseThrow(() -> new BadRequestException("机构不存在"));
+
         org.setAuditStatus("REJECTED");
+        org.setRejectReason(reason);
         organizationRepository.save(org);
+
         log.info("Organization rejected: orgId={}, reason={}", orgId, reason);
+
+        // 发送驳回邮件
+        sendRejectionEmail(org, reason);
     }
 
     @Override
@@ -150,38 +272,30 @@ public class OrganizationServiceImpl implements OrganizationService {
                 .orElseThrow(() -> new BadRequestException("机构不存在"));
     }
 
-    private TokenDTO generateToken(GridUser user, String deviceId, String deviceName) {
-        List<String> roles = userRoleRepository.findByUserId(user.getId()).stream()
-                .map(GridUserRole::getRoleCode)
-                .collect(Collectors.toList());
+    private void sendApprovalEmail(GridOrganization org, GridUser admin) {
+        String subject = "您的机构【" + org.getName() + "】入驻审核已通过";
+        String content = "<p>您好，</p>"
+                + "<p>您的机构【" + org.getName() + "】已通过审核，现已正式入驻有路中文平台。</p>"
+                + "<p>您可以点击以下链接使用邮箱【" + admin.getEmail() + "】登录平台：<br/>"
+                + "<a href=\"https://yourroad.com/login\">https://yourroad.com/login</a></p>"
+                + "<p>请及时设置机构信息并开始管理您的成员。</p>";
+        try {
+            emailService.sendHtmlEmail(admin.getEmail(), subject, content);
+        } catch (Exception e) {
+            log.error("Failed to send approval email to: {}", admin.getEmail(), e);
+        }
+    }
 
-        Integer orgId = user.getOrgId();
-        String accessToken = appTokenProvider.createToken(
-                user.getId(), user.getEmail(), deviceId, roles,
-                user.getUserType(),
-                orgId != null ? orgId.intValue() : null,
-                user.getOrgRole(),
-                user.getRegion());
-
-        String refreshToken = IdUtil.simpleUUID();
-        Date expireTime = new Date(System.currentTimeMillis() + 2592000L * 1000);
-        deviceManager.registerDevice(user.getId(), deviceId, deviceName, refreshToken, accessToken, expireTime);
-
-        TokenDTO tokenDTO = new TokenDTO();
-        tokenDTO.setAccessToken(accessToken);
-        tokenDTO.setRefreshToken(refreshToken);
-        tokenDTO.setExpiresIn(604800L);
-        AppUserDTO userDTO = new AppUserDTO();
-        userDTO.setId(user.getId());
-        userDTO.setEmail(user.getEmail());
-        userDTO.setNickname(user.getNickname());
-        userDTO.setAvatar(user.getAvatar());
-        userDTO.setGender(user.getGender());
-        userDTO.setRoles(roles);
-        userDTO.setUserType(user.getUserType());
-        userDTO.setOrgRole(user.getOrgRole());
-        userDTO.setRegion(user.getRegion());
-        tokenDTO.setUser(userDTO);
-        return tokenDTO;
+    private void sendRejectionEmail(GridOrganization org, String reason) {
+        String subject = "您的机构【" + org.getName() + "】入驻审核未通过";
+        String content = "<p>您好，</p>"
+                + "<p>您的机构【" + org.getName() + "】审核未通过，原因如下：</p>"
+                + "<p><strong>" + reason + "</strong></p>"
+                + "<p>您可根据驳回原因修改信息后<a href=\"https://yourroad.com/institution/apply\">重新提交申请</a>。</p>";
+        try {
+            emailService.sendHtmlEmail(org.getContactEmail(), subject, content);
+        } catch (Exception e) {
+            log.error("Failed to send rejection email to: {}", org.getContactEmail(), e);
+        }
     }
 }

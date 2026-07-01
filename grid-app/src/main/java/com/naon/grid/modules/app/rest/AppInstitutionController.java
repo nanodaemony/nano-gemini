@@ -4,15 +4,17 @@ import com.naon.grid.annotation.rest.AnonymousPostMapping;
 import com.naon.grid.modules.system.service.OrganizationService;
 import com.naon.grid.modules.system.service.dto.ApplicationQueryDTO;
 import com.naon.grid.modules.system.service.dto.InstitutionRegisterDTO;
-import com.naon.grid.modules.system.service.dto.TokenDTO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.HashMap;
+import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
@@ -24,9 +26,11 @@ public class AppInstitutionController {
 
     @ApiOperation("机构自助注册")
     @AnonymousPostMapping("/register")
-    public ResponseEntity<TokenDTO> register(@Validated @RequestBody InstitutionRegisterDTO dto,
+    public ResponseEntity<Map<String, Object>> register(@Validated @RequestBody InstitutionRegisterDTO dto,
                                               HttpServletRequest request) {
-        TokenDTO tokenDTO = organizationService.register(dto, request);
-        return ResponseEntity.ok(tokenDTO);
+        organizationService.register(dto, request);
+        Map<String, Object> result = new HashMap<>();
+        result.put("message", "申请已提交，请等待审核");
+        return ResponseEntity.status(HttpStatus.CREATED).body(result);
     }
 }

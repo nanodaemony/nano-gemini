@@ -34,6 +34,15 @@ public class GridOrganization extends BaseEntity {
     private String contactPhone;
 
     @Column(length = 100)
+    private String adminPassword;
+
+    @Column(length = 500)
+    private String rejectReason;
+
+    @Column(length = 32)
+    private String referredBy;
+
+    @Column(length = 100)
     private String country;
 
     @Column(length = 10)

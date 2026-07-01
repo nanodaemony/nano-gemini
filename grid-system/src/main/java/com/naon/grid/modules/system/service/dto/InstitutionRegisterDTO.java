@@ -17,9 +17,7 @@ public class InstitutionRegisterDTO {
     @NotBlank(message = "联系人姓名不能为空")
     private String contactName;
 
-    @NotBlank(message = "联系邮箱不能为空")
-    @Email(message = "邮箱格式不正确")
-    private String contactEmail;
+    private String contactPhone;
 
     @NotBlank(message = "管理员邮箱不能为空")
     @Email(message = "邮箱格式不正确")
@@ -28,8 +26,5 @@ public class InstitutionRegisterDTO {
     @NotBlank(message = "管理员密码不能为空")
     private String adminPassword;
 
-    @NotBlank(message = "设备ID不能为空")
-    private String deviceId;
-
-    private String deviceName;
+    private String referredBy;
 }

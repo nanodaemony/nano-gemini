@@ -2,6 +2,7 @@ package com.naon.grid.modules.app.rest;
 
 import com.naon.grid.annotation.rest.AnonymousPostMapping;
 import com.naon.grid.modules.system.service.OrganizationService;
+import com.naon.grid.modules.system.service.dto.ApplicationQueryDTO;
 import com.naon.grid.modules.system.service.dto.InstitutionRegisterDTO;
 import com.naon.grid.modules.system.service.dto.TokenDTO;
 import io.swagger.annotations.Api;

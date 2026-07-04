@@ -30,6 +30,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletRequest;
@@ -309,16 +310,33 @@ public class AppAuthServiceImpl implements AppAuthService {
             isNewUser = true;
         }
 
-        // 写 GridUserAuth 关联
-        GridUserAuth auth = new GridUserAuth();
-        auth.setUserId(user.getId());
-        auth.setProvider(provider);
-        auth.setProviderId(socialUser.getProviderId());
-        auth.setProviderName(socialUser.getName());
-        auth.setProviderAvatar(socialUser.getPicture());
-        auth.setAccessToken(idToken);
-        auth.setExpireTime(socialUser.getExpireTime());
-        userAuthRepository.save(auth);
+        // 写 GridUserAuth 关联 (defensive check + retry-on-constraint for race condition)
+        if (!userAuthRepository.findByProviderAndProviderId(provider, socialUser.getProviderId()).isPresent()) {
+            GridUserAuth auth = new GridUserAuth();
+            auth.setUserId(user.getId());
+            auth.setProvider(provider);
+            auth.setProviderId(socialUser.getProviderId());
+            auth.setProviderName(socialUser.getName());
+            auth.setProviderAvatar(socialUser.getPicture());
+            auth.setAccessToken(idToken);
+            auth.setExpireTime(socialUser.getExpireTime());
+            try {
+                userAuthRepository.save(auth);
+            } catch (DataIntegrityViolationException e) {
+                log.warn("Concurrent social login detected for provider={} providerId={}, retrying", provider, socialUser.getProviderId());
+                GridUserAuth existingAuth = userAuthRepository.findByProviderAndProviderId(provider, socialUser.getProviderId())
+                        .orElseThrow(() -> new BadRequestException("登录验证失败"));
+                user = userRepository.findById(existingAuth.getUserId())
+                        .orElseThrow(() -> new BadRequestException("用户不存在"));
+                if (user.getStatus() == 0) {
+                    throw new BadRequestException("账号已被禁用");
+                }
+                updateSocialAuth(existingAuth, idToken, socialUser);
+                updateLoginMetadata(user, request);
+                fillUserProfile(user, socialUser);
+                return generateToken(user, deviceId, deviceName);
+            }
+        }
 
         if (!isNewUser) {
             fillUserProfile(user, socialUser);

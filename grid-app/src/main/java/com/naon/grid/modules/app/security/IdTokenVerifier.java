@@ -16,14 +16,35 @@ import java.math.BigInteger;
 import java.security.KeyFactory;
 import java.security.PublicKey;
 import java.security.spec.RSAPublicKeySpec;
+import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Date;
+import java.util.Map;
 import java.util.Scanner;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Slf4j
 @Component
 @RequiredArgsConstructor
 public class IdTokenVerifier {
+
+    private static final long JWKS_CACHE_TTL_MILLIS = 3600_000L;
+
+    private final Map<String, CachedJwks> jwksCache = new ConcurrentHashMap<>();
+
+    private static class CachedJwks {
+        final String jwksJson;
+        final long expireAt;
+
+        CachedJwks(String jwksJson, long ttlMillis) {
+            this.jwksJson = jwksJson;
+            this.expireAt = System.currentTimeMillis() + ttlMillis;
+        }
+
+        boolean isExpired() {
+            return System.currentTimeMillis() > expireAt;
+        }
+    }
 
     private final SocialLoginProperties socialLoginProperties;
 
@@ -34,14 +55,22 @@ public class IdTokenVerifier {
         }
 
         // Parse JWT header to get kid
-        String[] parts = idToken.split("\\.");
-        if (parts.length < 2) {
+        String kid;
+        String alg;
+        try {
+            String[] parts = idToken.split("\\.");
+            if (parts.length < 2) {
+                throw new BadRequestException("登录验证失败");
+            }
+            String headerJson = new String(Base64.getUrlDecoder().decode(parts[0]), StandardCharsets.UTF_8);
+            JSONObject header = JSON.parseObject(headerJson);
+            kid = header.getString("kid");
+            alg = header.getString("alg");
+        } catch (BadRequestException e) {
+            throw e;
+        } catch (Exception e) {
             throw new BadRequestException("登录验证失败");
         }
-        String headerJson = new String(Base64.getUrlDecoder().decode(parts[0]));
-        JSONObject header = JSON.parseObject(headerJson);
-        String kid = header.getString("kid");
-        String alg = header.getString("alg");
 
         if (!"RS256".equals(alg)) {
             throw new BadRequestException("登录验证失败");
@@ -117,33 +146,72 @@ public class IdTokenVerifier {
 
     private PublicKey getPublicKey(String jwksUrl, String kid) {
         try {
-            String jwksJson = fetchJwks(jwksUrl);
-            JSONObject jwks = JSON.parseObject(jwksJson);
-            JSONArray keys = jwks.getJSONArray("keys");
-            if (keys == null || keys.isEmpty()) {
+            // Check cache first
+            String jwksJson = getJwksFromCache(jwksUrl);
+            boolean fromCache = true;
+
+            if (jwksJson == null) {
+                jwksJson = fetchJwks(jwksUrl);
+                cacheJwks(jwksUrl, jwksJson);
+                fromCache = false;
+            }
+
+            PublicKey publicKey = findKeyInJwks(jwksJson, kid);
+
+            // If kid not found and we used cached data, try fresh fetch (key rotation)
+            if (publicKey == null && fromCache) {
+                log.info("JWKS key kid={} not found in cache, re-fetching from {}", kid, jwksUrl);
+                jwksJson = fetchJwks(jwksUrl);
+                cacheJwks(jwksUrl, jwksJson);
+                publicKey = findKeyInJwks(jwksJson, kid);
+            }
+
+            if (publicKey == null) {
                 throw new BadRequestException("登录验证失败");
             }
 
-            for (int i = 0; i < keys.size(); i++) {
-                JSONObject key = keys.getJSONObject(i);
-                if (kid != null && kid.equals(key.getString("kid"))) {
-                    return buildRsaPublicKey(key.getString("n"), key.getString("e"));
-                }
-            }
-
-            // If kid not found and only one key, try it (edge case)
-            if (kid == null && keys.size() == 1) {
-                JSONObject key = keys.getJSONObject(0);
-                return buildRsaPublicKey(key.getString("n"), key.getString("e"));
-            }
-
-            throw new BadRequestException("登录验证失败");
+            return publicKey;
         } catch (BadRequestException e) {
             throw e;
         } catch (Exception e) {
             log.error("Failed to fetch/parse JWKS from {}: {}", jwksUrl, e.getMessage());
             throw new BadRequestException("登录验证失败");
         }
+    }
+
+    private PublicKey findKeyInJwks(String jwksJson, String kid) throws Exception {
+        JSONObject jwks = JSON.parseObject(jwksJson);
+        JSONArray keys = jwks.getJSONArray("keys");
+        if (keys == null || keys.isEmpty()) {
+            return null;
+        }
+
+        for (int i = 0; i < keys.size(); i++) {
+            JSONObject key = keys.getJSONObject(i);
+            if (kid != null && kid.equals(key.getString("kid"))) {
+                return buildRsaPublicKey(key.getString("n"), key.getString("e"));
+            }
+        }
+
+        // If kid not found and only one key, try it (edge case)
+        if (kid == null && keys.size() == 1) {
+            JSONObject key = keys.getJSONObject(0);
+            return buildRsaPublicKey(key.getString("n"), key.getString("e"));
+        }
+
+        return null;
+    }
+
+    private String getJwksFromCache(String jwksUrl) {
+        CachedJwks cached = jwksCache.get(jwksUrl);
+        if (cached != null && !cached.isExpired()) {
+            return cached.jwksJson;
+        }
+        return null;
+    }
+
+    private void cacheJwks(String jwksUrl, String jwksJson) {
+        jwksCache.put(jwksUrl, new CachedJwks(jwksJson, JWKS_CACHE_TTL_MILLIS));
     }
 
     private PublicKey buildRsaPublicKey(String modulusBase64, String exponentBase64) throws Exception {

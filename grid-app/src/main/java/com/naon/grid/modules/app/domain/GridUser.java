@@ -74,6 +74,9 @@ public class GridUser extends BaseEntity implements Serializable {
     @Column(length = 10)
     private String region;
 
+    @Column(length = 50)
+    private String country;
+
     @Column(length = 20)
     private String registerAuditStatus = "APPROVED";
 

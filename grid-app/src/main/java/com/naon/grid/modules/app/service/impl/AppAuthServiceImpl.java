@@ -282,7 +282,7 @@ public class AppAuthServiceImpl implements AppAuthService {
             bindClaims.put("name", socialUser.getName());
             bindClaims.put("picture", socialUser.getPicture());
             String bindJson = JSON.toJSONString(bindClaims);
-            redisUtils.set("social:bind:" + bindTokenId, bindJson, 300, java.util.concurrent.TimeUnit.SECONDS);
+            redisUtils.set("social:bind:" + bindTokenId, bindJson, 300, TimeUnit.SECONDS);
             throw new BindEmailRequiredException(bindTokenId);
         }
 
@@ -417,11 +417,11 @@ public class AppAuthServiceImpl implements AppAuthService {
         }
 
         String code = String.valueOf(100000 + SECURE_RANDOM.nextInt(900000));
-        redisUtils.set(cooldownKey, "1", 60, java.util.concurrent.TimeUnit.SECONDS);
+        redisUtils.set(cooldownKey, "1", 60, TimeUnit.SECONDS);
         emailService.sendHtmlEmail(normalizedEmail, "有路中文 - 邮箱验证码", buildCodeEmail(code));
 
         String codeKey = "email:code:" + normalizedEmail;
-        redisUtils.set(codeKey, code, 5, java.util.concurrent.TimeUnit.MINUTES);
+        redisUtils.set(codeKey, code, 5, TimeUnit.MINUTES);
         log.info("Bind verification code sent to: {}", normalizedEmail);
     }
 

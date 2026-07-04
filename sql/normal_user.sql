@@ -103,3 +103,7 @@ CREATE TABLE `grid_organization` (
   KEY `idx_region` (`region`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='机构表';
 
+-- grid_user 扩展
+ALTER TABLE `grid_user`
+    ADD COLUMN `country` VARCHAR(50) COMMENT '注册国家' AFTER `region`;
+

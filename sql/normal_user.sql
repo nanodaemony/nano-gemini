@@ -93,6 +93,8 @@ CREATE TABLE `grid_organization` (
   `max_admins`      INT NOT NULL DEFAULT 0 COMMENT '最大管理员数',
   `current_members` INT NOT NULL DEFAULT 0 COMMENT '当前成员数',
   `expire_time`     DATETIME COMMENT '机构有效到期时间',
+  `org_role`        VARCHAR(20)  NOT NULL DEFAULT 'INSTITUTION' COMMENT 'INSTITUTION/AGENT',
+  `commission_rate` DECIMAL(5,2) NOT NULL DEFAULT 0.00 COMMENT '佣金比例',
   `create_by`       VARCHAR(50), `update_by` VARCHAR(50),
   `create_time`     DATETIME DEFAULT CURRENT_TIMESTAMP,
   `update_time`     DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -100,23 +102,4 @@ CREATE TABLE `grid_organization` (
   KEY `idx_audit_status` (`audit_status`),
   KEY `idx_region` (`region`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='机构表';
-
--- 代理商表
-CREATE TABLE `grid_agent` (
-  `id`              INT AUTO_INCREMENT COMMENT '主键ID',
-  `name`            VARCHAR(200) NOT NULL COMMENT '代理商名称',
-  `contact_name`    VARCHAR(100) COMMENT '联系人姓名',
-  `contact_email`   VARCHAR(255) COMMENT '联系邮箱',
-  `contact_phone`   VARCHAR(50)  COMMENT '联系电话',
-  `commission_rate` DECIMAL(5,2) NOT NULL DEFAULT 0 COMMENT '返现比例 %',
-  `referral_code`   VARCHAR(32)  NOT NULL COMMENT '代理专用推荐码',
-  `status`          INT NOT NULL DEFAULT 1,
-  `audit_status`    VARCHAR(20)  NOT NULL DEFAULT 'PENDING' COMMENT 'PENDING/APPROVED/REJECTED',
-  `create_by`       VARCHAR(50), `update_by` VARCHAR(50),
-  `create_time`     DATETIME DEFAULT CURRENT_TIMESTAMP,
-  `update_time`     DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `uk_referral_code` (`referral_code`),
-  KEY `idx_audit_status` (`audit_status`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='代理商表';
 

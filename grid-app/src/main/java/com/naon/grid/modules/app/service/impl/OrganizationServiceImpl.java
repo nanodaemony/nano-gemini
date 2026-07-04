@@ -24,6 +24,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletRequest;
+import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -217,7 +218,7 @@ public class OrganizationServiceImpl implements OrganizationService {
         org.setCurrentMembers(1);
         // 若为代理机构，设置初始佣金比例（管理员后续可调整）
         if ("AGENT".equals(org.getOrgRole())) {
-            org.setCommissionRate(java.math.BigDecimal.ZERO);
+            org.setCommissionRate(BigDecimal.ZERO);
         }
         org.setAuditStatus("APPROVED");
         organizationRepository.save(org);

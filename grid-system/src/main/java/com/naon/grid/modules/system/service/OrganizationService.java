@@ -34,6 +34,11 @@ public interface OrganizationService {
     void reject(Integer orgId, String reason);
 
     /**
+     * 变更机构角色（普通机构 ↔ 代理机构）
+     */
+    void updateRole(Integer orgId, String orgRole);
+
+    /**
      * 根据ID查询
      */
     GridOrganization findById(Integer orgId);

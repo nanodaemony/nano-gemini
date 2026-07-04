@@ -8,6 +8,7 @@ import com.naon.grid.modules.app.service.AppAuthService;
 import com.naon.grid.modules.app.service.dto.LoginDTO;
 import com.naon.grid.modules.app.service.dto.RefreshTokenDTO;
 import com.naon.grid.modules.app.service.dto.RegisterDTO;
+import com.naon.grid.modules.app.service.dto.SendCodeDTO;
 import com.naon.grid.modules.system.service.dto.TokenDTO;
 import com.naon.grid.modules.app.utils.AppSecurityUtils;
 import com.naon.grid.utils.RsaUtils;
@@ -69,6 +70,16 @@ public class AppAuthController {
         Long userId = AppSecurityUtils.getCurrentUserId();
         appAuthService.logout(userId, deviceId);
         return ResponseEntity.ok().build();
+    }
+
+    @Log("发送邮箱验证码")
+    @ApiOperation("发送邮箱验证码")
+    @AnonymousPostMapping("/send-code")
+    public ResponseEntity<Map<String, String>> sendCode(@Validated @RequestBody SendCodeDTO sendCodeDTO) {
+        appAuthService.sendCode(sendCodeDTO);
+        Map<String, String> result = new HashMap<>();
+        result.put("message", "验证码已发送，5分钟内有效");
+        return ResponseEntity.ok(result);
     }
 
     @ApiOperation("获取RSA公钥")

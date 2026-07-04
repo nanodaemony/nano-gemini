@@ -39,7 +39,7 @@ public class GridUser extends BaseEntity implements Serializable {
     private Integer phoneVerified = 0;
 
     @Email
-    @Column(name = "email", length = 100)
+    @Column(name = "email", length = 100, unique = true)
     private String email;
 
     @NotNull

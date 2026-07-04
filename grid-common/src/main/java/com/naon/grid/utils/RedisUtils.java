@@ -287,6 +287,20 @@ public class RedisUtils {
     }
 
     /**
+     * 原子获取并删除缓存
+     *
+     * @param key 键
+     * @return 值
+     */
+    public String getAndDel(String key) {
+        String value = get(key, String.class);
+        if (value != null) {
+            del(key);
+        }
+        return value;
+    }
+
+    /**
      * 批量获取
      *
      * @param keys

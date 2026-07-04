@@ -33,6 +33,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletRequest;
+import java.security.SecureRandom;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
 import java.util.List;
@@ -57,6 +58,8 @@ public class AppAuthServiceImpl implements AppAuthService {
     private final RedisUtils redisUtils;
     private final EmailService emailService;
 
+    private static final SecureRandom SECURE_RANDOM = new SecureRandom();
+
     @Value("${app.auth.token-expire-seconds:604800}")
     private long tokenExpireSeconds;
 
@@ -66,21 +69,21 @@ public class AppAuthServiceImpl implements AppAuthService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public TokenDTO register(RegisterDTO registerDTO, HttpServletRequest request) {
-        if (userRepository.existsByEmail(registerDTO.getEmail())) {
+        String normalizedEmail = normalizeEmail(registerDTO.getEmail());
+
+        if (userRepository.existsByEmail(normalizedEmail)) {
             throw new BadRequestException("邮箱已被注册");
         }
 
         // 校验邮箱验证码
-        String codeKey = "email:code:" + registerDTO.getEmail();
-        String savedCode = redisUtils.get(codeKey, String.class);
+        String codeKey = "email:code:" + normalizedEmail;
+        String savedCode = redisUtils.getAndDel(codeKey);
         if (savedCode == null) {
             throw new BadRequestException("验证码不存在或已过期");
         }
         if (!savedCode.equals(registerDTO.getCode())) {
             throw new BadRequestException("验证码错误");
         }
-        // 验证通过，删除验证码（一次性使用）
-        redisUtils.del(codeKey);
 
         String decryptedPassword;
         try {
@@ -93,9 +96,10 @@ public class AppAuthServiceImpl implements AppAuthService {
         String region = regionResolver.resolve(ip);
 
         GridUser user = new GridUser();
-        user.setEmail(registerDTO.getEmail());
+        user.setEmail(normalizedEmail);
+        user.setEmailVerified(1);
         user.setPassword(passwordEncoder.encode(decryptedPassword));
-        user.setNickname(registerDTO.getNickname() != null ? registerDTO.getNickname() : registerDTO.getEmail().split("@")[0]);
+        user.setNickname(registerDTO.getNickname() != null ? registerDTO.getNickname() : normalizedEmail.split("@")[0]);
         user.setGender(0);
         user.setStatus(1);
         user.setUserType("NORMAL");
@@ -204,31 +208,33 @@ public class AppAuthServiceImpl implements AppAuthService {
 
     @Override
     public void sendCode(SendCodeDTO dto) {
+        String normalizedEmail = normalizeEmail(dto.getEmail());
+
         // 1. 检查邮箱是否已被注册
-        if (userRepository.existsByEmail(dto.getEmail())) {
+        if (userRepository.existsByEmail(normalizedEmail)) {
             throw new BadRequestException("邮箱已被注册");
         }
 
         // 2. 检查冷却期（60秒内不允许重复发送）
-        String cooldownKey = "email:code:cooldown:" + dto.getEmail();
+        String cooldownKey = "email:code:cooldown:" + normalizedEmail;
         if (redisUtils.hasKey(cooldownKey)) {
             throw new BadRequestException("验证码已发送，请60秒后重试");
         }
 
         // 3. 生成6位数字验证码
-        String code = String.valueOf((int) ((Math.random() * 9 + 1) * 100000));
+        String code = String.valueOf(100000 + SECURE_RANDOM.nextInt(900000));
 
-        // 4. 存入Redis（5分钟有效）
-        String codeKey = "email:code:" + dto.getEmail();
-        redisUtils.set(codeKey, code, 5, TimeUnit.MINUTES);
-
-        // 5. 设置冷却标记（60秒）
+        // 4. 设置冷却标记（60秒）
         redisUtils.set(cooldownKey, "1", 60, TimeUnit.SECONDS);
 
-        // 6. 发送邮件
-        emailService.sendHtmlEmail(dto.getEmail(), "有路中文 - 邮箱验证码", buildCodeEmail(code));
+        // 5. 发送邮件
+        emailService.sendHtmlEmail(normalizedEmail, "有路中文 - 邮箱验证码", buildCodeEmail(code));
 
-        log.info("Verification code sent to: {}", dto.getEmail());
+        // 6. 邮件发送成功后存入Redis（5分钟有效）
+        String codeKey = "email:code:" + normalizedEmail;
+        redisUtils.set(codeKey, code, 5, TimeUnit.MINUTES);
+
+        log.info("Verification code sent to: {}", normalizedEmail);
     }
 
     private String buildCodeEmail(String code) {
@@ -241,6 +247,10 @@ public class AppAuthServiceImpl implements AppAuthService {
                 + "<p style=\"color: #999; font-size: 14px;\">验证码5分钟内有效，请勿转发给他人。</p>"
                 + "<p style=\"color: #999; font-size: 14px;\">如非本人操作，请忽略此邮件。</p>"
                 + "</div>";
+    }
+
+    private String normalizeEmail(String email) {
+        return email != null ? email.trim().toLowerCase() : null;
     }
 
     @Override

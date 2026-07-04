@@ -23,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -77,13 +78,17 @@ public class PaymentServiceImpl implements PaymentService {
             JSONArray arr = JSON.parseArray(product.getEntitlementIds());
             List<Integer> ids = arr.stream()
                     .map(Object::toString)
-                    .map(code -> entitlementRepository.findByCode(code)
-                            .orElseThrow(() -> new RuntimeException("权益不存在: " + code)))
-                    .map(e -> e.getId())
+                    .map(code -> entitlementRepository.findByCode(code))
+                    .filter(Optional::isPresent)
+                    .map(o -> o.get().getId())
                     .collect(Collectors.toList());
-            entitlementService.grantEntitlements(
-                    order.getUserId(), ids,
-                    "PURCHASE", order.getOrderNo(), days, order.getRegion());
+            if (!ids.isEmpty()) {
+                entitlementService.grantEntitlements(
+                        order.getUserId(), ids,
+                        "PURCHASE", order.getOrderNo(), days, order.getRegion());
+            } else {
+                log.warn("No valid entitlements found for product: {}", order.getProductCode());
+            }
         }
 
         if (order.getChannelSubId() != null) {

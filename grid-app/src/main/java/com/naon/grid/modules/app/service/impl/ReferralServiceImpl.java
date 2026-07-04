@@ -92,13 +92,15 @@ public class ReferralServiceImpl implements ReferralService {
                     JSONArray arr = JSON.parseArray(product.getEntitlementIds());
                     List<Integer> ids = arr.stream()
                             .map(o -> o.toString())
-                            .map(code -> entitlementRepository.findByCode(code)
-                                    .orElseThrow(() -> new RuntimeException("Entitlement not found: " + code)))
-                            .map(e -> e.getId())
+                            .map(code -> entitlementRepository.findByCode(code))
+                            .filter(Optional::isPresent)
+                            .map(o -> o.get().getId())
                             .collect(Collectors.toList());
-                    entitlementService.grantEntitlements(
-                            record.getReferrerId(), ids,
-                            "REFERRAL", String.valueOf(record.getId()), 30, null);
+                    if (!ids.isEmpty()) {
+                        entitlementService.grantEntitlements(
+                                record.getReferrerId(), ids,
+                                "REFERRAL", String.valueOf(record.getId()), 30, null);
+                    }
                 }
                 record.setRewardAmount(BigDecimal.valueOf(30));
             } else if ("AGENT".equals(record.getReferrerType())) {

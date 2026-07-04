@@ -13,7 +13,8 @@ CREATE TABLE `entitlement` (
     `create_time` DATETIME DEFAULT CURRENT_TIMESTAMP,
     `update_time` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY (`id`),
-    UNIQUE KEY `uk_code` (`code`)
+    UNIQUE KEY `uk_code` (`code`),
+    UNIQUE KEY `uk_module_code` (`module_code`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='权益元数据表';
 
 -- ----------------------------

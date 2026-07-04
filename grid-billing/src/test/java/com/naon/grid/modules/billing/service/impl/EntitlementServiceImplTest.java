@@ -18,6 +18,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -37,34 +38,22 @@ class EntitlementServiceImplTest {
 
     @Test
     void grantEntitlements_newUser_createsSummary() {
-        when(userEntitlementRepository.findByUserIdAndEntitlementId(1L, 1))
-                .thenReturn(Optional.empty());
-
         entitlementService.grantEntitlements(1L, Arrays.asList(1),
                 "TRIAL", null, 7, "A");
 
         verify(recordRepository, times(1)).save(any());
-        verify(userEntitlementRepository, times(1)).save(any());
+        verify(userEntitlementRepository, times(1)).upsertUserEntitlement(
+                eq(1L), eq(1), any(), eq(7), any());
     }
 
     @Test
     void grantEntitlements_existingUser_stacksExpiry() {
-        UserEntitlement existing = new UserEntitlement();
-        existing.setUserId(1L);
-        existing.setEntitlementId(1);
-        existing.setExpireAt(LocalDateTime.now().plusDays(5));
-        existing.setStatus("ACTIVE");
-
-        when(userEntitlementRepository.findByUserIdAndEntitlementId(1L, 1))
-                .thenReturn(Optional.of(existing));
-
         entitlementService.grantEntitlements(1L, Arrays.asList(1),
                 "PURCHASE", "ORD001", 30, "A");
 
         verify(recordRepository, times(1)).save(any());
-        verify(userEntitlementRepository, times(1)).save(argThat(ue ->
-                ue.getExpireAt() != null &&
-                ue.getExpireAt().isAfter(LocalDateTime.now().plusDays(30))));
+        verify(userEntitlementRepository, times(1)).upsertUserEntitlement(
+                eq(1L), eq(1), any(), eq(30), any());
     }
 
     @Test

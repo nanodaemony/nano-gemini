@@ -6,6 +6,7 @@ import com.naon.grid.modules.billing.repository.PaymentSubscriptionRepository;
 import com.naon.grid.modules.billing.service.EntitlementService;
 import com.naon.grid.modules.billing.service.PaymentGateway;
 import com.naon.grid.modules.billing.service.dto.UserEntitlementVO;
+import com.naon.grid.modules.billing.service.dto.UserSubscriptionVO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
@@ -13,7 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -27,19 +28,18 @@ public class AppSubscriptionController {
 
     @ApiOperation("查询我的订阅/权益状态")
     @GetMapping("/my")
-    public ResponseEntity<Map<String, Object>> getMySubscription() {
+    public ResponseEntity<UserSubscriptionVO> getMySubscription() {
         Long userId = AppSecurityUtils.getCurrentUserId();
         List<UserEntitlementVO> entitlements = entitlementService.getUserEntitlements(userId);
 
-        Map<String, Object> result = new HashMap<>();
-        result.put("entitlements", entitlements);
-        result.put("hasTrial", entitlementService.hasReceivedTrial(userId));
-
         List<PaymentSubscription> activeSubs =
                 subscriptionRepository.findByUserIdAndStatus(userId, "ACTIVE");
-        result.put("hasAutoRenew", !activeSubs.isEmpty());
 
-        return ResponseEntity.ok(result);
+        return ResponseEntity.ok(UserSubscriptionVO.builder()
+                .entitlements(entitlements)
+                .hasTrial(entitlementService.hasReceivedTrial(userId))
+                .hasAutoRenew(!activeSubs.isEmpty())
+                .build());
     }
 
     @ApiOperation("取消自动续费订阅")

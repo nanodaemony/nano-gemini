@@ -10,6 +10,8 @@ import com.naon.grid.modules.app.service.RegionResolver;
 import com.naon.grid.modules.system.domain.GridOrganization;
 import com.naon.grid.modules.system.repository.GridOrganizationRepository;
 import com.naon.grid.modules.system.service.OrganizationService;
+import com.naon.grid.modules.billing.repository.EntitlementRepository;
+import com.naon.grid.modules.billing.service.EntitlementService;
 import com.naon.grid.modules.system.service.dto.ApplicationQueryDTO;
 import com.naon.grid.modules.system.service.dto.InstitutionRegisterDTO;
 import com.naon.grid.service.EmailService;
@@ -23,8 +25,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -36,6 +41,8 @@ public class OrganizationServiceImpl implements OrganizationService {
     private final RegionResolver regionResolver;
     private final EmailService emailService;
     private final ReferralService referralService;
+    private final EntitlementService entitlementService;
+    private final EntitlementRepository entitlementRepository;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -245,6 +252,19 @@ public class OrganizationServiceImpl implements OrganizationService {
         } while (userRepository.existsByReferralCode(referralCode));
         admin.setReferralCode(referralCode);
         userRepository.save(admin);
+
+        // Grant 30-day trial for institution admin
+        List<String> trialEntitlementCodes = Arrays.asList(
+                "VOCAB_ACCESS", "GRAMMAR_ACCESS", "CHARACTER_ACCESS",
+                "CONFUSING_WORDS_ACCESS", "CULTURE_ACCESS", "TOPIC_ACCESS");
+        List<Integer> allEntitlementIds = trialEntitlementCodes.stream()
+                .map(code -> entitlementRepository.findByCode(code)
+                        .orElseThrow(() -> new RuntimeException("Entitlement not found: " + code)))
+                .map(e -> e.getId())
+                .collect(Collectors.toList());
+        entitlementService.grantEntitlements(
+                admin.getId(), allEntitlementIds,
+                "TRIAL", null, 30, org.getRegion());
 
         // 处理邀请码溯源（如果申请时填了推荐码）
         if (org.getReferredBy() != null && !org.getReferredBy().isEmpty()) {

@@ -12,6 +12,7 @@ import com.naon.grid.modules.app.security.DeviceManager;
 import com.naon.grid.modules.app.service.AppAuthService;
 import com.naon.grid.modules.app.service.ReferralService;
 import com.naon.grid.modules.app.service.RegionResolver;
+import com.naon.grid.modules.billing.repository.EntitlementRepository;
 import com.naon.grid.modules.billing.service.EntitlementService;
 import com.naon.grid.service.EmailService;
 import com.naon.grid.modules.app.service.dto.LoginDTO;
@@ -37,6 +38,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.List;
 import java.util.Optional;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.stream.Collectors;
 
 import com.alibaba.fastjson2.JSON;
 import com.naon.grid.modules.app.domain.GridUserAuth;
@@ -62,6 +65,7 @@ public class AppAuthServiceImpl implements AppAuthService {
     private final AppTokenProvider appTokenProvider;
     private final DeviceManager deviceManager;
     private final EntitlementService entitlementService;
+    private final EntitlementRepository entitlementRepository;
     private final ReferralService referralService;
     private final RegionResolver regionResolver;
     private final RedisUtils redisUtils;
@@ -136,7 +140,14 @@ public class AppAuthServiceImpl implements AppAuthService {
 
         // Grant trial — 发放全部6个权益各7天
         try {
-            java.util.List<Integer> allEntitlementIds = java.util.Arrays.asList(1, 2, 3, 4, 5, 6);
+            List<String> trialEntitlementCodes = Arrays.asList(
+                    "VOCAB_ACCESS", "GRAMMAR_ACCESS", "CHARACTER_ACCESS",
+                    "CONFUSING_WORDS_ACCESS", "CULTURE_ACCESS", "TOPIC_ACCESS");
+            List<Integer> allEntitlementIds = trialEntitlementCodes.stream()
+                    .map(code -> entitlementRepository.findByCode(code)
+                            .orElseThrow(() -> new RuntimeException("Entitlement not found: " + code)))
+                    .map(e -> e.getId())
+                    .collect(Collectors.toList());
             entitlementService.grantEntitlements(
                     user.getId(), allEntitlementIds,
                     "TRIAL", null, 7, region);
@@ -353,7 +364,14 @@ public class AppAuthServiceImpl implements AppAuthService {
 
         // Grant trial — 发放全部6个权益各7天
         try {
-            java.util.List<Integer> allEntitlementIds = java.util.Arrays.asList(1, 2, 3, 4, 5, 6);
+            List<String> trialEntitlementCodes = Arrays.asList(
+                    "VOCAB_ACCESS", "GRAMMAR_ACCESS", "CHARACTER_ACCESS",
+                    "CONFUSING_WORDS_ACCESS", "CULTURE_ACCESS", "TOPIC_ACCESS");
+            List<Integer> allEntitlementIds = trialEntitlementCodes.stream()
+                    .map(code -> entitlementRepository.findByCode(code)
+                            .orElseThrow(() -> new RuntimeException("Entitlement not found: " + code)))
+                    .map(e -> e.getId())
+                    .collect(Collectors.toList());
             entitlementService.grantEntitlements(
                     user.getId(), allEntitlementIds,
                     "TRIAL", null, 7, region);
@@ -477,7 +495,14 @@ public class AppAuthServiceImpl implements AppAuthService {
 
             // Grant trial — 发放全部6个权益各7天
             try {
-                java.util.List<Integer> allEntitlementIds = java.util.Arrays.asList(1, 2, 3, 4, 5, 6);
+                List<String> trialEntitlementCodes = Arrays.asList(
+                        "VOCAB_ACCESS", "GRAMMAR_ACCESS", "CHARACTER_ACCESS",
+                        "CONFUSING_WORDS_ACCESS", "CULTURE_ACCESS", "TOPIC_ACCESS");
+                List<Integer> allEntitlementIds = trialEntitlementCodes.stream()
+                        .map(code -> entitlementRepository.findByCode(code)
+                                .orElseThrow(() -> new RuntimeException("Entitlement not found: " + code)))
+                        .map(e -> e.getId())
+                        .collect(Collectors.toList());
                 entitlementService.grantEntitlements(
                         user.getId(), allEntitlementIds,
                         "TRIAL", null, 7, region);

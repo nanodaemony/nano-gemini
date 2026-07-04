@@ -50,30 +50,9 @@ public class EntitlementServiceImpl implements EntitlementService {
             record.setCreateTime(now);
             recordRepository.save(record);
 
-            // 2. UPSERT summary with optimistic stacking
-            Optional<UserEntitlement> existing =
-                    userEntitlementRepository.findByUserIdAndEntitlementId(userId, entitlementId);
-
-            LocalDateTime cursor = now;
-            UserEntitlement userEntitlement;
-            if (existing.isPresent()) {
-                userEntitlement = existing.get();
-                if (userEntitlement.getExpireAt() != null && userEntitlement.getExpireAt().isAfter(now)) {
-                    cursor = userEntitlement.getExpireAt();
-                }
-                userEntitlement.setExpireAt(cursor.plusDays(durationDays));
-                userEntitlement.setStatus("ACTIVE");
-                userEntitlement.setUpdateTime(now);
-            } else {
-                userEntitlement = new UserEntitlement();
-                userEntitlement.setUserId(userId);
-                userEntitlement.setEntitlementId(entitlementId);
-                userEntitlement.setExpireAt(cursor.plusDays(durationDays));
-                userEntitlement.setStatus("ACTIVE");
-                userEntitlement.setCreateTime(now);
-                userEntitlement.setUpdateTime(now);
-            }
-            userEntitlementRepository.save(userEntitlement);
+            // 2. UPSERT summary with native query (race-condition safe)
+            userEntitlementRepository.upsertUserEntitlement(userId, entitlementId,
+                    now.plusDays(durationDays), durationDays, now);
         }
 
         log.info("Granted {} entitlements: userId={}, sourceType={}, sourceId={}, days={}",
@@ -103,7 +82,11 @@ public class EntitlementServiceImpl implements EntitlementService {
     }
 
     @Override
+    @Transactional
     public List<UserEntitlementVO> getUserEntitlements(Long userId) {
+        // Transition any past-due active entitlements to EXPIRED
+        userEntitlementRepository.expirePastDue(LocalDateTime.now());
+
         List<UserEntitlement> summaryList = userEntitlementRepository.findByUserId(userId);
         if (summaryList.isEmpty()) {
             return new ArrayList<>();

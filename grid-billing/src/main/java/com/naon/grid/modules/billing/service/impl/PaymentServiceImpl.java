@@ -2,14 +2,18 @@ package com.naon.grid.modules.billing.service.impl;
 
 import cn.hutool.core.util.IdUtil;
 import com.alibaba.fastjson2.JSON;
+import com.alibaba.fastjson2.JSONArray;
 import com.naon.grid.enums.BillingCycleEnum;
 import com.naon.grid.modules.billing.domain.GridOrder;
+import com.naon.grid.modules.billing.domain.GridProduct;
 import com.naon.grid.modules.billing.domain.PaymentRecord;
 import com.naon.grid.modules.billing.domain.PaymentSubscription;
+import com.naon.grid.modules.billing.repository.EntitlementRepository;
 import com.naon.grid.modules.billing.repository.GridOrderRepository;
+import com.naon.grid.modules.billing.repository.GridProductRepository;
 import com.naon.grid.modules.billing.repository.PaymentRecordRepository;
 import com.naon.grid.modules.billing.repository.PaymentSubscriptionRepository;
-import com.naon.grid.modules.billing.service.EntitlementEngine;
+import com.naon.grid.modules.billing.service.EntitlementService;
 import com.naon.grid.modules.billing.service.PaymentService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,15 +21,19 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class PaymentServiceImpl implements PaymentService {
     private final GridOrderRepository orderRepository;
+    private final GridProductRepository productRepository;
     private final PaymentRecordRepository paymentRecordRepository;
-    private final EntitlementEngine entitlementEngine;
+    private final EntitlementService entitlementService;
+    private final EntitlementRepository entitlementRepository;
     private final PaymentSubscriptionRepository subscriptionRepository;
 
     @Override
@@ -60,14 +68,23 @@ public class PaymentServiceImpl implements PaymentService {
 
         BillingCycleEnum cycle = BillingCycleEnum.fromCode(order.getBillingCycle());
         int days = cycle != null ? cycle.getDays() : 365;
-        entitlementEngine.grant(
-                order.getUserId(),
-                "PURCHASE",
-                order.getOrderNo(),
-                order.getProductCode(),
-                days,
-                order.getRegion()
-        );
+
+        // Grant entitlements from product's entitlementIds
+        GridProduct product = productRepository.findByCode(order.getProductCode())
+                .orElse(null);
+        if (product != null && product.getEntitlementIds() != null
+                && !product.getEntitlementIds().isEmpty()) {
+            JSONArray arr = JSON.parseArray(product.getEntitlementIds());
+            List<Integer> ids = arr.stream()
+                    .map(Object::toString)
+                    .map(code -> entitlementRepository.findByCode(code)
+                            .orElseThrow(() -> new RuntimeException("权益不存在: " + code)))
+                    .map(e -> e.getId())
+                    .collect(Collectors.toList());
+            entitlementService.grantEntitlements(
+                    order.getUserId(), ids,
+                    "PURCHASE", order.getOrderNo(), days, order.getRegion());
+        }
 
         if (order.getChannelSubId() != null) {
             PaymentSubscription sub = subscriptionRepository

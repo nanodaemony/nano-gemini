@@ -4,18 +4,15 @@ import cn.hutool.core.util.IdUtil;
 import com.naon.grid.config.properties.RsaProperties;
 import com.naon.grid.exception.BadRequestException;
 import com.naon.grid.modules.app.domain.GridUser;
-import com.naon.grid.modules.app.domain.GridUserRole;
 import com.naon.grid.modules.app.domain.GridUserToken;
 import com.naon.grid.modules.app.repository.GridUserRepository;
-import com.naon.grid.modules.app.repository.GridUserRoleRepository;
 import com.naon.grid.modules.app.repository.GridUserTokenRepository;
 import com.naon.grid.modules.app.security.AppTokenProvider;
 import com.naon.grid.modules.app.security.DeviceManager;
 import com.naon.grid.modules.app.service.AppAuthService;
 import com.naon.grid.modules.app.service.ReferralService;
 import com.naon.grid.modules.app.service.RegionResolver;
-import com.naon.grid.modules.app.service.SubscriptionService;
-import com.naon.grid.modules.billing.service.EntitlementEngine;
+import com.naon.grid.modules.billing.service.EntitlementService;
 import com.naon.grid.service.EmailService;
 import com.naon.grid.modules.app.service.dto.LoginDTO;
 import com.naon.grid.modules.app.service.dto.RegisterDTO;
@@ -39,7 +36,7 @@ import java.util.Date;
 import java.util.concurrent.TimeUnit;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
 
 import com.alibaba.fastjson2.JSON;
 import com.naon.grid.modules.app.domain.GridUserAuth;
@@ -60,13 +57,11 @@ import java.util.UUID;
 public class AppAuthServiceImpl implements AppAuthService {
 
     private final GridUserRepository userRepository;
-    private final GridUserRoleRepository userRoleRepository;
     private final GridUserTokenRepository userTokenRepository;
     private final PasswordEncoder passwordEncoder;
     private final AppTokenProvider appTokenProvider;
     private final DeviceManager deviceManager;
-    private final SubscriptionService subscriptionService;
-    private final EntitlementEngine entitlementEngine;
+    private final EntitlementService entitlementService;
     private final ReferralService referralService;
     private final RegionResolver regionResolver;
     private final RedisUtils redisUtils;
@@ -134,28 +129,19 @@ public class AppAuthServiceImpl implements AppAuthService {
 
         userRepository.save(user);
 
-        GridUserRole normalRole = new GridUserRole();
-        normalRole.setUserId(user.getId());
-        normalRole.setRoleCode("NORMAL");
-        normalRole.setRoleName("普通用户");
-        userRoleRepository.save(normalRole);
-
         // Record referral relationship (needs user ID)
         if (referralCode != null && !referralCode.isEmpty()) {
             referralService.processReferral(referralCode, user.getId());
         }
 
-        // Grant trial
+        // Grant trial — 发放全部6个权益各7天
         try {
-            entitlementEngine.grant(user.getId(), "TRIAL", null, "PLUS", 7, region);
+            java.util.List<Integer> allEntitlementIds = java.util.Arrays.asList(1, 2, 3, 4, 5, 6);
+            entitlementService.grantEntitlements(
+                    user.getId(), allEntitlementIds,
+                    "TRIAL", null, 7, region);
         } catch (Exception e) {
             log.error("Failed to grant trial for userId={}", user.getId(), e);
-            // Fallback: try old subscription service
-            try {
-                subscriptionService.grantTrial(user.getId());
-            } catch (Exception ex) {
-                log.error("Fallback grantTrial also failed for userId={}", user.getId(), ex);
-            }
         }
 
         return generateToken(user, registerDTO.getDeviceId(), registerDTO.getDeviceName());
@@ -365,21 +351,14 @@ public class AppAuthServiceImpl implements AppAuthService {
         user.setReferralCode(generateReferralCode(userRepository));
         userRepository.save(user);
 
-        GridUserRole normalRole = new GridUserRole();
-        normalRole.setUserId(user.getId());
-        normalRole.setRoleCode("NORMAL");
-        normalRole.setRoleName("普通用户");
-        userRoleRepository.save(normalRole);
-
+        // Grant trial — 发放全部6个权益各7天
         try {
-            entitlementEngine.grant(user.getId(), "TRIAL", null, "PLUS", 7, region);
+            java.util.List<Integer> allEntitlementIds = java.util.Arrays.asList(1, 2, 3, 4, 5, 6);
+            entitlementService.grantEntitlements(
+                    user.getId(), allEntitlementIds,
+                    "TRIAL", null, 7, region);
         } catch (Exception e) {
             log.error("Failed to grant trial for social userId={}", user.getId(), e);
-            try {
-                subscriptionService.grantTrial(user.getId());
-            } catch (Exception ex) {
-                log.error("Fallback grantTrial also failed for userId={}", user.getId(), ex);
-            }
         }
 
         return user;
@@ -496,21 +475,14 @@ public class AppAuthServiceImpl implements AppAuthService {
             user.setReferralCode(generateReferralCode(userRepository));
             userRepository.save(user);
 
-            GridUserRole normalRole = new GridUserRole();
-            normalRole.setUserId(user.getId());
-            normalRole.setRoleCode("NORMAL");
-            normalRole.setRoleName("普通用户");
-            userRoleRepository.save(normalRole);
-
+            // Grant trial — 发放全部6个权益各7天
             try {
-                entitlementEngine.grant(user.getId(), "TRIAL", null, "PLUS", 7, region);
+                java.util.List<Integer> allEntitlementIds = java.util.Arrays.asList(1, 2, 3, 4, 5, 6);
+                entitlementService.grantEntitlements(
+                        user.getId(), allEntitlementIds,
+                        "TRIAL", null, 7, region);
             } catch (Exception e) {
                 log.error("Failed to grant trial for socialBind userId={}", user.getId(), e);
-                try {
-                    subscriptionService.grantTrial(user.getId());
-                } catch (Exception ex) {
-                    log.error("Fallback grantTrial also failed for userId={}", user.getId(), ex);
-                }
             }
         }
 
@@ -554,9 +526,7 @@ public class AppAuthServiceImpl implements AppAuthService {
     }
 
     private TokenDTO generateToken(GridUser user, String deviceId, String deviceName) {
-        List<String> roles = userRoleRepository.findByUserId(user.getId()).stream()
-                .map(GridUserRole::getRoleCode)
-                .collect(Collectors.toList());
+        List<String> roles = new ArrayList<>();
 
         Integer orgId = user.getOrgId();
         String accessToken = appTokenProvider.createToken(

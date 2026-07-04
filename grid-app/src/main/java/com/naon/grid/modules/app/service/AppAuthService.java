@@ -2,6 +2,7 @@ package com.naon.grid.modules.app.service;
 
 import com.naon.grid.modules.app.service.dto.LoginDTO;
 import com.naon.grid.modules.app.service.dto.RegisterDTO;
+import com.naon.grid.modules.app.service.dto.SendCodeDTO;
 import com.naon.grid.modules.system.service.dto.TokenDTO;
 
 import javax.servlet.http.HttpServletRequest;
@@ -11,4 +12,5 @@ public interface AppAuthService {
     TokenDTO login(LoginDTO loginDTO, HttpServletRequest request);
     void logout(Long userId, String deviceId);
     TokenDTO refreshToken(String refreshToken);
+    void sendCode(SendCodeDTO dto);
 }

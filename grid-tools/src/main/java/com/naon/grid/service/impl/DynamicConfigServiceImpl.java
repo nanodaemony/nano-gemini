@@ -36,7 +36,7 @@ public class DynamicConfigServiceImpl implements DynamicConfigService {
         configCache.clear();
         List<DynamicConfig> list = repository.findByStatus(StatusEnum.ENABLED.getCode());
         for (DynamicConfig cfg : list) {
-            configCache.put(key(cfg.getNamespace(), cfg.getConfigKey()), cfg.getValue());
+            safeCachePut(key(cfg.getNamespace(), cfg.getConfigKey()), cfg.getValue());
         }
     }
 
@@ -68,6 +68,10 @@ public class DynamicConfigServiceImpl implements DynamicConfigService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void create(DynamicConfigDto dto) {
+        String cacheKey = key(dto.getNamespace(), dto.getConfigKey());
+        if (configCache.containsKey(cacheKey)) {
+            throw new IllegalArgumentException("配置项 [" + cacheKey + "] 已存在");
+        }
         DynamicConfig entity = new DynamicConfig();
         entity.setNamespace(dto.getNamespace());
         entity.setName(dto.getName());
@@ -76,7 +80,7 @@ public class DynamicConfigServiceImpl implements DynamicConfigService {
         entity.setDescription(dto.getDescription());
         entity.setStatus(StatusEnum.ENABLED.getCode());
         repository.save(entity);
-        configCache.put(key(entity.getNamespace(), entity.getConfigKey()), entity.getValue());
+        safeCachePut(cacheKey, entity.getValue());
     }
 
     @Override
@@ -85,9 +89,18 @@ public class DynamicConfigServiceImpl implements DynamicConfigService {
         DynamicConfig entity = repository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException(DynamicConfig.class, "id", id.toString()));
 
+        if (StatusEnum.DISABLED.getCode().equals(entity.getStatus())) {
+            throw new EntityNotFoundException(DynamicConfig.class, "id", id.toString());
+        }
+
         // 记录旧 cache key，如果 namespace 或 configKey 改变需要移除旧条目
         String oldKey = key(entity.getNamespace(), entity.getConfigKey());
         boolean keyChanged = !oldKey.equals(key(dto.getNamespace(), dto.getConfigKey()));
+
+        // 如果 key 变更了，检查新 key 是否已被占用
+        if (keyChanged && configCache.containsKey(key(dto.getNamespace(), dto.getConfigKey()))) {
+            throw new IllegalArgumentException("配置项 [" + dto.getNamespace() + ":" + dto.getConfigKey() + "] 已存在");
+        }
 
         entity.setNamespace(dto.getNamespace());
         entity.setName(dto.getName());
@@ -100,7 +113,7 @@ public class DynamicConfigServiceImpl implements DynamicConfigService {
         if (keyChanged) {
             configCache.remove(oldKey);
         }
-        configCache.put(key(entity.getNamespace(), entity.getConfigKey()), entity.getValue());
+        safeCachePut(key(entity.getNamespace(), entity.getConfigKey()), entity.getValue());
     }
 
     @Override
@@ -124,6 +137,13 @@ public class DynamicConfigServiceImpl implements DynamicConfigService {
         dto.setDescription(entity.getDescription());
         dto.setStatus(entity.getStatus());
         return dto;
+    }
+
+    /**
+     * 安全写入缓存，null 值替换为空字符串以避免 ConcurrentHashMap NPE
+     */
+    private void safeCachePut(String cacheKey, String value) {
+        configCache.put(cacheKey, value != null ? value : "");
     }
 
     private String key(String namespace, String configKey) {

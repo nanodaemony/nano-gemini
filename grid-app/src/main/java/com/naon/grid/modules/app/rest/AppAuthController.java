@@ -26,6 +26,9 @@ import java.security.interfaces.RSAPrivateCrtKey;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.RSAPublicKeySpec;
 import java.util.Base64;
+import com.naon.grid.modules.app.exception.BindEmailRequiredException;
+import com.naon.grid.modules.app.service.dto.SocialBindEmailDTO;
+import com.naon.grid.modules.app.service.dto.SocialLoginDTO;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -80,6 +83,41 @@ public class AppAuthController {
         Map<String, String> result = new HashMap<>();
         result.put("message", "验证码已发送，5分钟内有效");
         return ResponseEntity.ok(result);
+    }
+
+    @Log("APP第三方登录")
+    @ApiOperation("第三方登录")
+    @AnonymousPostMapping("/social-login")
+    public ResponseEntity<?> socialLogin(@Validated @RequestBody SocialLoginDTO socialLoginDTO,
+                                          HttpServletRequest request) {
+        try {
+            TokenDTO tokenDTO = appAuthService.socialLogin(socialLoginDTO, request);
+            return ResponseEntity.ok(tokenDTO);
+        } catch (BindEmailRequiredException e) {
+            Map<String, Object> result = new HashMap<>();
+            result.put("requireBindEmail", true);
+            result.put("bindToken", e.getBindToken());
+            return ResponseEntity.ok(result);
+        }
+    }
+
+    @Log("发送邮箱绑定验证码")
+    @ApiOperation("第三方登录-发送邮箱绑定验证码")
+    @AnonymousPostMapping("/send-bind-code")
+    public ResponseEntity<Map<String, String>> sendBindCode(@Validated @RequestBody SendCodeDTO sendCodeDTO) {
+        appAuthService.sendBindCode(sendCodeDTO);
+        Map<String, String> result = new HashMap<>();
+        result.put("message", "验证码已发送，5分钟内有效");
+        return ResponseEntity.ok(result);
+    }
+
+    @Log("APP第三方登录邮箱绑定")
+    @ApiOperation("第三方登录-绑定邮箱")
+    @AnonymousPostMapping("/social-bind-email")
+    public ResponseEntity<TokenDTO> socialBindEmail(@Validated @RequestBody SocialBindEmailDTO socialBindEmailDTO,
+                                                     HttpServletRequest request) {
+        TokenDTO tokenDTO = appAuthService.socialBindEmail(socialBindEmailDTO, request);
+        return ResponseEntity.ok(tokenDTO);
     }
 
     @ApiOperation("获取RSA公钥")

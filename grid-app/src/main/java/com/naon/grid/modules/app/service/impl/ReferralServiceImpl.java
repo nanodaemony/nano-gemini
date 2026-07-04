@@ -1,5 +1,6 @@
 package com.naon.grid.modules.app.service.impl;
 
+import com.alibaba.fastjson2.JSON;
 import com.naon.grid.modules.app.domain.GridUser;
 import com.naon.grid.modules.app.domain.ReferralRecord;
 import com.naon.grid.modules.system.domain.GridOrganization;
@@ -8,8 +9,11 @@ import com.naon.grid.modules.app.repository.GridUserRepository;
 import com.naon.grid.modules.app.repository.ReferralRecordRepository;
 import com.naon.grid.modules.app.service.ReferralService;
 import com.naon.grid.modules.billing.domain.GridOrder;
+import com.naon.grid.modules.billing.domain.GridProduct;
+import com.naon.grid.modules.billing.repository.EntitlementRepository;
 import com.naon.grid.modules.billing.repository.GridOrderRepository;
-import com.naon.grid.modules.billing.service.EntitlementEngine;
+import com.naon.grid.modules.billing.repository.GridProductRepository;
+import com.naon.grid.modules.billing.service.EntitlementService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -17,7 +21,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -27,7 +33,9 @@ public class ReferralServiceImpl implements ReferralService {
     private final GridOrganizationRepository organizationRepository;
     private final ReferralRecordRepository referralRecordRepository;
     private final GridOrderRepository orderRepository;
-    private final EntitlementEngine entitlementEngine;
+    private final GridProductRepository productRepository;
+    private final EntitlementRepository entitlementRepository;
+    private final EntitlementService entitlementService;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -76,9 +84,21 @@ public class ReferralServiceImpl implements ReferralService {
             if (order == null || !"PENDING".equals(record.getRewardStatus())) return;
 
             if ("NORMAL".equals(record.getReferrerType())) {
-                // Grant 30 days PLUS
-                entitlementEngine.grant(record.getReferrerId(), "REFERRAL",
-                        String.valueOf(record.getId()), "PLUS", 30, null);
+                // Grant 30 days via product entitlements
+                GridProduct product = productRepository.findByCode("PLUS").orElse(null);
+                if (product != null && product.getEntitlementIds() != null
+                        && !product.getEntitlementIds().isEmpty()) {
+                    JSONArray arr = JSON.parseArray(product.getEntitlementIds());
+                    List<Integer> ids = arr.stream()
+                            .map(Object::toString)
+                            .map(code -> entitlementRepository.findByCode(code)
+                                    .orElseThrow(() -> new RuntimeException("Entitlement not found: " + code)))
+                            .map(e -> e.getId())
+                            .collect(Collectors.toList());
+                    entitlementService.grantEntitlements(
+                            record.getReferrerId(), ids,
+                            "REFERRAL", String.valueOf(record.getId()), 30, null);
+                }
                 record.setRewardAmount(BigDecimal.valueOf(30));
             } else if ("AGENT".equals(record.getReferrerType())) {
                 // Calculate commission

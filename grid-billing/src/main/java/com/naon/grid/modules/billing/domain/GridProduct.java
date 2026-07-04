@@ -1,7 +1,6 @@
 package com.naon.grid.modules.billing.domain;
 
 import com.naon.grid.base.BaseEntity;
-import com.naon.grid.enums.ProductTypeEnum;
 import lombok.Getter;
 import lombok.Setter;
 import javax.persistence.*;
@@ -23,6 +22,15 @@ public class GridProduct extends BaseEntity {
 
     @Column(length = 30, nullable = false)
     private String productType;
+
+    @Column(length = 500)
+    private String entitlementIds;
+
+    @Column(length = 500)
+    private String institutionConfig;
+
+    @Column(length = 500)
+    private String coverImage;
 
     @Column(columnDefinition = "TEXT")
     private String description;

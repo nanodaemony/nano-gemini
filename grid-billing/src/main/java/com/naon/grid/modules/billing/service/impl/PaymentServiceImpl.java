@@ -75,17 +75,13 @@ public class PaymentServiceImpl implements PaymentService {
                     .orElseGet(() -> {
                         PaymentSubscription newSub = new PaymentSubscription();
                         newSub.setUserId(order.getUserId());
-                        newSub.setOrderId(order.getId());
                         newSub.setProductCode(order.getProductCode());
-                        newSub.setBillingCycle(order.getBillingCycle());
-                        newSub.setRegion(order.getRegion());
                         newSub.setChannel("PHOTONPAY");
                         newSub.setChannelSubId(order.getChannelSubId());
                         newSub.setCreateTime(LocalDateTime.now());
                         return newSub;
                     });
             sub.setStatus("ACTIVE");
-            sub.setLastChargedAt(LocalDateTime.now());
             subscriptionRepository.save(sub);
             log.info("Payment subscription processed: userId={}, product={}, subId={}",
                     order.getUserId(), order.getProductCode(), order.getChannelSubId());

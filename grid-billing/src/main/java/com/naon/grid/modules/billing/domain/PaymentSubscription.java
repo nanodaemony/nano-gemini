@@ -20,17 +20,8 @@ public class PaymentSubscription {
     @Column(nullable = false)
     private Long userId;
 
-    @Column(nullable = false)
-    private Long orderId;
-
     @Column(length = 50, nullable = false)
     private String productCode;
-
-    @Column(length = 20, nullable = false)
-    private String billingCycle;
-
-    @Column(length = 10)
-    private String region;
 
     @Column(length = 30, nullable = false)
     private String channel = "PHOTONPAY";
@@ -41,14 +32,7 @@ public class PaymentSubscription {
     @Column(length = 20, nullable = false)
     private String status = "ACTIVE";
 
-    private LocalDateTime nextBillingAt;
-
-    private LocalDateTime lastChargedAt;
-
-    private LocalDateTime cancelAt;
-
-    @Column(nullable = false)
     private LocalDateTime createTime;
 
-    private LocalDateTime updateTime;
+    private LocalDateTime cancelAt;
 }

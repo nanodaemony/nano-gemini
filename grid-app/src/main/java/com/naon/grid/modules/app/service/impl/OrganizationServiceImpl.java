@@ -78,6 +78,10 @@ public class OrganizationServiceImpl implements OrganizationService {
         org.setReferredBy(dto.getReferredBy());
         org.setAdminPassword(encryptedPassword);
         org.setRegion(region);
+        // 若申请成为代理机构，设置 orgRole 为 AGENT
+        if (Boolean.TRUE.equals(dto.getApplyAsAgent())) {
+            org.setOrgRole("AGENT");
+        }
         org.setAuditStatus("PENDING");
         organizationRepository.save(org);
     }
@@ -206,6 +210,10 @@ public class OrganizationServiceImpl implements OrganizationService {
         }
 
         org.setCurrentMembers(1);
+        // 若为代理机构，设置初始佣金比例（管理员后续可调整）
+        if ("AGENT".equals(org.getOrgRole())) {
+            org.setCommissionRate(java.math.BigDecimal.ZERO);
+        }
         org.setAuditStatus("APPROVED");
         organizationRepository.save(org);
 
@@ -270,6 +278,17 @@ public class OrganizationServiceImpl implements OrganizationService {
 
         // 发送驳回邮件
         sendRejectionEmail(org, reason);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void updateRole(Integer orgId, String orgRole) {
+        GridOrganization org = findById(orgId);
+        if (!"INSTITUTION".equals(orgRole) && !"AGENT".equals(orgRole)) {
+            throw new BadRequestException("无效的机构角色，仅支持 INSTITUTION 或 AGENT");
+        }
+        org.setOrgRole(orgRole);
+        organizationRepository.save(org);
     }
 
     @Override

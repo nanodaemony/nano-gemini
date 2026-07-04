@@ -136,3 +136,17 @@ chat:
   deepseek:
     api-key: ${DEEPSEEK_API_KEY:}
     base-url: ${DEEPSEEK_CHAT_BASE_URL:https://api.deepseek.com/v1}
+
+# ============================================================
+# 第三方登录配置
+# ============================================================
+social:
+  providers:
+    google:
+      client-id: ${GOOGLE_CLIENT_ID:}
+      issuer: ${GOOGLE_ISSUER:https://accounts.google.com}
+      jwks-url: ${GOOGLE_JWKS_URL:https://www.googleapis.com/oauth2/v3/certs}
+    twitter:
+      client-id: ${TWITTER_CLIENT_ID:}
+      issuer: ${TWITTER_ISSUER:https://api.twitter.com}
+      jwks-url: ${TWITTER_JWKS_URL:https://api.twitter.com/2/oauth2/jwks}

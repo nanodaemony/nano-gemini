@@ -27,4 +27,6 @@ public class InstitutionRegisterDTO {
     private String adminPassword;
 
     private String referredBy;
+
+    private Boolean applyAsAgent;
 }

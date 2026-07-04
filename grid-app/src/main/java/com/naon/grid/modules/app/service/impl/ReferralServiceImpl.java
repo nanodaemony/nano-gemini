@@ -2,8 +2,8 @@ package com.naon.grid.modules.app.service.impl;
 
 import com.naon.grid.modules.app.domain.GridUser;
 import com.naon.grid.modules.app.domain.ReferralRecord;
-import com.naon.grid.modules.system.domain.GridAgent;
-import com.naon.grid.modules.system.repository.GridAgentRepository;
+import com.naon.grid.modules.system.domain.GridOrganization;
+import com.naon.grid.modules.system.repository.GridOrganizationRepository;
 import com.naon.grid.modules.app.repository.GridUserRepository;
 import com.naon.grid.modules.app.repository.ReferralRecordRepository;
 import com.naon.grid.modules.app.service.ReferralService;
@@ -24,7 +24,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class ReferralServiceImpl implements ReferralService {
     private final GridUserRepository userRepository;
-    private final GridAgentRepository agentRepository;
+    private final GridOrganizationRepository organizationRepository;
     private final ReferralRecordRepository referralRecordRepository;
     private final GridOrderRepository orderRepository;
     private final EntitlementEngine entitlementEngine;
@@ -34,39 +34,35 @@ public class ReferralServiceImpl implements ReferralService {
     public Long processReferral(String referralCode, Long referredUserId) {
         if (referralCode == null || referralCode.isEmpty()) return null;
 
-        // Check if it belongs to an agent
-        Optional<GridAgent> agentOpt = agentRepository.findByReferralCode(referralCode);
-        if (agentOpt.isPresent() && "APPROVED".equals(agentOpt.get().getAuditStatus())) {
-            GridAgent agent = agentOpt.get();
-            ReferralRecord record = new ReferralRecord();
-            record.setReferrerId(agent.getId().longValue());
-            record.setReferrerType("AGENT");
-            record.setReferredId(referredUserId);
-            record.setReferralCode(referralCode);
-            record.setRewardStatus("PENDING");
-            record.setRewardType("CASH");
-            record.setCreateTime(LocalDateTime.now());
-            referralRecordRepository.save(record);
-            return agent.getId().longValue();
+        // 按推荐码查找推荐人用户
+        GridUser referrer = userRepository.findByReferralCode(referralCode).orElse(null);
+        if (referrer == null) return null;
+
+        // 不能自己推荐自己
+        if (referrer.getId().equals(referredUserId)) return null;
+
+        // 判断推荐人是否为代理机构成员
+        boolean isAgent = false;
+        if (referrer.getOrgId() != null) {
+            isAgent = organizationRepository.findById(referrer.getOrgId())
+                    .map(org -> "AGENT".equals(org.getOrgRole()))
+                    .orElse(false);
         }
 
-        // Check if it belongs to a user
-        Optional<GridUser> userOpt = userRepository.findByReferralCode(referralCode);
-        if (userOpt.isPresent() && !userOpt.get().getId().equals(referredUserId)) {
-            GridUser referrer = userOpt.get();
-            ReferralRecord record = new ReferralRecord();
-            record.setReferrerId(referrer.getId());
-            record.setReferrerType("NORMAL");
-            record.setReferredId(referredUserId);
-            record.setReferralCode(referralCode);
-            record.setRewardStatus("PENDING");
-            record.setRewardType("EXTEND_DAYS");
-            record.setCreateTime(LocalDateTime.now());
-            referralRecordRepository.save(record);
-            return referrer.getId();
-        }
+        String referrerType = isAgent ? "AGENT" : "NORMAL";
+        String rewardType = isAgent ? "CASH" : "EXTEND_DAYS";
 
-        return null;
+        ReferralRecord record = new ReferralRecord();
+        record.setReferrerId(referrer.getId());
+        record.setReferrerType(referrerType);
+        record.setReferredId(referredUserId);
+        record.setReferralCode(referralCode);
+        record.setRewardStatus("PENDING");
+        record.setRewardType(rewardType);
+        record.setCreateTime(LocalDateTime.now());
+        referralRecordRepository.save(record);
+
+        return referrer.getId();
     }
 
     @Override

@@ -16,10 +16,13 @@ import com.naon.grid.modules.app.service.ReferralService;
 import com.naon.grid.modules.app.service.RegionResolver;
 import com.naon.grid.modules.app.service.SubscriptionService;
 import com.naon.grid.modules.billing.service.EntitlementEngine;
+import com.naon.grid.service.EmailService;
 import com.naon.grid.modules.app.service.dto.LoginDTO;
 import com.naon.grid.modules.app.service.dto.RegisterDTO;
 import com.naon.grid.modules.system.service.dto.AppUserDTO;
+import com.naon.grid.modules.app.service.dto.SendCodeDTO;
 import com.naon.grid.modules.system.service.dto.TokenDTO;
+import com.naon.grid.utils.RedisUtils;
 import com.naon.grid.utils.RsaUtils;
 import com.naon.grid.utils.StringUtils;
 import lombok.RequiredArgsConstructor;
@@ -31,6 +34,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Date;
+import java.util.concurrent.TimeUnit;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -50,6 +54,8 @@ public class AppAuthServiceImpl implements AppAuthService {
     private final EntitlementEngine entitlementEngine;
     private final ReferralService referralService;
     private final RegionResolver regionResolver;
+    private final RedisUtils redisUtils;
+    private final EmailService emailService;
 
     @Value("${app.auth.token-expire-seconds:604800}")
     private long tokenExpireSeconds;
@@ -182,6 +188,47 @@ public class AppAuthServiceImpl implements AppAuthService {
         userTokenRepository.delete(userToken);
 
         return generateToken(user, userToken.getDeviceId(), userToken.getDeviceName());
+    }
+
+    @Override
+    public void sendCode(SendCodeDTO dto) {
+        // 1. 检查邮箱是否已被注册
+        if (userRepository.existsByEmail(dto.getEmail())) {
+            throw new BadRequestException("邮箱已被注册");
+        }
+
+        // 2. 检查冷却期（60秒内不允许重复发送）
+        String cooldownKey = "email:code:cooldown:" + dto.getEmail();
+        if (redisUtils.hasKey(cooldownKey)) {
+            throw new BadRequestException("验证码已发送，请60秒后重试");
+        }
+
+        // 3. 生成6位数字验证码
+        String code = String.valueOf((int) ((Math.random() * 9 + 1) * 100000));
+
+        // 4. 存入Redis（5分钟有效）
+        String codeKey = "email:code:" + dto.getEmail();
+        redisUtils.set(codeKey, code, 5, TimeUnit.MINUTES);
+
+        // 5. 设置冷却标记（60秒）
+        redisUtils.set(cooldownKey, "1", 60, TimeUnit.SECONDS);
+
+        // 6. 发送邮件
+        emailService.sendHtmlEmail(dto.getEmail(), "有路中文 - 邮箱验证码", buildCodeEmail(code));
+
+        log.info("Verification code sent to: {}", dto.getEmail());
+    }
+
+    private String buildCodeEmail(String code) {
+        return "<div style=\"font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto;\">"
+                + "<h2 style=\"color: #333;\">有路中文</h2>"
+                + "<p>您的邮箱验证码是：</p>"
+                + "<div style=\"font-size: 28px; font-weight: bold; color: #1890ff; letter-spacing: 6px; padding: 12px 0;\">"
+                + code
+                + "</div>"
+                + "<p style=\"color: #999; font-size: 14px;\">验证码5分钟内有效，请勿转发给他人。</p>"
+                + "<p style=\"color: #999; font-size: 14px;\">如非本人操作，请忽略此邮件。</p>"
+                + "</div>";
     }
 
     @Override

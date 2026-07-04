@@ -4,9 +4,7 @@ import cn.hutool.core.util.IdUtil;
 import com.naon.grid.config.properties.RsaProperties;
 import com.naon.grid.exception.BadRequestException;
 import com.naon.grid.modules.app.domain.GridUser;
-import com.naon.grid.modules.app.domain.GridUserRole;
 import com.naon.grid.modules.app.repository.GridUserRepository;
-import com.naon.grid.modules.app.repository.GridUserRoleRepository;
 import com.naon.grid.modules.app.service.ReferralService;
 import com.naon.grid.modules.app.service.RegionResolver;
 import com.naon.grid.modules.system.domain.GridOrganization;
@@ -34,7 +32,6 @@ import java.util.Map;
 public class OrganizationServiceImpl implements OrganizationService {
     private final GridOrganizationRepository organizationRepository;
     private final GridUserRepository userRepository;
-    private final GridUserRoleRepository userRoleRepository;
     private final PasswordEncoder passwordEncoder;
     private final RegionResolver regionResolver;
     private final EmailService emailService;
@@ -248,13 +245,6 @@ public class OrganizationServiceImpl implements OrganizationService {
         } while (userRepository.existsByReferralCode(referralCode));
         admin.setReferralCode(referralCode);
         userRepository.save(admin);
-
-        // 创建 NORMAL 角色
-        GridUserRole normalRole = new GridUserRole();
-        normalRole.setUserId(admin.getId());
-        normalRole.setRoleCode("NORMAL");
-        normalRole.setRoleName("普通用户");
-        userRoleRepository.save(normalRole);
 
         // 处理邀请码溯源（如果申请时填了推荐码）
         if (org.getReferredBy() != null && !org.getReferredBy().isEmpty()) {

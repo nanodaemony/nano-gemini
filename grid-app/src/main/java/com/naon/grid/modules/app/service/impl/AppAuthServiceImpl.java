@@ -40,6 +40,19 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import com.alibaba.fastjson2.JSON;
+import com.naon.grid.modules.app.domain.GridUserAuth;
+import com.naon.grid.modules.app.exception.BindEmailRequiredException;
+import com.naon.grid.modules.app.repository.GridUserAuthRepository;
+import com.naon.grid.modules.app.security.IdTokenVerifier;
+import com.naon.grid.modules.app.security.SocialUserInfo;
+import com.naon.grid.modules.app.service.dto.SocialLoginDTO;
+import com.naon.grid.modules.app.service.dto.SocialBindEmailDTO;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -57,6 +70,8 @@ public class AppAuthServiceImpl implements AppAuthService {
     private final RegionResolver regionResolver;
     private final RedisUtils redisUtils;
     private final EmailService emailService;
+    private final GridUserAuthRepository userAuthRepository;
+    private final IdTokenVerifier idTokenVerifier;
 
     private static final SecureRandom SECURE_RANDOM = new SecureRandom();
 
@@ -235,6 +250,267 @@ public class AppAuthServiceImpl implements AppAuthService {
         redisUtils.set(codeKey, code, 5, TimeUnit.MINUTES);
 
         log.info("Verification code sent to: {}", normalizedEmail);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public TokenDTO socialLogin(SocialLoginDTO socialLoginDTO, HttpServletRequest request) {
+        String provider = socialLoginDTO.getProvider().toLowerCase();
+        SocialUserInfo socialUser = idTokenVerifier.verify(provider, socialLoginDTO.getIdToken());
+
+        // 1. 查 GridUserAuth — providerId 优先匹配
+        Optional<GridUserAuth> existingAuth =
+                userAuthRepository.findByProviderAndProviderId(provider, socialUser.getProviderId());
+        if (existingAuth.isPresent()) {
+            GridUser user = userRepository.findById(existingAuth.get().getUserId())
+                    .orElseThrow(() -> new BadRequestException("用户不存在"));
+            if (user.getStatus() == 0) {
+                throw new BadRequestException("账号已被禁用");
+            }
+            updateSocialAuth(existingAuth.get(), socialLoginDTO.getIdToken(), socialUser);
+            updateLoginMetadata(user, request);
+            fillUserProfile(user, socialUser);
+            return generateToken(user, socialLoginDTO.getDeviceId(), socialLoginDTO.getDeviceName());
+        }
+
+        // 2. 无邮箱 → 需要绑定
+        if (socialUser.getEmail() == null || socialUser.getEmail().isEmpty()) {
+            String bindTokenId = UUID.randomUUID().toString();
+            Map<String, Object> bindClaims = new HashMap<>();
+            bindClaims.put("provider", provider);
+            bindClaims.put("providerId", socialUser.getProviderId());
+            bindClaims.put("name", socialUser.getName());
+            bindClaims.put("picture", socialUser.getPicture());
+            String bindJson = JSON.toJSONString(bindClaims);
+            redisUtils.set("social:bind:" + bindTokenId, bindJson, 300, java.util.concurrent.TimeUnit.SECONDS);
+            throw new BindEmailRequiredException(bindTokenId);
+        }
+
+        // 3. 有邮箱 → 按邮箱查找或创建用户
+        return createOrLinkSocialUser(provider, socialUser, socialLoginDTO.getIdToken(),
+                socialLoginDTO.getDeviceId(), socialLoginDTO.getDeviceName(), request);
+    }
+
+    private TokenDTO createOrLinkSocialUser(String provider, SocialUserInfo socialUser,
+                                             String idToken, String deviceId, String deviceName,
+                                             HttpServletRequest request) {
+        String normalizedEmail = normalizeEmail(socialUser.getEmail());
+        Optional<GridUser> existingUser = userRepository.findByEmail(normalizedEmail);
+
+        GridUser user;
+        boolean isNewUser = false;
+        if (existingUser.isPresent()) {
+            user = existingUser.get();
+            if (user.getStatus() == 0) {
+                throw new BadRequestException("账号已被禁用");
+            }
+        } else {
+            user = createSocialUser(socialUser, request);
+            isNewUser = true;
+        }
+
+        // 写 GridUserAuth 关联
+        GridUserAuth auth = new GridUserAuth();
+        auth.setUserId(user.getId());
+        auth.setProvider(provider);
+        auth.setProviderId(socialUser.getProviderId());
+        auth.setProviderName(socialUser.getName());
+        auth.setProviderAvatar(socialUser.getPicture());
+        auth.setAccessToken(idToken);
+        auth.setExpireTime(socialUser.getExpireTime());
+        userAuthRepository.save(auth);
+
+        if (!isNewUser) {
+            fillUserProfile(user, socialUser);
+        }
+        updateLoginMetadata(user, request);
+        return generateToken(user, deviceId, deviceName);
+    }
+
+    private GridUser createSocialUser(SocialUserInfo socialUser, HttpServletRequest request) {
+        String normalizedEmail = normalizeEmail(socialUser.getEmail());
+        String ip = StringUtils.getIp(request);
+        String region = regionResolver.resolve(ip);
+
+        GridUser user = new GridUser();
+        user.setEmail(normalizedEmail);
+        user.setEmailVerified(socialUser.isEmailVerified() ? 1 : 0);
+        user.setPassword(null);
+        user.setNickname(socialUser.getName() != null ? socialUser.getName() : normalizedEmail.split("@")[0]);
+        user.setAvatar(socialUser.getPicture());
+        user.setGender(0);
+        user.setStatus(1);
+        user.setUserType("NORMAL");
+        user.setRegion(region);
+        user.setRegisterIp(ip);
+        user.setRegisterAuditStatus("APPROVED");
+        user.setReferralCode(generateReferralCode(userRepository));
+        userRepository.save(user);
+
+        GridUserRole normalRole = new GridUserRole();
+        normalRole.setUserId(user.getId());
+        normalRole.setRoleCode("NORMAL");
+        normalRole.setRoleName("普通用户");
+        userRoleRepository.save(normalRole);
+
+        try {
+            entitlementEngine.grant(user.getId(), "TRIAL", null, "PLUS", 7, region);
+        } catch (Exception e) {
+            log.error("Failed to grant trial for social userId={}", user.getId(), e);
+            try {
+                subscriptionService.grantTrial(user.getId());
+            } catch (Exception ex) {
+                log.error("Fallback grantTrial also failed for userId={}", user.getId(), ex);
+            }
+        }
+
+        return user;
+    }
+
+    private void fillUserProfile(GridUser user, SocialUserInfo socialUser) {
+        boolean changed = false;
+        // Fill name/avatar if user hasn't set them yet
+        if ((user.getNickname() == null || user.getNickname().isEmpty())
+                && socialUser.getName() != null && !socialUser.getName().isEmpty()) {
+            user.setNickname(socialUser.getName());
+            changed = true;
+        }
+        if ((user.getAvatar() == null || user.getAvatar().isEmpty())
+                && socialUser.getPicture() != null && !socialUser.getPicture().isEmpty()) {
+            user.setAvatar(socialUser.getPicture());
+            changed = true;
+        }
+        if (changed) {
+            userRepository.save(user);
+        }
+    }
+
+    private void updateSocialAuth(GridUserAuth auth, String idToken, SocialUserInfo socialUser) {
+        auth.setAccessToken(idToken);
+        auth.setExpireTime(socialUser.getExpireTime());
+        if (socialUser.getName() != null) {
+            auth.setProviderName(socialUser.getName());
+        }
+        if (socialUser.getPicture() != null) {
+            auth.setProviderAvatar(socialUser.getPicture());
+        }
+        userAuthRepository.save(auth);
+    }
+
+    private void updateLoginMetadata(GridUser user, HttpServletRequest request) {
+        user.setLastLoginTime(new Date());
+        user.setLastLoginIp(StringUtils.getIp(request));
+        String currentRegion = regionResolver.resolve(StringUtils.getIp(request));
+        user.setRegion(currentRegion);
+        userRepository.save(user);
+    }
+
+    @Override
+    public void sendBindCode(SendCodeDTO dto) {
+        String normalizedEmail = normalizeEmail(dto.getEmail());
+
+        // 不检查邮箱是否已注册（允许绑定已有账号）
+
+        String cooldownKey = "email:code:cooldown:" + normalizedEmail;
+        if (redisUtils.hasKey(cooldownKey)) {
+            throw new BadRequestException("验证码已发送，请60秒后重试");
+        }
+
+        String code = String.valueOf(100000 + SECURE_RANDOM.nextInt(900000));
+        redisUtils.set(cooldownKey, "1", 60, java.util.concurrent.TimeUnit.SECONDS);
+        emailService.sendHtmlEmail(normalizedEmail, "有路中文 - 邮箱验证码", buildCodeEmail(code));
+
+        String codeKey = "email:code:" + normalizedEmail;
+        redisUtils.set(codeKey, code, 5, java.util.concurrent.TimeUnit.MINUTES);
+        log.info("Bind verification code sent to: {}", normalizedEmail);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public TokenDTO socialBindEmail(SocialBindEmailDTO socialBindEmailDTO, HttpServletRequest request) {
+        String bindTokenId = socialBindEmailDTO.getBindToken();
+        String redisKey = "social:bind:" + bindTokenId;
+        String bindJson = redisUtils.getAndDel(redisKey);
+        if (bindJson == null) {
+            throw new BadRequestException("操作超时，请重新登录");
+        }
+
+        @SuppressWarnings("unchecked")
+        Map<String, Object> bindClaims = JSON.parseObject(bindJson, Map.class);
+        String provider = (String) bindClaims.get("provider");
+        String providerId = (String) bindClaims.get("providerId");
+
+        // Verify email code
+        String normalizedEmail = normalizeEmail(socialBindEmailDTO.getEmail());
+        String codeKey = "email:code:" + normalizedEmail;
+        String savedCode = redisUtils.getAndDel(codeKey);
+        if (savedCode == null) {
+            throw new BadRequestException("验证码不存在或已过期");
+        }
+        if (!savedCode.equals(socialBindEmailDTO.getCode())) {
+            throw new BadRequestException("验证码错误");
+        }
+
+        // Find or create user by email
+        Optional<GridUser> existingUser = userRepository.findByEmail(normalizedEmail);
+        GridUser user;
+        if (existingUser.isPresent()) {
+            user = existingUser.get();
+            if (user.getStatus() == 0) {
+                throw new BadRequestException("账号已被禁用");
+            }
+        } else {
+            String ip = StringUtils.getIp(request);
+            String region = regionResolver.resolve(ip);
+            user = new GridUser();
+            user.setEmail(normalizedEmail);
+            user.setEmailVerified(1);
+            user.setPassword(null);
+            user.setNickname(bindClaims.get("name") != null
+                    ? (String) bindClaims.get("name") : normalizedEmail.split("@")[0]);
+            user.setAvatar((String) bindClaims.get("picture"));
+            user.setGender(0);
+            user.setStatus(1);
+            user.setUserType("NORMAL");
+            user.setRegion(region);
+            user.setRegisterIp(ip);
+            user.setRegisterAuditStatus("APPROVED");
+            user.setReferralCode(generateReferralCode(userRepository));
+            userRepository.save(user);
+
+            GridUserRole normalRole = new GridUserRole();
+            normalRole.setUserId(user.getId());
+            normalRole.setRoleCode("NORMAL");
+            normalRole.setRoleName("普通用户");
+            userRoleRepository.save(normalRole);
+
+            try {
+                entitlementEngine.grant(user.getId(), "TRIAL", null, "PLUS", 7, region);
+            } catch (Exception e) {
+                log.error("Failed to grant trial for socialBind userId={}", user.getId(), e);
+                try {
+                    subscriptionService.grantTrial(user.getId());
+                } catch (Exception ex) {
+                    log.error("Fallback grantTrial also failed for userId={}", user.getId(), ex);
+                }
+            }
+        }
+
+        // Write GridUserAuth
+        Optional<GridUserAuth> existingAuth =
+                userAuthRepository.findByProviderAndProviderId(provider, providerId);
+        if (!existingAuth.isPresent()) {
+            GridUserAuth auth = new GridUserAuth();
+            auth.setUserId(user.getId());
+            auth.setProvider(provider);
+            auth.setProviderId(providerId);
+            auth.setProviderName((String) bindClaims.get("name"));
+            auth.setProviderAvatar((String) bindClaims.get("picture"));
+            userAuthRepository.save(auth);
+        }
+
+        updateLoginMetadata(user, request);
+        return generateToken(user, socialBindEmailDTO.getDeviceId(), socialBindEmailDTO.getDeviceName());
     }
 
     private String buildCodeEmail(String code) {

@@ -77,4 +77,13 @@ public class InstitutionAuditController {
         organizationService.reject(id, reason);
         return ResponseEntity.ok().build();
     }
+
+    @ApiOperation("变更机构角色（普通机构 ↔ 代理机构）")
+    @PutMapping("/{id}/role")
+    @PreAuthorize("@el.check('institution:edit')")
+    public ResponseEntity<Void> updateRole(@PathVariable Integer id,
+                                           @RequestParam String orgRole) {
+        organizationService.updateRole(id, orgRole);
+        return ResponseEntity.ok().build();
+    }
 }

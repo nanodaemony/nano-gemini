@@ -70,6 +70,18 @@ public class AppAuthServiceImpl implements AppAuthService {
             throw new BadRequestException("邮箱已被注册");
         }
 
+        // 校验邮箱验证码
+        String codeKey = "email:code:" + registerDTO.getEmail();
+        String savedCode = redisUtils.get(codeKey, String.class);
+        if (savedCode == null) {
+            throw new BadRequestException("验证码不存在或已过期");
+        }
+        if (!savedCode.equals(registerDTO.getCode())) {
+            throw new BadRequestException("验证码错误");
+        }
+        // 验证通过，删除验证码（一次性使用）
+        redisUtils.del(codeKey);
+
         String decryptedPassword;
         try {
             decryptedPassword = RsaUtils.decryptByPrivateKey(RsaProperties.privateKey, registerDTO.getPassword());

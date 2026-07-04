@@ -1,6 +1,7 @@
 package com.naon.grid.modules.app.service.impl;
 
 import com.alibaba.fastjson2.JSON;
+import com.alibaba.fastjson2.JSONArray;
 import com.naon.grid.modules.app.domain.GridUser;
 import com.naon.grid.modules.app.domain.ReferralRecord;
 import com.naon.grid.modules.system.domain.GridOrganization;
@@ -90,7 +91,7 @@ public class ReferralServiceImpl implements ReferralService {
                         && !product.getEntitlementIds().isEmpty()) {
                     JSONArray arr = JSON.parseArray(product.getEntitlementIds());
                     List<Integer> ids = arr.stream()
-                            .map(Object::toString)
+                            .map(o -> o.toString())
                             .map(code -> entitlementRepository.findByCode(code)
                                     .orElseThrow(() -> new RuntimeException("Entitlement not found: " + code)))
                             .map(e -> e.getId())

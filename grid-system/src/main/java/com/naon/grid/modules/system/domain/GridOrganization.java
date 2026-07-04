@@ -4,6 +4,7 @@ import com.naon.grid.base.BaseEntity;
 import lombok.Getter;
 import lombok.Setter;
 import javax.persistence.*;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
@@ -58,4 +59,10 @@ public class GridOrganization extends BaseEntity {
     private Integer maxAdmins = 0;
     private Integer currentMembers = 0;
     private LocalDateTime expireTime;
+
+    @Column(length = 20, nullable = false)
+    private String orgRole = "INSTITUTION";
+
+    @Column(precision = 5, scale = 2, nullable = false)
+    private BigDecimal commissionRate = BigDecimal.ZERO;
 }

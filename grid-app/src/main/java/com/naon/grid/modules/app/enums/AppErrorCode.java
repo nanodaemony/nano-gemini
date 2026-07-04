@@ -24,6 +24,13 @@ public enum AppErrorCode {
     INVALID_PHONE(1100, "手机号格式错误"),
     INVALID_PASSWORD(1101, "密码格式错误"),
 
+    // 第三方登录相关 1102-1109
+    SOCIAL_AUTH_FAILED(1102, "第三方登录验证失败"),
+    SOCIAL_BIND_TOKEN_EXPIRED(1103, "操作超时，请重新登录"),
+    SOCIAL_EMAIL_CONFLICT(1104, "该邮箱已绑定其他登录方式"),
+    SOCIAL_ACCOUNT_DISABLED(1105, "账号已被禁用"),
+    SOCIAL_PROVIDER_UNSUPPORTED(1106, "不支持的第三方登录方式"),
+
     // 系统错误 5000-5999
     SYSTEM_ERROR(5000, "系统繁忙，请稍后重试");
 

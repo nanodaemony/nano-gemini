@@ -25,4 +25,7 @@ public class RegisterDTO {
     private String deviceName;
 
     private String referralCode; // 新增：注册时选填推荐码
+
+    @NotBlank(message = "验证码不能为空")
+    private String code;
 }

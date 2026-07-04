@@ -179,6 +179,11 @@ public class OrganizationServiceImpl implements OrganizationService {
         org.setContactPhone(dto.getContactPhone());
         org.setReferredBy(dto.getReferredBy());
         org.setRegion(region);
+        if (Boolean.TRUE.equals(dto.getApplyAsAgent())) {
+            org.setOrgRole("AGENT");
+        } else {
+            org.setOrgRole("INSTITUTION");
+        }
         org.setAuditStatus("PENDING");
         org.setRejectReason(null);  // 清除驳回原因
         organizationRepository.save(org);
@@ -236,7 +241,10 @@ public class OrganizationServiceImpl implements OrganizationService {
         admin.setStatus(1);
 
         // 生成机构邀请码
-        String referralCode = "UR" + IdUtil.fastSimpleUUID().substring(0, 8).toUpperCase();
+        String referralCode;
+        do {
+            referralCode = "UR" + IdUtil.fastSimpleUUID().substring(0, 8).toUpperCase();
+        } while (userRepository.existsByReferralCode(referralCode));
         admin.setReferralCode(referralCode);
         userRepository.save(admin);
 

@@ -27,6 +27,7 @@ ALTER TABLE `grid_user`
     ADD COLUMN `org_role` VARCHAR(20) COMMENT '机构角色 ADMIN/MEMBER' AFTER `org_id`,
     ADD COLUMN `agent_id` INT COMMENT '所属代理ID' AFTER `org_role`,
     ADD COLUMN `referral_code` VARCHAR(32) COMMENT '我的推荐码' AFTER `agent_id`,
+    ADD UNIQUE KEY `uk_referral_code` (`referral_code`),
     ADD COLUMN `referred_by` VARCHAR(32) COMMENT '注册时填的推荐码' AFTER `referral_code`,
     ADD COLUMN `region` VARCHAR(10) COMMENT '所属区域 A/B/C/D/E' AFTER `referred_by`,
     ADD COLUMN `register_audit_status` VARCHAR(20) DEFAULT 'APPROVED' COMMENT '注册审核状态 PENDING/APPROVED/REJECTED' AFTER `region`;

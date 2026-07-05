@@ -20,7 +20,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -59,15 +58,14 @@ public class ReferralServiceImpl implements ReferralService {
         }
 
         String referrerType = isAgent ? "AGENT" : "NORMAL";
-        String rewardType = isAgent ? "CASH" : "EXTEND_DAYS";
 
         ReferralRecord record = new ReferralRecord();
         record.setReferrerId(referrer.getId());
         record.setReferrerType(referrerType);
         record.setReferredId(referredUserId);
         record.setReferralCode(referralCode);
+        record.setEventType("REGISTRATION");
         record.setRewardStatus("PENDING");
-        record.setRewardType(rewardType);
         record.setCreateTime(LocalDateTime.now());
         referralRecordRepository.save(record);
 
@@ -102,11 +100,11 @@ public class ReferralServiceImpl implements ReferralService {
                                 "REFERRAL", String.valueOf(record.getId()), 30, null);
                     }
                 }
-                record.setRewardAmount(BigDecimal.valueOf(30));
+                
             } else if ("AGENT".equals(record.getReferrerType())) {
                 // Calculate commission
                 // Phase 1: simplified, actual commission calc later
-                record.setRewardAmount(BigDecimal.ZERO);
+                
             }
             record.setOrderId(order.getId());
             record.setRewardStatus("SETTLED");

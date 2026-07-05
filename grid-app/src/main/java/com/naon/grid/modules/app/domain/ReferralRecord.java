@@ -3,7 +3,6 @@ package com.naon.grid.modules.app.domain;
 import lombok.Getter;
 import lombok.Setter;
 import javax.persistence.*;
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
@@ -21,22 +20,30 @@ public class ReferralRecord {
     @Column(length = 20, nullable = false)
     private String referrerType;
 
+    @Column
+    private Integer referrerOrgId;
+
+    @Column
     private Long referredId;
+
+    @Column
+    private Integer referredOrgId;
 
     @Column(length = 32, nullable = false)
     private String referralCode;
 
+    @Column(length = 30, nullable = false)
+    private String eventType;
+
+    @Column
     private Long orderId;
 
     @Column(length = 20)
     private String rewardStatus = "PENDING";
 
-    @Column(precision = 12, scale = 2)
-    private BigDecimal rewardAmount;
-
-    @Column(length = 20)
-    private String rewardType;
-
-    private LocalDateTime createTime;
+    @Column
     private LocalDateTime settleTime;
+
+    @Column
+    private LocalDateTime createTime;
 }

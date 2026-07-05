@@ -268,7 +268,7 @@ public class OrganizationServiceImpl implements OrganizationService {
 
         // 处理邀请码溯源（如果申请时填了推荐码）
         if (org.getReferredBy() != null && !org.getReferredBy().isEmpty()) {
-            referralService.processReferral(org.getReferredBy(), admin.getId());
+            referralService.recordEvent(org.getReferredBy(), admin.getId(), "REGISTER", org.getId());
         }
 
         // 清空 admin_password

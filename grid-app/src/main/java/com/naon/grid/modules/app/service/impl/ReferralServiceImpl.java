@@ -77,7 +77,7 @@ public class ReferralServiceImpl implements ReferralService {
     public void settleReferralReward(Long referredUserId, String orderNo) {
         // Find the most recent referral record for this referred user
         Optional<ReferralRecord> recordOpt = referralRecordRepository
-                .findFirstByReferredIdOrderByCreateTimeDesc(referredUserId);
+                .findFirstByReferredIdAndEventTypeOrderByCreateTimeDesc(referredUserId, "REGISTRATION");
         recordOpt.ifPresent(record -> {
             GridOrder order = orderRepository.findByOrderNo(orderNo).orElse(null);
             if (order == null || !"PENDING".equals(record.getRewardStatus())) return;

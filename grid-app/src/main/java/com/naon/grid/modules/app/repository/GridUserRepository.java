@@ -58,4 +58,9 @@ public interface GridUserRepository extends JpaRepository<GridUser, Long>, JpaSp
      * 根据机构ID和角色查询用户
      */
     List<GridUser> findByOrgIdAndOrgRole(Integer orgId, String orgRole);
+
+    /**
+     * 根据机构ID查询所有成员
+     */
+    List<GridUser> findByOrgId(Integer orgId);
 }

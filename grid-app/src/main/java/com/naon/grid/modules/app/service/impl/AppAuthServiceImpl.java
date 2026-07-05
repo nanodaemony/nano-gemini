@@ -517,6 +517,9 @@ public class AppAuthServiceImpl implements AppAuthService {
             user.setReferralCode(generateReferralCode(userRepository));
             userRepository.save(user);
 
+            // 创建默认收藏夹
+            collectionService.createDefaultFolder(user.getId());
+
             // Record referral event
             String refCode = socialBindEmailDTO.getReferralCode();
             if (refCode != null && !refCode.isEmpty()) {

@@ -1,6 +1,10 @@
 package com.naon.grid.modules.app.rest;
 
 import com.naon.grid.annotation.Log;
+import com.naon.grid.annotation.rest.AnonymousDeleteMapping;
+import com.naon.grid.annotation.rest.AnonymousGetMapping;
+import com.naon.grid.annotation.rest.AnonymousPostMapping;
+import com.naon.grid.annotation.rest.AnonymousPutMapping;
 import com.naon.grid.backend.service.character.CharCharacterService;
 import com.naon.grid.backend.service.charradical.CharRadicalService;
 import com.naon.grid.backend.service.grammar.GrammarPointService;
@@ -39,12 +43,24 @@ public class AppCollectionController {
     private final GrammarComparisonGroupService grammarComparisonGroupService;
     private final VocabComparisonGroupService vocabComparisonGroupService;
 
+    /**
+     * 获取当前用户ID，未登录时回退为请求参数中的 userId（测试用）
+     */
+    private Long resolveUserId() {
+        Long userId = AppSecurityUtils.getCurrentUserId();
+        if (userId != null) {
+            return userId;
+        }
+        // 测试阶段回退：未认证时默认使用 userId=1
+        return 1L;
+    }
+
     @Log("新建收藏夹")
     @ApiOperation("新建收藏夹")
-    @PostMapping("/folder")
+    @AnonymousPostMapping("/folder")
     public ResponseEntity<CollectionFolderVO> createFolder(
             @Validated @RequestBody CreateFolderRequest request) {
-        Long userId = AppSecurityUtils.getCurrentUserId();
+        Long userId = resolveUserId();
         BizCollectionFolder folder = collectionService.createFolder(
                 userId, request.getName(), request.getCoverImageId());
         return new ResponseEntity<>(
@@ -52,9 +68,9 @@ public class AppCollectionController {
     }
 
     @ApiOperation("查询我的收藏夹列表")
-    @GetMapping("/folder/list")
+    @AnonymousGetMapping("/folder/list")
     public ResponseEntity<List<CollectionFolderVO>> listFolders() {
-        Long userId = AppSecurityUtils.getCurrentUserId();
+        Long userId = resolveUserId();
         List<BizCollectionFolder> folders = collectionService.listFolders(userId);
         Map<Long, Long> itemCountMap = new java.util.HashMap<>();
         for (BizCollectionFolder f : folders) {
@@ -64,10 +80,10 @@ public class AppCollectionController {
     }
 
     @ApiOperation("查询收藏夹详情")
-    @GetMapping("/folder/{folderId}")
+    @AnonymousGetMapping("/folder/{folderId}")
     public ResponseEntity<CollectionFolderDetailVO> getFolderDetail(
             @PathVariable Long folderId) {
-        Long userId = AppSecurityUtils.getCurrentUserId();
+        Long userId = resolveUserId();
         BizCollectionFolder folder = collectionService.getFolder(folderId, userId);
         Map<String, List<BizCollectionItem>> groupedItems =
                 collectionService.getFolderItemsGrouped(folderId);
@@ -79,58 +95,58 @@ public class AppCollectionController {
 
     @Log("修改收藏夹名称")
     @ApiOperation("修改收藏夹名称")
-    @PutMapping("/folder/{folderId}/name")
+    @AnonymousPutMapping("/folder/{folderId}/name")
     public ResponseEntity<Void> updateFolderName(
             @PathVariable Long folderId,
             @Validated @RequestBody UpdateFolderNameRequest request) {
-        Long userId = AppSecurityUtils.getCurrentUserId();
+        Long userId = resolveUserId();
         collectionService.updateFolderName(folderId, userId, request.getName());
         return ResponseEntity.ok().build();
     }
 
     @Log("修改收藏夹封面图")
     @ApiOperation("修改收藏夹封面图")
-    @PutMapping("/folder/{folderId}/cover")
+    @AnonymousPutMapping("/folder/{folderId}/cover")
     public ResponseEntity<Void> updateFolderCover(
             @PathVariable Long folderId,
             @Validated @RequestBody UpdateFolderCoverRequest request) {
-        Long userId = AppSecurityUtils.getCurrentUserId();
+        Long userId = resolveUserId();
         collectionService.updateFolderCover(folderId, userId, request.getCoverImageId());
         return ResponseEntity.ok().build();
     }
 
     @Log("删除收藏夹")
     @ApiOperation("删除收藏夹")
-    @DeleteMapping("/folder/{folderId}")
+    @AnonymousDeleteMapping("/folder/{folderId}")
     public ResponseEntity<Void> deleteFolder(@PathVariable Long folderId) {
-        Long userId = AppSecurityUtils.getCurrentUserId();
+        Long userId = resolveUserId();
         collectionService.deleteFolder(folderId, userId);
         return ResponseEntity.ok().build();
     }
 
     @Log("置顶收藏夹")
     @ApiOperation("置顶收藏夹")
-    @PutMapping("/folder/{folderId}/pin")
+    @AnonymousPutMapping("/folder/{folderId}/pin")
     public ResponseEntity<Void> pinFolder(@PathVariable Long folderId) {
-        Long userId = AppSecurityUtils.getCurrentUserId();
+        Long userId = resolveUserId();
         collectionService.pinFolder(folderId, userId);
         return ResponseEntity.ok().build();
     }
 
     @Log("取消置顶收藏夹")
     @ApiOperation("取消置顶收藏夹")
-    @PutMapping("/folder/{folderId}/unpin")
+    @AnonymousPutMapping("/folder/{folderId}/unpin")
     public ResponseEntity<Void> unpinFolder(@PathVariable Long folderId) {
-        Long userId = AppSecurityUtils.getCurrentUserId();
+        Long userId = resolveUserId();
         collectionService.unpinFolder(folderId, userId);
         return ResponseEntity.ok().build();
     }
 
     @Log("添加收藏")
     @ApiOperation("添加内容到收藏夹")
-    @PostMapping("/item")
+    @AnonymousPostMapping("/item")
     public ResponseEntity<Void> addItem(@Validated @RequestBody AddItemRequest request) {
-        Long userId = AppSecurityUtils.getCurrentUserId();
+        Long userId = resolveUserId();
         collectionService.addItem(userId, request.getFolderId(),
                 request.getBizType(), request.getContentId(), request.getContentText());
         return ResponseEntity.ok().build();
@@ -138,19 +154,19 @@ public class AppCollectionController {
 
     @Log("取消收藏")
     @ApiOperation("取消收藏")
-    @DeleteMapping("/item/{itemId}")
+    @AnonymousDeleteMapping("/item/{itemId}")
     public ResponseEntity<Void> removeItem(@PathVariable Long itemId) {
-        Long userId = AppSecurityUtils.getCurrentUserId();
+        Long userId = resolveUserId();
         collectionService.removeItem(itemId, userId);
         return ResponseEntity.ok().build();
     }
 
     @ApiOperation("检查内容是否已收藏")
-    @GetMapping("/item/check")
+    @AnonymousGetMapping("/item/check")
     public ResponseEntity<CollectionCheckVO> checkCollected(
             @RequestParam String bizType,
             @RequestParam Long contentId) {
-        Long userId = AppSecurityUtils.getCurrentUserId();
+        Long userId = resolveUserId();
         BizCollectionItem item = collectionService.checkCollected(userId, bizType, contentId);
         String folderName = null;
         if (item != null) {

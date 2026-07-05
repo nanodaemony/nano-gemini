@@ -42,24 +42,7 @@ import org.springframework.web.bind.annotation.RestController;
 @EnableScheduling
 @RestController
 @Api(hidden = true)
-@SpringBootApplication(scanBasePackages = {
-    "com.naon.grid.modules.billing",
-    "com.naon.grid.modules.app",
-    "com.naon.grid.modules.system",
-    "com.naon.grid.modules.security",
-    "com.naon.grid.service",
-    "com.naon.grid.backend",
-    "com.naon.grid.utils",
-    "com.naon.grid.enums",
-    "com.naon.grid.exception",
-    "com.naon.grid.common",
-    "com.naon.grid.config",
-    "com.naon.grid.annotation",
-    "com.naon.grid.aspect",
-    "com.naon.grid.base",
-    "com.naon.grid.domain",
-    "com.naon.grid.logging"
-})
+@SpringBootApplication
 @EnableTransactionManagement
 @EnableJpaAuditing(auditorAwareRef = "auditorAware")
 public class AppRun {

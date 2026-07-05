@@ -10,6 +10,7 @@ import com.naon.grid.modules.app.repository.GridUserTokenRepository;
 import com.naon.grid.modules.app.security.AppTokenProvider;
 import com.naon.grid.modules.app.security.DeviceManager;
 import com.naon.grid.modules.app.service.AppAuthService;
+import com.naon.grid.modules.app.service.CollectionService;
 import com.naon.grid.modules.app.service.ReferralService;
 import com.naon.grid.modules.app.service.RegionResolver;
 import com.naon.grid.modules.billing.repository.EntitlementRepository;
@@ -67,6 +68,7 @@ public class AppAuthServiceImpl implements AppAuthService {
     private final EntitlementService entitlementService;
     private final EntitlementRepository entitlementRepository;
     private final ReferralService referralService;
+    private final CollectionService collectionService;
     private final RegionResolver regionResolver;
     private final RedisUtils redisUtils;
     private final EmailService emailService;
@@ -132,6 +134,9 @@ public class AppAuthServiceImpl implements AppAuthService {
         }
 
         userRepository.save(user);
+
+        // 创建默认收藏夹
+        collectionService.createDefaultFolder(user.getId());
 
         // Record referral relationship (needs user ID)
         if (referralCode != null && !referralCode.isEmpty()) {
@@ -370,6 +375,9 @@ public class AppAuthServiceImpl implements AppAuthService {
         user.setRegisterAuditStatus("APPROVED");
         user.setReferralCode(generateReferralCode(userRepository));
         userRepository.save(user);
+
+        // 创建默认收藏夹
+        collectionService.createDefaultFolder(user.getId());
 
         // Record referral event
         if (referralCode != null && !referralCode.isEmpty()) {

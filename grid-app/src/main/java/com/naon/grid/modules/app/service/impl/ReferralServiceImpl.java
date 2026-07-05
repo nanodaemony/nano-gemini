@@ -1,7 +1,5 @@
 package com.naon.grid.modules.app.service.impl;
 
-import com.alibaba.fastjson2.JSON;
-import com.alibaba.fastjson2.JSONArray;
 import com.naon.grid.modules.app.domain.GridUser;
 import com.naon.grid.modules.app.domain.ReferralRecord;
 import com.naon.grid.modules.app.repository.GridUserRepository;
@@ -161,7 +159,7 @@ public class ReferralServiceImpl implements ReferralService {
                 if ("SUBSCRIBE".equals(eventType)) return 10;
             }
             // institution → normal user: handled by threshold logic in settlePendingRewards
-            return 1; // per-threshold reward
+            return 1; // value ignored — threshold branch computes totalDays independently
         }
         return 0;
     }

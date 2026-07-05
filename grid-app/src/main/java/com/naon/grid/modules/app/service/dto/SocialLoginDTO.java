@@ -17,4 +17,6 @@ public class SocialLoginDTO {
     private String deviceId;
 
     private String deviceName;
+
+    private String referralCode;
 }

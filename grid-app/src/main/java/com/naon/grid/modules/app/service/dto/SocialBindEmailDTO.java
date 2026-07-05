@@ -22,4 +22,6 @@ public class SocialBindEmailDTO {
     private String deviceId;
 
     private String deviceName;
+
+    private String referralCode;
 }

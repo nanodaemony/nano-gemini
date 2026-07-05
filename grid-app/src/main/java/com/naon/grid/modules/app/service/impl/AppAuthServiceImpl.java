@@ -135,7 +135,7 @@ public class AppAuthServiceImpl implements AppAuthService {
 
         // Record referral relationship (needs user ID)
         if (referralCode != null && !referralCode.isEmpty()) {
-            referralService.processReferral(referralCode, user.getId());
+            referralService.recordEvent(referralCode, user.getId(), "REGISTER");
         }
 
         // Grant trial — 发放全部6个权益各7天
@@ -266,8 +266,16 @@ public class AppAuthServiceImpl implements AppAuthService {
                 throw new BadRequestException("账号已被禁用");
             }
             updateSocialAuth(existingAuth.get(), socialLoginDTO.getIdToken(), socialUser);
-            updateLoginMetadata(user, request);
             fillUserProfile(user, socialUser);
+            // Process referral code for existing user if not already referred
+            String refCode = socialLoginDTO.getReferralCode();
+            if (refCode != null && !refCode.isEmpty()
+                    && (user.getReferredBy() == null || user.getReferredBy().isEmpty())) {
+                user.setReferredBy(refCode);
+                userRepository.save(user);
+                referralService.recordEvent(refCode, user.getId(), "REGISTER");
+            }
+            updateLoginMetadata(user, request);
             return generateToken(user, socialLoginDTO.getDeviceId(), socialLoginDTO.getDeviceName());
         }
 
@@ -286,12 +294,13 @@ public class AppAuthServiceImpl implements AppAuthService {
 
         // 3. 有邮箱 → 按邮箱查找或创建用户
         return createOrLinkSocialUser(provider, socialUser, socialLoginDTO.getIdToken(),
-                socialLoginDTO.getDeviceId(), socialLoginDTO.getDeviceName(), request);
+                socialLoginDTO.getDeviceId(), socialLoginDTO.getDeviceName(), request,
+                socialLoginDTO.getReferralCode());
     }
 
     private TokenDTO createOrLinkSocialUser(String provider, SocialUserInfo socialUser,
                                              String idToken, String deviceId, String deviceName,
-                                             HttpServletRequest request) {
+                                             HttpServletRequest request, String referralCode) {
         String normalizedEmail = normalizeEmail(socialUser.getEmail());
         Optional<GridUser> existingUser = userRepository.findByEmail(normalizedEmail);
 
@@ -303,7 +312,7 @@ public class AppAuthServiceImpl implements AppAuthService {
                 throw new BadRequestException("账号已被禁用");
             }
         } else {
-            user = createSocialUser(socialUser, request);
+            user = createSocialUser(socialUser, request, referralCode);
             isNewUser = true;
         }
 
@@ -342,7 +351,7 @@ public class AppAuthServiceImpl implements AppAuthService {
         return generateToken(user, deviceId, deviceName);
     }
 
-    private GridUser createSocialUser(SocialUserInfo socialUser, HttpServletRequest request) {
+    private GridUser createSocialUser(SocialUserInfo socialUser, HttpServletRequest request, String referralCode) {
         String normalizedEmail = normalizeEmail(socialUser.getEmail());
         String ip = StringUtils.getIp(request);
         String region = regionResolver.resolve(ip);
@@ -361,6 +370,13 @@ public class AppAuthServiceImpl implements AppAuthService {
         user.setRegisterAuditStatus("APPROVED");
         user.setReferralCode(generateReferralCode(userRepository));
         userRepository.save(user);
+
+        // Record referral event
+        if (referralCode != null && !referralCode.isEmpty()) {
+            user.setReferredBy(referralCode);
+            userRepository.save(user);
+            referralService.recordEvent(referralCode, user.getId(), "REGISTER");
+        }
 
         // Grant trial — 发放全部6个权益各7天
         try {
@@ -492,6 +508,14 @@ public class AppAuthServiceImpl implements AppAuthService {
             user.setRegisterAuditStatus("APPROVED");
             user.setReferralCode(generateReferralCode(userRepository));
             userRepository.save(user);
+
+            // Record referral event
+            String refCode = socialBindEmailDTO.getReferralCode();
+            if (refCode != null && !refCode.isEmpty()) {
+                user.setReferredBy(refCode);
+                userRepository.save(user);
+                referralService.recordEvent(refCode, user.getId(), "REGISTER");
+            }
 
             // Grant trial — 发放全部6个权益各7天
             try {

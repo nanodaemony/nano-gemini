@@ -3,6 +3,10 @@ package com.naon.grid.modules.app.rest;
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONObject;
 import com.naon.grid.annotation.rest.AnonymousPostMapping;
+import com.naon.grid.modules.app.repository.ReferralRecordRepository;
+import com.naon.grid.modules.app.service.ReferralService;
+import com.naon.grid.modules.billing.domain.GridOrder;
+import com.naon.grid.modules.billing.repository.GridOrderRepository;
 import com.naon.grid.modules.billing.service.PaymentGateway;
 import com.naon.grid.modules.billing.service.PaymentService;
 import io.swagger.annotations.Api;
@@ -23,6 +27,9 @@ public class PaymentWebhookController {
 
     private final PaymentGateway paymentGateway;
     private final PaymentService paymentService;
+    private final GridOrderRepository orderRepository;
+    private final ReferralService referralService;
+    private final ReferralRecordRepository referralRecordRepository;
 
     @ApiOperation("PhotonPay 支付回调 Webhook")
     @AnonymousPostMapping("/webhook/photonpay")
@@ -55,6 +62,23 @@ public class PaymentWebhookController {
                 String orderNo = eventData != null ? eventData.getString("merchant_order_no") : null;
                 if (orderNo != null) {
                     paymentService.handlePaymentCallback(orderNo, "PHOTONPAY", eventData);
+
+                // Record SUBSCRIBE referral event
+                try {
+                    GridOrder order = orderRepository.findByOrderNo(orderNo).orElse(null);
+                    if (order != null) {
+                        referralRecordRepository
+                            .findFirstByReferredIdAndEventTypeOrderByCreateTimeDesc(
+                                order.getUserId(), "REGISTER")
+                            .ifPresent(regRecord -> {
+                                referralService.recordEvent(regRecord.getReferralCode(),
+                                    order.getUserId(), "SUBSCRIBE", order.getOrgId());
+                            });
+                    }
+                } catch (Exception e) {
+                    log.warn("Failed to record SUBSCRIBE referral event for orderNo={}: {}",
+                            orderNo, e.getMessage());
+                }
                 }
                 break;
             case "payment.refunded":

@@ -63,22 +63,22 @@ public class PaymentWebhookController {
                 if (orderNo != null) {
                     paymentService.handlePaymentCallback(orderNo, "PHOTONPAY", eventData);
 
-                // Record SUBSCRIBE referral event
-                try {
-                    GridOrder order = orderRepository.findByOrderNo(orderNo).orElse(null);
-                    if (order != null) {
-                        referralRecordRepository
-                            .findFirstByReferredIdAndEventTypeOrderByCreateTimeDesc(
-                                order.getUserId(), "REGISTER")
-                            .ifPresent(regRecord -> {
-                                referralService.recordEvent(regRecord.getReferralCode(),
-                                    order.getUserId(), "SUBSCRIBE", order.getOrgId());
-                            });
+                    // Record SUBSCRIBE referral event
+                    try {
+                        GridOrder order = orderRepository.findByOrderNo(orderNo).orElse(null);
+                        if (order != null) {
+                            referralRecordRepository
+                                .findFirstByReferredIdAndEventTypeOrderByCreateTimeDesc(
+                                    order.getUserId(), "REGISTER")
+                                .ifPresent(regRecord -> {
+                                    referralService.recordEvent(regRecord.getReferralCode(),
+                                        order.getUserId(), "SUBSCRIBE", order.getOrgId());
+                                });
+                        }
+                    } catch (Exception e) {
+                        log.warn("Failed to record SUBSCRIBE referral event for orderNo={}: {}",
+                                orderNo, e.getMessage());
                     }
-                } catch (Exception e) {
-                    log.warn("Failed to record SUBSCRIBE referral event for orderNo={}: {}",
-                            orderNo, e.getMessage());
-                }
                 }
                 break;
             case "payment.refunded":

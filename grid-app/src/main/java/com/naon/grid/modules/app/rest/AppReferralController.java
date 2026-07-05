@@ -12,8 +12,7 @@ import org.springframework.web.bind.annotation.*;
 @Api(tags = "用户：推荐接口")
 public class AppReferralController {
 
-    // Phase 1: simple health check, full referral API in Phase 2
-    @ApiOperation("推荐信息")
+    @ApiOperation("推荐系统状态")
     @GetMapping("/info")
     public ResponseEntity<String> info() {
         return ResponseEntity.ok("Referral system active");

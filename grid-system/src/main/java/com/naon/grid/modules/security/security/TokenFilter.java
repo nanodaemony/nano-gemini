@@ -58,6 +58,11 @@ public class TokenFilter extends GenericFilterBean {
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain)
             throws IOException, ServletException {
         HttpServletRequest httpServletRequest = (HttpServletRequest) servletRequest;
+        // App 端请求由 AppTokenFilter 独享处理，admin TokenFilter 不介入
+        if (httpServletRequest.getRequestURI().startsWith("/api/app/")) {
+            filterChain.doFilter(servletRequest, servletResponse);
+            return;
+        }
         String token = resolveToken(httpServletRequest);
         // 对于 Token 为空的不需要去查 Redis
         if(StrUtil.isNotBlank(token)){

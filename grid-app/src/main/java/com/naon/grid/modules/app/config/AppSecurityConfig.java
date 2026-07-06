@@ -38,7 +38,7 @@ public class AppSecurityConfig {
         AppTokenFilter appTokenFilter = new AppTokenFilter(appTokenProvider, securityProperties);
 
         return http
-                .securityMatcher("/api/app/**")
+                .antMatcher("/api/app/**")
                 .csrf().disable()
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()

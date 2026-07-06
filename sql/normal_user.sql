@@ -14,6 +14,15 @@
       `nickname` VARCHAR(50) DEFAULT NULL COMMENT '昵称',
       `avatar` VARCHAR(500) DEFAULT NULL COMMENT '头像URL',
       `gender` TINYINT DEFAULT 0 COMMENT '性别：0-未知 1-男 2-女',
+      `user_type` VARCHAR(20) NOT NULL DEFAULT 'NORMAL' COMMENT '用户类型 NORMAL/INSTITUTION/AGENT',
+      `org_id` INT COMMENT '所属机构ID',
+      `org_role` VARCHAR(20) COMMENT '机构角色 ADMIN/MEMBER',
+      `agent_id` INT COMMENT '所属代理ID',
+      `referral_code` VARCHAR(32) COMMENT '我的推荐码',
+      `referred_by` VARCHAR(32) COMMENT '注册时填的推荐码',
+      `region` VARCHAR(10) COMMENT '所属区域 A/B/C/D/E',
+      `country` VARCHAR(50) COMMENT '注册国家',
+      `register_audit_status` VARCHAR(20) DEFAULT 'APPROVED' COMMENT '注册审核状态 PENDING/APPROVED/REJECTED',
       `status` TINYINT NOT NULL DEFAULT 1 COMMENT '状态：0-禁用 1-正常',
       `register_ip` VARCHAR(50) DEFAULT NULL COMMENT '注册IP',
       `last_login_time` DATETIME DEFAULT NULL COMMENT '最后登录时间',
@@ -23,7 +32,8 @@
       PRIMARY KEY (`id`),
       UNIQUE KEY `uk_username` (`username`),
       UNIQUE KEY `uk_phone` (`phone`),
-      UNIQUE KEY `uk_email` (`email`)
+      UNIQUE KEY `uk_email` (`email`),
+      UNIQUE KEY `uk_referral_code` (`referral_code`)
   ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='APP用户表';
 
 -- APP用户第三方登录关联表

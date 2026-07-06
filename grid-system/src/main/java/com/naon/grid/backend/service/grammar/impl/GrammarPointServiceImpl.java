@@ -243,8 +243,7 @@ public class GrammarPointServiceImpl implements GrammarPointService {
             }
             return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
         }, pageable);
-        PageResult<GrammarPointDto> pageResult = PageUtil.toPage(page.map(this::toDtoWithDraftOverlay));
-        populateGrammarListStats(pageResult.getContent());
+        PageResult<GrammarPointDto> pageResult = PageUtil.toPage(page.map(grammarPointMapper::toDto));
         return pageResult;
     }
 

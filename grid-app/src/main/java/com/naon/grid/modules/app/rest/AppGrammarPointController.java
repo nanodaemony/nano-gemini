@@ -82,8 +82,6 @@ public class AppGrammarPointController {
         Map<Long, ExampleSentenceDto> sentenceMap = collectComparisonSentences(comparisons);
         List<Long> comparisonAudioIds = collectSentenceAudios(sentenceMap);
         List<Long> comparisonImageIds = collectSentenceImages(sentenceMap);
-        // 也从 chat 中收集音频ID
-        comparisonAudioIds.addAll(collectChatAudios(comparisons));
         audioMap = mergeAudioMap(audioMap, comparisonAudioIds);
         imageMap = mergeImageMap(imageMap, comparisonImageIds);
 
@@ -220,21 +218,6 @@ public class AppGrammarPointController {
             }
         }
         return imageIds;
-    }
-
-    private List<Long> collectChatAudios(List<GrammarComparisonGroupDto> comparisons) {
-        List<Long> audioIds = new ArrayList<>();
-        if (comparisons == null) return audioIds;
-        for (GrammarComparisonGroupDto group : comparisons) {
-            if (group.getChats() != null) {
-                for (GrammarComparisonChatDto chat : group.getChats()) {
-                    if (chat.getAudioId() != null) {
-                        audioIds.add(chat.getAudioId());
-                    }
-                }
-            }
-        }
-        return audioIds;
     }
 
     private Map<Long, AudioResourceDto> mergeAudioMap(Map<Long, AudioResourceDto> existing, List<Long> newIds) {

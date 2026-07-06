@@ -1,57 +1,29 @@
 package com.naon.grid.modules.app.config;
 
+import com.naon.grid.config.properties.SecurityProperties;
 import com.naon.grid.modules.app.security.AppTokenFilter;
 import com.naon.grid.modules.app.security.AppTokenProvider;
-import com.naon.grid.config.properties.SecurityProperties;
-import com.naon.grid.utils.AnonTagUtils;
-import com.naon.grid.utils.enums.RequestMethodEnum;
-import lombok.RequiredArgsConstructor;
-import org.springframework.context.ApplicationContext;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.annotation.Order;
-import org.springframework.http.HttpMethod;
-import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
-import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.core.Ordered;
 
-import java.util.Map;
-import java.util.Set;
-
+/**
+ * 注册 App Token 过滤器为全局 Servlet Filter（Ordered.HIGHEST_PRECEDENCE），
+ * 在所有 Spring Security FilterChain 之前运行，确保 /api/app/** 请求的
+ * JWT 认证独立于 admin SecurityFilterChain 链作用域问题。
+ */
 @Configuration
-@Order(1)
-@RequiredArgsConstructor
-@EnableWebSecurity
-@EnableGlobalMethodSecurity(prePostEnabled = true, securedEnabled = true)
 public class AppSecurityConfig {
 
-    private final ApplicationContext applicationContext;
-    private final AppTokenProvider appTokenProvider;
-    private final SecurityProperties securityProperties;
-
     @Bean
-    public SecurityFilterChain appSecurityFilterChain(HttpSecurity http) throws Exception {
-        Map<String, Set<String>> anonymousUrls = AnonTagUtils.getAnonymousUrl(applicationContext);
-        AppTokenFilter appTokenFilter = new AppTokenFilter(appTokenProvider, securityProperties);
-
-        return http
-                .requestMatchers(matchers -> matchers.antMatchers("/api/app/**"))
-                .csrf().disable()
-                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                .and()
-                .authorizeHttpRequests(auth -> {
-                    auth.antMatchers(HttpMethod.GET, anonymousUrls.get(RequestMethodEnum.GET.getType()).toArray(new String[0])).permitAll();
-                    auth.antMatchers(HttpMethod.POST, anonymousUrls.get(RequestMethodEnum.POST.getType()).toArray(new String[0])).permitAll();
-                    auth.antMatchers(HttpMethod.PUT, anonymousUrls.get(RequestMethodEnum.PUT.getType()).toArray(new String[0])).permitAll();
-                    auth.antMatchers(HttpMethod.PATCH, anonymousUrls.get(RequestMethodEnum.PATCH.getType()).toArray(new String[0])).permitAll();
-                    auth.antMatchers(HttpMethod.DELETE, anonymousUrls.get(RequestMethodEnum.DELETE.getType()).toArray(new String[0])).permitAll();
-                    auth.antMatchers(anonymousUrls.get(RequestMethodEnum.ALL.getType()).toArray(new String[0])).permitAll();
-                    auth.anyRequest().authenticated();
-                })
-                .addFilterBefore(appTokenFilter, UsernamePasswordAuthenticationFilter.class)
-                .build();
+    public FilterRegistrationBean<AppTokenFilter> appTokenFilterRegistration(
+            AppTokenProvider appTokenProvider, SecurityProperties securityProperties) {
+        FilterRegistrationBean<AppTokenFilter> registration = new FilterRegistrationBean<>();
+        registration.setFilter(new AppTokenFilter(appTokenProvider, securityProperties));
+        registration.addUrlPatterns("/api/app/*");
+        registration.setOrder(Ordered.HIGHEST_PRECEDENCE);
+        registration.setName("appTokenFilter");
+        return registration;
     }
 }

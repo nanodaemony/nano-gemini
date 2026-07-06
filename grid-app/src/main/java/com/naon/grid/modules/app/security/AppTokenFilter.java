@@ -5,6 +5,7 @@ import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.GenericFilterBean;
 
@@ -17,6 +18,7 @@ import java.io.IOException;
 import java.util.List;
 
 @Slf4j
+@Component
 @RequiredArgsConstructor
 public class AppTokenFilter extends GenericFilterBean {
 
@@ -27,6 +29,11 @@ public class AppTokenFilter extends GenericFilterBean {
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain)
             throws IOException, ServletException {
         HttpServletRequest httpServletRequest = (HttpServletRequest) servletRequest;
+        // 仅处理 App 端请求
+        if (!httpServletRequest.getRequestURI().startsWith("/api/app/")) {
+            filterChain.doFilter(servletRequest, servletResponse);
+            return;
+        }
         String token = resolveToken(httpServletRequest);
 
         if (StringUtils.hasText(token) && appTokenProvider.validateToken(token)) {

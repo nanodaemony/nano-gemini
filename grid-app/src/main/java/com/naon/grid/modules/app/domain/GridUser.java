@@ -1,7 +1,6 @@
 
 package com.naon.grid.modules.app.domain;
 
-import com.naon.grid.base.BaseEntity;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -10,13 +9,14 @@ import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
+import java.time.LocalDateTime;
 import java.util.Date;
 
 @Entity
 @Getter
 @Setter
 @Table(name = "grid_user")
-public class GridUser extends BaseEntity implements Serializable {
+public class GridUser implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -92,4 +92,10 @@ public class GridUser extends BaseEntity implements Serializable {
 
     @Column(name = "last_login_ip", length = 50)
     private String lastLoginIp;
+
+    @Column(name = "create_time")
+    private LocalDateTime createTime;
+
+    @Column(name = "update_time")
+    private LocalDateTime updateTime;
 }

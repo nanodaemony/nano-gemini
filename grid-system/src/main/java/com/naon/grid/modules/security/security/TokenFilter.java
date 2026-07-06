@@ -58,8 +58,24 @@ public class TokenFilter extends GenericFilterBean {
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain)
             throws IOException, ServletException {
         HttpServletRequest httpServletRequest = (HttpServletRequest) servletRequest;
-        // App 端请求由 AppTokenFilter 独享处理，admin TokenFilter 不介入
+        // App 端请求：admin TokenProvider 和 app TokenProvider 共用同一签名密钥，
+        // 可直接解析 app JWT 并设置认证上下文，避免跨模块依赖
         if (httpServletRequest.getRequestURI().startsWith("/api/app/")) {
+            String appToken = resolveToken(httpServletRequest);
+            if (StringUtils.hasText(appToken)) {
+                try {
+                    io.jsonwebtoken.Claims claims = tokenProvider.getClaims(appToken);
+                    Long userId = claims.get("userId", Long.class);
+                    if (userId != null) {
+                        org.springframework.security.authentication.UsernamePasswordAuthenticationToken auth =
+                                new org.springframework.security.authentication.UsernamePasswordAuthenticationToken(
+                                        userId, null, java.util.Collections.emptyList());
+                        SecurityContextHolder.getContext().setAuthentication(auth);
+                    }
+                } catch (Exception e) {
+                    log.debug("App token validation skipped: {}", e.getMessage());
+                }
+            }
             filterChain.doFilter(servletRequest, servletResponse);
             return;
         }

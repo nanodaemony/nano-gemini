@@ -216,6 +216,38 @@ public class GrammarPointServiceImpl implements GrammarPointService {
         return toPublishedDetailDto(grammarPoint);
     }
 
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public GrammarPointDto findPublishedById(Long id) {
+        if (id == null) {
+            throw new EntityNotFoundException(GrammarPoint.class, "id", String.valueOf(id));
+        }
+        GrammarPoint grammarPoint = grammarPointRepository.findById(id).orElseGet(GrammarPoint::new);
+        if (grammarPoint.getId() == null || StatusEnum.DISABLED.getCode().equals(grammarPoint.getStatus())) {
+            throw new EntityNotFoundException(GrammarPoint.class, "id", String.valueOf(id));
+        }
+        if (!PublishStatusEnum.PUBLISHED.getCode().equals(grammarPoint.getPublishStatus())) {
+            throw new BadRequestException("语法点尚未发布");
+        }
+        return toPublishedDetailDto(grammarPoint);
+    }
+
+    @Override
+    public PageResult<GrammarPointDto> searchPublished(String keyword, Pageable pageable) {
+        Page<GrammarPoint> page = grammarPointRepository.findAll((root, criteriaQuery, criteriaBuilder) -> {
+            List<Predicate> predicates = new ArrayList<>();
+            predicates.add(criteriaBuilder.equal(root.get("status"), StatusEnum.ENABLED.getCode()));
+            predicates.add(criteriaBuilder.equal(root.get("publishStatus"), PublishStatusEnum.PUBLISHED.getCode()));
+            if (keyword != null && !keyword.trim().isEmpty()) {
+                predicates.add(criteriaBuilder.like(root.get("name"), "%" + keyword.trim() + "%"));
+            }
+            return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
+        }, pageable);
+        PageResult<GrammarPointDto> pageResult = PageUtil.toPage(page.map(this::toDtoWithDraftOverlay));
+        populateGrammarListStats(pageResult.getContent());
+        return pageResult;
+    }
+
     private GrammarPointDto toPublishedDetailDto(GrammarPoint grammarPoint) {
         Long id = grammarPoint.getId();
         GrammarPointDto dto = grammarPointMapper.toDto(grammarPoint);

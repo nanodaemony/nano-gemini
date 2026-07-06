@@ -11,6 +11,16 @@ public interface GrammarPointService {
 
     GrammarPointDto findById(Long id);
 
+    /**
+     * 查询已发布的语法点详情（不走草稿覆盖逻辑，仅返回发布态数据）
+     */
+    GrammarPointDto findPublishedById(Long id);
+
+    /**
+     * 按关键词搜索已发布的语法点
+     */
+    PageResult<GrammarPointDto> searchPublished(String keyword, Pageable pageable);
+
     Long create(GrammarPointDto resources);
 
     void update(Long id, GrammarPointDto resources);

@@ -1,11 +1,14 @@
 package com.naon.grid.modules.app.service.impl;
 
 import com.naon.grid.backend.service.character.CharCharacterService;
+import com.naon.grid.backend.service.character.dto.CharCharacterDto;
 import com.naon.grid.backend.service.charradical.CharRadicalService;
 import com.naon.grid.backend.service.grammar.GrammarPointService;
+import com.naon.grid.backend.service.grammar.dto.GrammarPointDto;
 import com.naon.grid.backend.service.grammarcomparison.GrammarComparisonGroupService;
 import com.naon.grid.backend.service.vocabcomparison.VocabComparisonGroupService;
 import com.naon.grid.backend.service.vocabulary.VocabWordService;
+import com.naon.grid.backend.service.vocabulary.dto.VocabWordDto;
 import com.naon.grid.exception.BadRequestException;
 import com.naon.grid.modules.app.domain.BizCollectionFolder;
 import com.naon.grid.modules.app.domain.BizCollectionItem;
@@ -219,31 +222,51 @@ public class CollectionServiceImpl implements CollectionService {
             // 未知类型，不做校验（兼容将来扩展）
             return;
         }
-        boolean exists = false;
         switch (type) {
-            case CHARACTER:
-                exists = charCharacterService.findById(contentId.intValue()) != null;
+            case CHARACTER: {
+                CharCharacterDto dto = charCharacterService.findById(contentId.intValue());
+                if (dto == null || dto.getCharacter() == null) {
+                    throw new BadRequestException("收藏的" + type.getDescription() + "不存在");
+                }
                 break;
-            case VOCABULARY:
-                exists = vocabWordService.findById(contentId.intValue()) != null;
+            }
+            case VOCABULARY: {
+                VocabWordDto dto = vocabWordService.findById(contentId.intValue());
+                if (dto == null || dto.getWord() == null) {
+                    throw new BadRequestException("收藏的" + type.getDescription() + "不存在");
+                }
                 break;
+            }
             case RADICAL:
-                exists = charRadicalService.findById(contentId) != null;
+                try {
+                    charRadicalService.findById(contentId);
+                } catch (Exception e) {
+                    throw new BadRequestException("收藏的" + type.getDescription() + "不存在");
+                }
                 break;
-            case GRAMMAR:
-                exists = grammarPointService.findById(contentId) != null;
+            case GRAMMAR: {
+                GrammarPointDto dto = grammarPointService.findById(contentId);
+                if (dto == null || dto.getName() == null) {
+                    throw new BadRequestException("收藏的" + type.getDescription() + "不存在");
+                }
                 break;
+            }
             case GRAMMAR_COMPARISON:
-                exists = grammarComparisonGroupService.findById(contentId) != null;
+                try {
+                    grammarComparisonGroupService.findById(contentId);
+                } catch (Exception e) {
+                    throw new BadRequestException("收藏的" + type.getDescription() + "不存在");
+                }
                 break;
             case VOCAB_COMPARISON:
-                exists = vocabComparisonGroupService.findById(contentId) != null;
+                try {
+                    vocabComparisonGroupService.findById(contentId);
+                } catch (Exception e) {
+                    throw new BadRequestException("收藏的" + type.getDescription() + "不存在");
+                }
                 break;
             default:
                 return; // 未知类型不校验
-        }
-        if (!exists) {
-            throw new BadRequestException("收藏的" + type.getDescription() + "不存在");
         }
     }
 }

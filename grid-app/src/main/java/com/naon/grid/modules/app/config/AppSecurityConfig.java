@@ -21,7 +21,7 @@ public class AppSecurityConfig {
             AppTokenProvider appTokenProvider, SecurityProperties securityProperties) {
         FilterRegistrationBean<AppTokenFilter> registration = new FilterRegistrationBean<>();
         registration.setFilter(new AppTokenFilter(appTokenProvider, securityProperties));
-        registration.addUrlPatterns("/api/app/*");
+        registration.addUrlPatterns("/*");
         registration.setOrder(Ordered.HIGHEST_PRECEDENCE);
         registration.setName("appTokenFilter");
         return registration;

@@ -120,6 +120,9 @@ public class AppAuthServiceImpl implements AppAuthService {
         user.setGender(0);
         user.setStatus(1);
         user.setUserType("NORMAL");
+        // 设置HSK等级和个性签名
+        user.setHskLevel(registerDTO.getHskLevel() != null ? registerDTO.getHskLevel() : "0");
+        user.setSignature(registerDTO.getSignature());
         user.setRegion(region);
         user.setRegisterIp(ip);
         user.setRegisterAuditStatus("APPROVED");
@@ -366,7 +369,8 @@ public class AppAuthServiceImpl implements AppAuthService {
         user.setEmailVerified(socialUser.isEmailVerified() ? 1 : 0);
         user.setPassword(null);
         user.setNickname(socialUser.getName() != null ? socialUser.getName() : normalizedEmail.split("@")[0]);
-        user.setAvatar(socialUser.getPicture());
+        // 社交登录用户头像不再直接写入 avatar（avatar 现在是 BIGINT OSS ID 类型）
+        // 社交头像 URL 存储在 GridUserAuth.providerAvatar 中
         user.setGender(0);
         user.setStatus(1);
         user.setUserType("NORMAL");
@@ -414,10 +418,10 @@ public class AppAuthServiceImpl implements AppAuthService {
             user.setNickname(socialUser.getName());
             changed = true;
         }
-        if ((user.getAvatar() == null || user.getAvatar().isEmpty())
+        if (user.getAvatar() == null
                 && socialUser.getPicture() != null && !socialUser.getPicture().isEmpty()) {
-            user.setAvatar(socialUser.getPicture());
-            changed = true;
+            // 社交头像 URL 不直接存入 avatar 字段（avatar 现在是 BIGINT OSS ID）
+            // 仅存入 GridUserAuth.providerAvatar
         }
         if (changed) {
             userRepository.save(user);
@@ -507,7 +511,7 @@ public class AppAuthServiceImpl implements AppAuthService {
             user.setPassword(null);
             user.setNickname(bindClaims.get("name") != null
                     ? (String) bindClaims.get("name") : normalizedEmail.split("@")[0]);
-            user.setAvatar((String) bindClaims.get("picture"));
+            // 社交登录用户头像不直接设置 avatar 字段
             user.setGender(0);
             user.setStatus(1);
             user.setUserType("NORMAL");
@@ -616,6 +620,8 @@ public class AppAuthServiceImpl implements AppAuthService {
         dto.setNickname(user.getNickname());
         dto.setAvatar(user.getAvatar());
         dto.setGender(user.getGender());
+        dto.setHskLevel(user.getHskLevel());
+        dto.setSignature(user.getSignature());
         dto.setRoles(roles);
         dto.setUserType(user.getUserType());
         dto.setOrgRole(user.getOrgRole());

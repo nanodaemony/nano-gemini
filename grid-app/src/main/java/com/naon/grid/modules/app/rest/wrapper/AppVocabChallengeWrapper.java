@@ -100,6 +100,7 @@ public class AppVocabChallengeWrapper {
                 return opt.getOption();
             }
         }
+        log.error("Correct word '{}' not found in options", correctWord);
         return "A";
     }
 

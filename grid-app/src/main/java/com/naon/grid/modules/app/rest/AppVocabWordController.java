@@ -104,11 +104,19 @@ public class AppVocabWordController {
             levelA = "4";
             levelB = "5";
         } else {
-            int n = Integer.parseInt(hskLevel);
+            int n;
+            try {
+                n = Integer.parseInt(hskLevel);
+            } catch (NumberFormatException e) {
+                log.warn("Invalid HSK level '{}' for user {}, falling back to default", hskLevel, userId);
+                levelA = "4";
+                levelB = "5";
+                n = -1; // sentinel to skip remaining level logic
+            }
             if (n >= 9) {
                 levelA = "9";
                 levelB = "9";
-            } else {
+            } else if (n > 0) {
                 levelA = hskLevel;
                 levelB = String.valueOf(n + 1);
             }
@@ -194,6 +202,9 @@ public class AppVocabWordController {
             if (!excluded) {
                 result.add(w);
             }
+        }
+        if (result.size() < count) {
+            log.warn("Only {} distractors available for HSK level {}, needed {}", result.size(), hskLevel, count);
         }
         return result;
     }

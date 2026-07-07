@@ -135,15 +135,6 @@ public class AppUserServiceImpl implements AppUserService {
             throw new BadRequestException("请先验证邮箱");
         }
 
-        String codeKey = "email:code:" + user.getEmail();
-        String savedCode = redisUtils.getAndDel(codeKey);
-        if (savedCode == null) {
-            throw new BadRequestException("验证码不存在或已过期");
-        }
-        if (!savedCode.equals(request.getEmailCode())) {
-            throw new BadRequestException("验证码错误");
-        }
-
         // 密码验证（社交登录用户无密码可跳过）
         if (user.getPassword() != null && !user.getPassword().isEmpty()) {
             if (request.getPassword() == null || request.getPassword().isEmpty()) {
@@ -158,6 +149,15 @@ public class AppUserServiceImpl implements AppUserService {
             if (!passwordEncoder.matches(decryptedPassword, user.getPassword())) {
                 throw new BadRequestException("密码不正确");
             }
+        }
+
+        String codeKey = "email:code:" + user.getEmail();
+        String savedCode = redisUtils.getAndDel(codeKey);
+        if (savedCode == null) {
+            throw new BadRequestException("验证码不存在或已过期");
+        }
+        if (!savedCode.equals(request.getEmailCode())) {
+            throw new BadRequestException("验证码错误");
         }
 
         // 软删除

@@ -30,7 +30,7 @@ public class AppUserWrapper {
         vo.setSignature(user.getSignature());
         vo.setUserType(user.getUserType());
         vo.setRegion(user.getRegion());
-        vo.setPhone(user.getPhone());
+        vo.setPhone(maskPhone(user.getPhone()));
         vo.setEmailVerified(user.getEmailVerified());
         vo.setHasPassword(user.getPassword() != null && !user.getPassword().isEmpty());
         if (user.getCreateTime() != null) {
@@ -62,5 +62,20 @@ public class AppUserWrapper {
             vo.setCreatedAt(new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss").format(auth.getCreateTime()));
         }
         return vo;
+    }
+
+    /**
+     * 对手机号进行脱敏处理：前3位 + **** + 后4位
+     * @param phone 原始手机号
+     * @return 脱敏后的手机号，如果为 null 则返回 null，长度不足7位则原样返回
+     */
+    private static String maskPhone(String phone) {
+        if (phone == null) {
+            return null;
+        }
+        if (phone.length() < 7) {
+            return phone;
+        }
+        return phone.substring(0, 3) + "****" + phone.substring(phone.length() - 4);
     }
 }

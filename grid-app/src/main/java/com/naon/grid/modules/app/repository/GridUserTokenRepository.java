@@ -21,4 +21,6 @@ public interface GridUserTokenRepository extends JpaRepository<GridUserToken, Lo
     List<GridUserToken> findByExpireTimeBefore(Date now);
 
     void deleteByUserIdAndDeviceId(Long userId, String deviceId);
+
+    void deleteByUserId(Long userId);
 }

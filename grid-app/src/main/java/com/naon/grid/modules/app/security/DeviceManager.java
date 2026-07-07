@@ -43,4 +43,8 @@ public class DeviceManager {
     public void removeDevice(Long userId, String deviceId) {
         gridUserTokenRepository.deleteByUserIdAndDeviceId(userId, deviceId);
     }
+
+    public void removeAllDevices(Long userId) {
+        gridUserTokenRepository.deleteByUserId(userId);
+    }
 }

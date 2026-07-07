@@ -2,6 +2,7 @@ package com.naon.grid.backend.repo.vocabulary;
 
 import com.naon.grid.backend.domain.vocabulary.VocabWord;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import java.util.List;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
@@ -28,4 +29,18 @@ public interface VocabWordRepository extends JpaRepository<VocabWord, Integer>, 
      * @return 匹配的词汇列表
      */
     List<VocabWord> findByIdIn(List<Integer> ids);
+
+    /**
+     * 随机获取指定HSK等级的已发布且有配图的词汇
+     *
+     * @param hskLevel HSK等级
+     * @param count    返回数量
+     * @return 随机词汇列表
+     */
+    @Query(value = "SELECT DISTINCT vw.* FROM vocab_word vw " +
+        "INNER JOIN vocab_sense vs ON vw.id = vs.word_id " +
+        "WHERE vw.hsk_level = ?1 AND vw.status = 1 AND vw.publish_status = 'published' " +
+        "AND vs.status = 1 AND vs.def_image_id IS NOT NULL " +
+        "ORDER BY RAND() LIMIT ?2", nativeQuery = true)
+    List<VocabWord> findRandomPublishedByHskLevel(String hskLevel, int count);
 }

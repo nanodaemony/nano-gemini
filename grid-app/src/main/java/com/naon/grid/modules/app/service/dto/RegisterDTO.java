@@ -26,6 +26,11 @@ public class RegisterDTO {
 
     private String referralCode; // 新增：注册时选填推荐码
 
+    private String hskLevel;
+
+    @Size(max = 200, message = "个性签名长度不能超过200")
+    private String signature;
+
     @NotBlank(message = "验证码不能为空")
     private String code;
 }

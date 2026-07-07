@@ -5,6 +5,8 @@ import com.naon.grid.backend.service.question.dto.ExerciseQuestionQueryCriteria;
 import com.naon.grid.utils.PageResult;
 import org.springframework.data.domain.Pageable;
 
+import java.util.List;
+
 public interface ExerciseQuestionService {
 
     PageResult<ExerciseQuestionDto> queryAll(ExerciseQuestionQueryCriteria criteria, Pageable pageable);
@@ -22,4 +24,8 @@ public interface ExerciseQuestionService {
     void publishDraft(Long id);
 
     void offline(Long id);
+
+    ExerciseQuestionDto findPublishedById(Long id);
+
+    List<ExerciseQuestionDto> findPublishedByIds(List<Long> ids);
 }

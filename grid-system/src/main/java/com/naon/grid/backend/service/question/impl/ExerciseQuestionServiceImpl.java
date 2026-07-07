@@ -356,6 +356,35 @@ public class ExerciseQuestionServiceImpl implements ExerciseQuestionService {
     }
 
     @Override
+    @Transactional(readOnly = true, rollbackFor = Exception.class)
+    public ExerciseQuestionDto findPublishedById(Long id) {
+        if (id == null) {
+            throw new EntityNotFoundException(ExerciseQuestion.class, "id", String.valueOf(id));
+        }
+        ExerciseQuestion entity = exerciseQuestionRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException(ExerciseQuestion.class, "id", String.valueOf(id)));
+        if (StatusEnum.DISABLED.getCode().equals(entity.getStatus())
+                || !PublishStatusEnum.PUBLISHED.getCode().equals(entity.getPublishStatus())) {
+            throw new EntityNotFoundException(ExerciseQuestion.class, "id", String.valueOf(id));
+        }
+        return buildPublishedDetail(entity);
+    }
+
+    @Override
+    @Transactional(readOnly = true, rollbackFor = Exception.class)
+    public List<ExerciseQuestionDto> findPublishedByIds(List<Long> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return Collections.emptyList();
+        }
+        List<ExerciseQuestion> entities = exerciseQuestionRepository.findAllById(ids);
+        return entities.stream()
+                .filter(e -> StatusEnum.ENABLED.getCode().equals(e.getStatus())
+                        && PublishStatusEnum.PUBLISHED.getCode().equals(e.getPublishStatus()))
+                .map(this::buildPublishedDetail)
+                .collect(Collectors.toList());
+    }
+
+    @Override
     @Transactional(rollbackFor = Exception.class)
     public void offline(Long id) {
         ExerciseQuestion entity = exerciseQuestionRepository.findById(id)

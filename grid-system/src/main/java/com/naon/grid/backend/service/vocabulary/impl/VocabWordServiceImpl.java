@@ -792,4 +792,12 @@ public class VocabWordServiceImpl implements VocabWordService {
 
         return result;
     }
+
+    @Override
+    public List<VocabWordDto> findRandomPublishedWithImage(String hskLevel, int count) {
+        List<VocabWord> words = vocabWordRepository.findRandomPublishedByHskLevel(hskLevel, count);
+        return words.stream()
+                .map(vocabWordMapper::toDto)
+                .collect(Collectors.toList());
+    }
 }

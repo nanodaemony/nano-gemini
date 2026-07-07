@@ -45,4 +45,13 @@ public interface VocabWordService {
      * @return 匹配的已发布词汇列表，无匹配返回空列表
      */
     List<VocabWordDto> searchByWord(String word);
+
+    /**
+     * 随机获取指定HSK等级的已发布且有配图的词汇
+     *
+     * @param hskLevel HSK等级
+     * @param count    返回数量
+     * @return 词汇DTO列表（仅主表字段，不含子表）
+     */
+    List<VocabWordDto> findRandomPublishedWithImage(String hskLevel, int count);
 }

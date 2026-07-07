@@ -49,11 +49,17 @@ public class GridUser implements Serializable {
     @Column(name = "nickname", length = 50)
     private String nickname;
 
-    @Column(name = "avatar", length = 500)
-    private String avatar;
+    @Column(name = "avatar")
+    private Long avatar;
 
     @Column(name = "gender")
     private Integer gender = 0;
+
+    @Column(name = "hsk_level", length = 20)
+    private String hskLevel = "0";
+
+    @Column(name = "signature", length = 200)
+    private String signature;
 
     @Column(length = 20)
     private String userType = "NORMAL";

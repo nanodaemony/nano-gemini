@@ -56,6 +56,9 @@ public class AppTokenFilter extends GenericFilterBean {
                 return;
             }
 
+            // 刷新会话 TTL，保持活跃会话不过期
+            sessionManager.refreshTtl(userId);
+
             AppAuthenticationToken authentication = new AppAuthenticationToken(
                     userId, username, deviceId, roles, userType, orgId, orgRole, region);
             SecurityContextHolder.getContext().setAuthentication(authentication);

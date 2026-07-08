@@ -27,9 +27,6 @@ public class SessionManager {
     @Value("${app.auth.token-expire-seconds:604800}")
     private long tokenExpireSeconds;
 
-    @Value("${app.auth.max-devices:3}")
-    private int maxDevices;
-
     // ── public API ──
 
     /** O(1) 检查设备是否在活跃会话中。Redis 不可用时抛出异常，由调用方决定降级策略。 */
@@ -90,6 +87,15 @@ public class SessionManager {
             }
         }
         return oldest;
+    }
+
+    /** 刷新会话 key 的 TTL，保持活跃会话不过期。 */
+    public void refreshTtl(Long userId) {
+        try {
+            redisUtils.expire(sessionKey(userId), tokenExpireSeconds);
+        } catch (Exception e) {
+            log.warn("Failed to refresh session TTL for userId={}", userId, e);
+        }
     }
 
     // ── internal ──

@@ -61,4 +61,14 @@ public interface CharCharacterRepository extends JpaRepository<CharCharacter, In
      * @return 分页的汉字列表
      */
     Page<CharCharacter> findByRadicalIdAndStatusAndPublishStatus(Long radicalId, Integer status, String publishStatus, Pageable pageable);
+
+    /**
+     * 根据 radicalId 查询所有已发布的汉字（不分页）
+     *
+     * @param radicalId     部首ID
+     * @param status        有效状态
+     * @param publishStatus 发布状态
+     * @return 汉字列表
+     */
+    List<CharCharacter> findByRadicalIdAndStatusAndPublishStatus(Long radicalId, Integer status, String publishStatus);
 }

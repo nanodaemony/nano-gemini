@@ -670,6 +670,13 @@ public class CharCharacterServiceImpl implements CharCharacterService {
     }
 
     @Override
+    public List<CharCharacterDto> findPublishedListByRadicalId(Long radicalId) {
+        List<CharCharacter> list = charCharacterRepository.findByRadicalIdAndStatusAndPublishStatus(
+                radicalId, StatusEnum.ENABLED.getCode(), PublishStatusEnum.PUBLISHED.getCode());
+        return list.stream().map(charCharacterMapper::toDto).collect(Collectors.toList());
+    }
+
+    @Override
     @Transactional(rollbackFor = Exception.class)
     public void offline(Integer id) {
         CharCharacter charCharacter = charCharacterRepository.findById(id)

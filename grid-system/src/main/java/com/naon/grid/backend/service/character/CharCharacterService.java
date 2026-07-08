@@ -33,4 +33,6 @@ public interface CharCharacterService {
     void offline(Integer id);
 
     Page<CharCharacterDto> findPublishedByRadicalId(Long radicalId, Pageable pageable);
+
+    List<CharCharacterDto> findPublishedListByRadicalId(Long radicalId);
 }

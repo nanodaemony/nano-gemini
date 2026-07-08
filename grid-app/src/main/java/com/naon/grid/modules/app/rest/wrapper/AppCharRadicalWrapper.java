@@ -4,7 +4,9 @@ import com.naon.grid.backend.service.character.dto.CharCharacterDto;
 import com.naon.grid.backend.service.charradical.dto.CharRadicalDto;
 import com.naon.grid.modules.app.rest.vo.AppCharRadicalBaseVO;
 import com.naon.grid.modules.app.rest.vo.AppCharRadicalDetailVO;
+import com.naon.grid.modules.app.rest.vo.AppPracticeCharVO;
 import com.naon.grid.modules.app.rest.vo.AppRadicalCharVO;
+import com.naon.grid.modules.app.rest.vo.AppRadicalPracticeVO;
 import org.springframework.data.domain.Page;
 
 import java.util.Collections;
@@ -55,5 +57,21 @@ public class AppCharRadicalWrapper {
         vo.setHskLevel(dto.getHskLevel());
         vo.setPinyin(dto.getPinyin());
         return vo;
+    }
+
+    public static AppRadicalPracticeVO.RadicalGroup toGroup(
+            CharRadicalDto radicalDto, List<CharCharacterDto> charDtos) {
+        AppRadicalPracticeVO.RadicalGroup group = new AppRadicalPracticeVO.RadicalGroup();
+        group.setRadicalId(radicalDto.getId());
+        group.setRadical(radicalDto.getRadical());
+        group.setRadicalName(radicalDto.getRadicalName());
+        List<AppPracticeCharVO> chars = charDtos.stream().map(dto -> {
+            AppPracticeCharVO vo = new AppPracticeCharVO();
+            vo.setId(dto.getId());
+            vo.setCharacter(dto.getCharacter());
+            return vo;
+        }).collect(Collectors.toList());
+        group.setCharacters(chars);
+        return group;
     }
 }

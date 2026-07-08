@@ -7,9 +7,13 @@ import com.naon.grid.backend.service.charradical.CharRadicalService;
 import com.naon.grid.backend.service.charradical.dto.CharRadicalDto;
 import com.naon.grid.modules.app.rest.vo.AppCharRadicalBaseVO;
 import com.naon.grid.modules.app.rest.vo.AppCharRadicalDetailVO;
+import com.naon.grid.modules.app.rest.vo.AppRadicalPracticeVO;
 import com.naon.grid.modules.app.rest.wrapper.AppCharRadicalWrapper;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
@@ -51,5 +55,44 @@ public class AppCharRadicalController {
                 id, PageRequest.of(page, size));
 
         return new ResponseEntity<>(AppCharRadicalWrapper.toDetailVO(radicalDto, charPage), HttpStatus.OK);
+    }
+
+    @ApiOperation("部首练习：获取目标部首+2个随机部首，各附带最多10个随机汉字")
+    @AnonymousGetMapping("/{id}/practice")
+    public ResponseEntity<AppRadicalPracticeVO> practice(@PathVariable Long id) {
+        // 1. 查询目标部首
+        CharRadicalDto targetRadical = charRadicalService.findPublishedById(id);
+
+        // 2. 获取目标部首的随机汉字
+        List<CharCharacterDto> targetChars = charCharacterService.findPublishedListByRadicalId(id);
+        List<CharCharacterDto> randomTargetChars = pickRandom(targetChars, 10);
+
+        // 3. 随机选2个其他部首
+        List<CharRadicalDto> allRadicals = charRadicalService.findAllPublished();
+        List<CharRadicalDto> others = allRadicals.stream()
+                .filter(r -> !r.getId().equals(id))
+                .collect(Collectors.toList());
+        Collections.shuffle(others);
+        List<CharRadicalDto> randomRadicals = others.stream().limit(2).collect(Collectors.toList());
+
+        // 4. 获取随机部首的随机汉字
+        List<AppRadicalPracticeVO.RadicalGroup> radicalGroups = new ArrayList<>();
+        radicalGroups.add(AppCharRadicalWrapper.toGroup(targetRadical, randomTargetChars));
+        for (CharRadicalDto radical : randomRadicals) {
+            List<CharCharacterDto> chars = charCharacterService.findPublishedListByRadicalId(radical.getId());
+            radicalGroups.add(AppCharRadicalWrapper.toGroup(radical, pickRandom(chars, 10)));
+        }
+
+        return new ResponseEntity<>(AppRadicalPracticeVO.withRadicals(radicalGroups), HttpStatus.OK);
+    }
+
+    /**
+     * 从列表中随机取最多 limit 个元素
+     */
+    private static <T> List<T> pickRandom(List<T> list, int limit) {
+        if (list == null || list.isEmpty()) return Collections.emptyList();
+        List<T> copy = new ArrayList<>(list);
+        Collections.shuffle(copy);
+        return copy.subList(0, Math.min(limit, copy.size()));
     }
 }

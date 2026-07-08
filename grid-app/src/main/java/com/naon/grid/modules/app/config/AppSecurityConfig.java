@@ -1,8 +1,10 @@
 package com.naon.grid.modules.app.config;
 
 import com.naon.grid.config.properties.SecurityProperties;
+import com.naon.grid.modules.app.repository.GridUserTokenRepository;
 import com.naon.grid.modules.app.security.AppTokenFilter;
 import com.naon.grid.modules.app.security.AppTokenProvider;
+import com.naon.grid.modules.app.security.SessionManager;
 import com.naon.grid.utils.AnonTagUtils;
 import com.naon.grid.utils.enums.RequestMethodEnum;
 import org.springframework.context.ApplicationContext;
@@ -27,19 +29,26 @@ public class AppSecurityConfig {
     private final ApplicationContext applicationContext;
     private final AppTokenProvider appTokenProvider;
     private final SecurityProperties securityProperties;
+    private final SessionManager sessionManager;
+    private final GridUserTokenRepository userTokenRepository;
 
     public AppSecurityConfig(ApplicationContext applicationContext,
                              AppTokenProvider appTokenProvider,
-                             SecurityProperties securityProperties) {
+                             SecurityProperties securityProperties,
+                             SessionManager sessionManager,
+                             GridUserTokenRepository userTokenRepository) {
         this.applicationContext = applicationContext;
         this.appTokenProvider = appTokenProvider;
         this.securityProperties = securityProperties;
+        this.sessionManager = sessionManager;
+        this.userTokenRepository = userTokenRepository;
     }
 
     @Bean
     public SecurityFilterChain appSecurityFilterChain(HttpSecurity http) throws Exception {
         Map<String, Set<String>> anonymousUrls = AnonTagUtils.getAnonymousUrl(applicationContext);
-        AppTokenFilter appTokenFilter = new AppTokenFilter(appTokenProvider, securityProperties);
+        AppTokenFilter appTokenFilter = new AppTokenFilter(
+                appTokenProvider, securityProperties, sessionManager, userTokenRepository);
 
         return http
                 .requestMatchers(matchers -> matchers.antMatchers("/api/app/**"))

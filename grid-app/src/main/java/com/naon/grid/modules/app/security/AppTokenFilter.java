@@ -15,6 +15,7 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.List;
 
@@ -52,9 +53,12 @@ public class AppTokenFilter extends GenericFilterBean {
             String orgRole = claims.get(AppTokenProvider.ORG_ROLE_KEY, String.class);
             String region = claims.get(AppTokenProvider.REGION_KEY, String.class);
 
-            // 【新增】会话校验 + Redis 降级
+            // 会话校验 + Redis 降级 — 被踢设备直接返回 401
             if (!isSessionActive(userId, deviceId)) {
-                filterChain.doFilter(servletRequest, servletResponse);
+                HttpServletResponse httpResponse = (HttpServletResponse) servletResponse;
+                httpResponse.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                httpResponse.setContentType("application/json;charset=UTF-8");
+                httpResponse.getWriter().write("{\"status\":401,\"message\":\"登录状态已过期，请重新登录\"}");
                 return;
             }
 

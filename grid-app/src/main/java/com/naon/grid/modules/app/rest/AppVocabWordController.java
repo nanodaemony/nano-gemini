@@ -94,6 +94,9 @@ public class AppVocabWordController {
     @GetMapping("/challenge")
     public ResponseEntity<List<AppExerciseQuestionDetailVO>> challenge() {
         Long userId = AppSecurityUtils.getCurrentUserId();
+        if (userId == null) {
+            throw new EntityNotFoundException(GridUser.class, "id", "null");
+        }
         GridUser user = gridUserRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException(GridUser.class, "id", userId.toString()));
         String hskLevel = user.getHskLevel();

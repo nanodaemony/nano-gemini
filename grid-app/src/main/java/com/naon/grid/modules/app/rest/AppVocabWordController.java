@@ -104,14 +104,14 @@ public class AppVocabWordController {
             levelA = "4";
             levelB = "5";
         } else {
+            levelA = "4";
+            levelB = "5"; // defaults, overridden below for valid numeric levels
             int n;
             try {
                 n = Integer.parseInt(hskLevel);
             } catch (NumberFormatException e) {
                 log.warn("Invalid HSK level '{}' for user {}, falling back to default", hskLevel, userId);
-                levelA = "4";
-                levelB = "5";
-                n = -1; // sentinel to skip remaining level logic
+                n = -1; // skip remaining level logic, keep defaults
             }
             if (n >= 9) {
                 levelA = "9";

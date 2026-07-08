@@ -8,6 +8,7 @@ import com.naon.grid.modules.app.domain.GridUserToken;
 import com.naon.grid.modules.app.repository.GridUserRepository;
 import com.naon.grid.modules.app.repository.GridUserTokenRepository;
 import com.naon.grid.modules.app.security.AppTokenProvider;
+import com.naon.grid.modules.app.security.SessionManager;
 import com.naon.grid.modules.app.security.DeviceManager;
 import com.naon.grid.modules.app.service.AppAuthService;
 import com.naon.grid.modules.app.service.CollectionService;
@@ -74,6 +75,7 @@ public class AppAuthServiceImpl implements AppAuthService {
     private final EmailService emailService;
     private final GridUserAuthRepository userAuthRepository;
     private final IdTokenVerifier idTokenVerifier;
+    private final SessionManager sessionManager;
 
     private static final SecureRandom SECURE_RANDOM = new SecureRandom();
 
@@ -82,6 +84,9 @@ public class AppAuthServiceImpl implements AppAuthService {
 
     @Value("${app.auth.refresh-token-expire-seconds:2592000}")
     private long refreshTokenExpireSeconds;
+
+    @Value("${app.auth.max-devices:3}")
+    private int maxDevices;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -217,6 +222,17 @@ public class AppAuthServiceImpl implements AppAuthService {
         if (userToken.getExpireTime().before(new Date())) {
             userTokenRepository.delete(userToken);
             throw new BadRequestException("刷新令牌已过期");
+        }
+
+        // 【新增】校验设备会话是否仍活跃
+        try {
+            if (!sessionManager.isActive(userToken.getUserId(), userToken.getDeviceId())) {
+                throw new BadRequestException("设备已下线，请重新登录");
+            }
+        } catch (Exception e) {
+            log.warn("Redis session check failed during refresh for userId={}, proceeding",
+                    userToken.getUserId(), e);
+            // Redis 不可用时放行
         }
 
         GridUser user = userRepository.findById(userToken.getUserId())
@@ -586,10 +602,33 @@ public class AppAuthServiceImpl implements AppAuthService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void logout(Long userId, String deviceId) {
+        sessionManager.removeSession(userId, deviceId);
         userTokenRepository.deleteByUserIdAndDeviceId(userId, deviceId);
     }
 
     private TokenDTO generateToken(GridUser user, String deviceId, String deviceName) {
+        // ── 设备会话限制 ──
+        try {
+            if (!sessionManager.isActive(user.getId(), deviceId)) {
+                // 新设备 ─ 检查是否达到上限
+                int activeCount = sessionManager.getActiveCount(user.getId());
+                if (activeCount >= maxDevices) {
+                    String oldestDeviceId = sessionManager.findOldestDeviceId(user.getId());
+                    if (oldestDeviceId != null) {
+                        log.info("Device limit reached for userId={}, evicting oldest device={}",
+                                user.getId(), oldestDeviceId);
+                        sessionManager.removeSession(user.getId(), oldestDeviceId);
+                        userTokenRepository.deleteByUserIdAndDeviceId(user.getId(), oldestDeviceId);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            log.warn("Session enforcement failed for userId={}, skipping device limit check", user.getId(), e);
+            // Redis 不可用时跳过限制，不阻断登录
+        }
+        sessionManager.addSession(user.getId(), deviceId, deviceName);
+
+        // ── 原有逻辑 ──
         List<String> roles = new ArrayList<>();
 
         Integer orgId = user.getOrgId();

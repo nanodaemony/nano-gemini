@@ -24,6 +24,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.data.redis.connection.RedisConnection;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.*;
+import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 import org.springframework.stereotype.Component;
 
@@ -799,6 +800,111 @@ public class RedisUtils {
             keys.addAll(redisTemplate.keys(new StringBuffer(prefix).append(id).toString()));
         }
         long count = redisTemplate.delete(keys);
+    }
+
+    // ===============================zSet=============================
+
+    /**
+     * 添加/更新ZSet成员，member相同时score覆盖
+     *
+     * @param key   键
+     * @param value 成员值
+     * @param score 分数
+     * @return true 成功 false 失败
+     */
+    public boolean zAdd(String key, Object value, double score) {
+        try {
+            Boolean added = redisTemplate.opsForZSet().add(key, value, score);
+            return Boolean.TRUE.equals(added);
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            return false;
+        }
+    }
+
+    /**
+     * 按排名范围删除成员
+     *
+     * @param key   键
+     * @param start 起始排名（含，0=最低score）
+     * @param end   结束排名（含，-1=最高score）
+     * @return 删除的成员数量
+     */
+    public long zRemRangeByRank(String key, long start, long end) {
+        try {
+            Long removed = redisTemplate.opsForZSet().removeRange(key, start, end);
+            return removed != null ? removed : 0;
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            return 0;
+        }
+    }
+
+    /**
+     * 移除指定成员
+     *
+     * @param key    键
+     * @param values 成员值（可多个）
+     * @return 移除的成员数量
+     */
+    public long zRemove(String key, Object... values) {
+        try {
+            Long removed = redisTemplate.opsForZSet().remove(key, values);
+            return removed != null ? removed : 0;
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            return 0;
+        }
+    }
+
+    /**
+     * 按score降序取范围
+     *
+     * @param key   键
+     * @param start 起始位置
+     * @param end   结束位置
+     * @return 成员集合（按score降序）
+     */
+    public Set<Object> zRevRange(String key, long start, long end) {
+        try {
+            return redisTemplate.opsForZSet().reverseRange(key, start, end);
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            return null;
+        }
+    }
+
+    /**
+     * 按score降序取范围（带score）
+     *
+     * @param key   键
+     * @param start 起始位置
+     * @param end   结束位置
+     * @return 带score的成员集合（按score降序）
+     */
+    public Set<ZSetOperations.TypedTuple<Object>> zRevRangeWithScores(String key, long start, long end) {
+        try {
+            return redisTemplate.opsForZSet().reverseRangeWithScores(key, start, end);
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            return null;
+        }
+    }
+
+    /**
+     * 获取ZSet成员数量
+     *
+     * @param key 键
+     * @return 成员数量
+     */
+    public long zCard(String key) {
+        try {
+            Long size = redisTemplate.opsForZSet().size(key);
+            return size != null ? size : 0;
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            return 0;
+        }
     }
 
     // ============================incr=============================

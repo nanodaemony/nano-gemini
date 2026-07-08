@@ -37,6 +37,8 @@ public class AppTokenFilter extends GenericFilterBean {
             filterChain.doFilter(servletRequest, servletResponse);
             return;
         }
+        // 清除上一个请求的 SecurityContext，防止 ThreadLocal 污染
+        SecurityContextHolder.clearContext();
         String token = resolveToken(httpServletRequest);
 
         if (StringUtils.hasText(token) && appTokenProvider.validateToken(token)) {

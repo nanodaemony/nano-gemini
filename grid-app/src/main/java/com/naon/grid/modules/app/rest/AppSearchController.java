@@ -94,6 +94,7 @@ public class AppSearchController {
         return vos;
     }
 
+    // TODO: Add DB-level LIMIT to searchPublishedByCharacter to avoid loading all rows for common characters
     private List<AppCharCharacterBaseVO> searchCharacter(String keyword) {
         List<CharCharacterDto> dtos = charCharacterService.searchPublishedByCharacter(keyword);
         if (dtos.size() > 20) {
@@ -110,6 +111,8 @@ public class AppSearchController {
 
     private List<AppComparisonGroupVO> searchComparison(String keyword) {
         List<AppComparisonGroupVO> result = new ArrayList<>();
+
+        // TODO: Consider interleaving vocab and grammar comparison results (e.g., 10+10) for fairer distribution
 
         // 词汇辨析
         List<VocabComparisonGroupDto> vocabGroups = vocabComparisonGroupService.searchByWordFuzzy(keyword, 20);

@@ -265,31 +265,11 @@ public class GrammarComparisonGroupServiceImpl implements GrammarComparisonGroup
     public List<GrammarComparisonGroupDto> searchByGrammarNameFuzzy(String name, int limit) {
         List<GrammarComparisonItem> items = itemRepository.findByGrammarNameContainingAndStatus(
                 name, StatusEnum.ENABLED.getCode());
-        if (items == null || items.isEmpty()) {
-            return Collections.emptyList();
+        List<GrammarComparisonGroupDto> groups = searchPublishedGroups(items);
+        if (groups.size() > limit) {
+            return groups.subList(0, limit);
         }
-        List<Long> groupIds = items.stream()
-                .map(GrammarComparisonItem::getGroupId)
-                .distinct()
-                .collect(Collectors.toList());
-        List<GrammarComparisonGroup> groups = groupRepository.findAllById(groupIds);
-        List<GrammarComparisonGroupDto> result = new ArrayList<>();
-        for (GrammarComparisonGroup group : groups) {
-            if (!PublishStatusEnum.PUBLISHED.getCode().equals(group.getPublishStatus())) {
-                continue;
-            }
-            if (StatusEnum.DISABLED.getCode().equals(group.getStatus())) {
-                continue;
-            }
-            GrammarComparisonGroupDto dto = toBaseDto(group);
-            dto.setItems(loadItems(group.getId()));
-            dto.setChats(loadChats(group.getId()));
-            result.add(dto);
-            if (result.size() >= limit) {
-                break;
-            }
-        }
-        return result;
+        return groups;
     }
 
     // ==================== Private Helper Methods ====================

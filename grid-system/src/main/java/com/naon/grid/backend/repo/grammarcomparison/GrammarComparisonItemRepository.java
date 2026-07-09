@@ -18,4 +18,6 @@ public interface GrammarComparisonItemRepository extends JpaRepository<GrammarCo
     List<GrammarComparisonItem> findByGrammarNameAndStatus(String grammarName, Integer status);
 
     List<GrammarComparisonItem> findByGrammarIdAndStatus(Long grammarId, Integer status);
+
+    List<GrammarComparisonItem> findByGrammarNameContainingAndStatus(String grammarName, Integer status);
 }

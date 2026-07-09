@@ -18,4 +18,6 @@ public interface VocabComparisonItemRepository extends JpaRepository<VocabCompar
     List<VocabComparisonItem> findByWordAndStatus(String word, Integer status);
 
     List<VocabComparisonItem> findByWordIdAndStatus(Long wordId, Integer status);
+
+    List<VocabComparisonItem> findByWordContainingAndStatus(String word, Integer status);
 }

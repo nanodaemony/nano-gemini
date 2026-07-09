@@ -34,4 +34,9 @@ public interface VocabComparisonGroupService {
      * 根据词汇ID精确搜索已发布的辨析组
      */
     List<VocabComparisonGroupDto> searchByWordId(Long wordId);
+
+    /**
+     * 根据词汇文本模糊搜索已发布的辨析组（LIKE %word%），最多返回 limit 条
+     */
+    List<VocabComparisonGroupDto> searchByWordFuzzy(String word, int limit);
 }

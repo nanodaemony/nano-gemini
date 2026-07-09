@@ -257,6 +257,37 @@ public class VocabComparisonGroupServiceImpl implements VocabComparisonGroupServ
         return searchPublishedGroups(items);
     }
 
+    @Override
+    public List<VocabComparisonGroupDto> searchByWordFuzzy(String word, int limit) {
+        List<VocabComparisonItem> items = itemRepository.findByWordContainingAndStatus(
+                word, StatusEnum.ENABLED.getCode());
+        if (items == null || items.isEmpty()) {
+            return Collections.emptyList();
+        }
+        List<Long> groupIds = items.stream()
+                .map(VocabComparisonItem::getGroupId)
+                .distinct()
+                .collect(Collectors.toList());
+        List<VocabComparisonGroup> groups = groupRepository.findAllById(groupIds);
+        List<VocabComparisonGroupDto> result = new ArrayList<>();
+        for (VocabComparisonGroup group : groups) {
+            if (!PublishStatusEnum.PUBLISHED.getCode().equals(group.getPublishStatus())) {
+                continue;
+            }
+            if (StatusEnum.DISABLED.getCode().equals(group.getStatus())) {
+                continue;
+            }
+            VocabComparisonGroupDto dto = toBaseDto(group);
+            dto.setItems(loadItems(group.getId()));
+            dto.setChats(loadChats(group.getId()));
+            result.add(dto);
+            if (result.size() >= limit) {
+                break;
+            }
+        }
+        return result;
+    }
+
     // ==================== Private Helper Methods ====================
 
     /**

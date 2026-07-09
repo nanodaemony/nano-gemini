@@ -34,4 +34,9 @@ public interface GrammarComparisonGroupService {
      * 根据语法点ID搜索已发布的辨析组
      */
     List<GrammarComparisonGroupDto> searchByGrammarId(Long grammarId);
+
+    /**
+     * 根据语法点名称模糊搜索已发布的辨析组（LIKE %name%），最多返回 limit 条
+     */
+    List<GrammarComparisonGroupDto> searchByGrammarNameFuzzy(String name, int limit);
 }

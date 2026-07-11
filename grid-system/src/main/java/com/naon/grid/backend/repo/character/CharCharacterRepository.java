@@ -71,4 +71,30 @@ public interface CharCharacterRepository extends JpaRepository<CharCharacter, In
      * @return 汉字列表
      */
     List<CharCharacter> findByRadicalIdAndStatusAndPublishStatus(Long radicalId, Integer status, String publishStatus);
+
+    /**
+     * 按 HSK 等级列表随机取已发布汉字。
+     *
+     * @param levels HSK 等级代码列表
+     * @param limit  返回数量上限
+     * @return 随机汉字列表
+     */
+    @Query(value = "SELECT * FROM char_character WHERE hsk_level IN ?1 " +
+        "AND status = 1 AND publish_status = 'published' " +
+        "ORDER BY RAND() LIMIT ?2", nativeQuery = true)
+    List<CharCharacter> findRandomPublishedByHskLevels(List<String> levels, int limit);
+
+    /**
+     * 按 HSK 等级列表随机取已发布且关联至少 2 条组词的汉字。
+     *
+     * @param levels HSK 等级代码列表
+     * @param limit  返回数量上限
+     * @return 随机汉字列表
+     */
+    @Query(value = "SELECT cc.* FROM char_character cc " +
+        "INNER JOIN char_word cw ON cc.id = cw.char_id " +
+        "WHERE cc.hsk_level IN ?1 AND cc.status = 1 AND cc.publish_status = 'published' " +
+        "AND cw.status = 1 GROUP BY cc.id HAVING COUNT(cw.id) >= 2 " +
+        "ORDER BY RAND() LIMIT ?2", nativeQuery = true)
+    List<CharCharacter> findRandomPublishedWithMinWords(List<String> levels, int limit);
 }

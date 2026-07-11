@@ -16,4 +16,13 @@ public interface CharWordRepository extends JpaRepository<CharWord, Integer> {
 
     @Query("SELECT c.charId, COUNT(c) FROM CharWord c WHERE c.charId IN :charIds AND c.status = :status GROUP BY c.charId")
     List<Object[]> countByCharIdInGroupByCharId(@Param("charIds") Collection<Integer> charIds, @Param("status") Integer status);
+
+    /**
+     * 按 charId 列表批量查询已启用的组词。
+     *
+     * @param charIds 汉字ID列表
+     * @param status  状态
+     * @return 组词列表
+     */
+    List<CharWord> findByCharIdInAndStatus(List<Integer> charIds, Integer status);
 }

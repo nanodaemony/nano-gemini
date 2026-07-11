@@ -18,4 +18,23 @@ public interface CharComparisonRepository extends JpaRepository<CharComparison, 
 
     @Query("SELECT c.charId, COUNT(c) FROM CharComparison c WHERE c.charId IN :charIds AND c.status = :status GROUP BY c.charId")
     List<Object[]> countByCharIdInGroupByCharId(@Param("charIds") Collection<Integer> charIds, @Param("status") Integer status);
+
+    /**
+     * 随机取已启用（status=1）的辨析记录。
+     *
+     * @param limit 返回数量上限
+     * @return 随机辨析记录列表
+     */
+    @Query(value = "SELECT * FROM char_comparison WHERE status = 1 " +
+        "ORDER BY RAND() LIMIT ?1", nativeQuery = true)
+    List<CharComparison> findRandomEnabled(int limit);
+
+    /**
+     * 按 charId 列表批量查询已启用的辨析记录（用于干扰项生成）。
+     *
+     * @param charIds 汉字ID列表
+     * @param status  状态
+     * @return 辨析记录列表
+     */
+    List<CharComparison> findByCharIdInAndStatus(List<Integer> charIds, Integer status);
 }

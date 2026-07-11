@@ -43,4 +43,18 @@ public interface VocabWordRepository extends JpaRepository<VocabWord, Integer>, 
         "AND vs.status = 1 AND vs.def_image_id IS NOT NULL " +
         "ORDER BY RAND() LIMIT ?2", nativeQuery = true)
     List<VocabWord> findRandomPublishedByHskLevel(String hskLevel, int count);
+
+    /**
+     * 随机取已发布词汇，排除包含指定汉字的词（用于组词游戏干扰项）。
+     *
+     * @param levels      HSK等级列表
+     * @param excludeChar 要排除的汉字
+     * @param limit       返回数量上限
+     * @return 随机词汇列表
+     */
+    @Query(value = "SELECT * FROM vocab_word WHERE hsk_level IN ?1 " +
+        "AND status = 1 AND publish_status = 'published' " +
+        "AND word NOT LIKE CONCAT('%', ?2, '%') " +
+        "ORDER BY RAND() LIMIT ?3", nativeQuery = true)
+    List<VocabWord> findRandomPublishedExcludingChar(List<String> levels, String excludeChar, int limit);
 }

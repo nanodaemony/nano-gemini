@@ -20,6 +20,7 @@ import com.naon.grid.enums.StatusEnum;
 import com.naon.grid.exception.BadRequestException;
 import com.naon.grid.exception.EntityNotFoundException;
 import com.naon.grid.utils.JsonUtils;
+import com.naon.grid.utils.OpenCcUtils;
 import com.naon.grid.utils.PageResult;
 import com.naon.grid.utils.PageUtil;
 import com.naon.grid.utils.QueryHelp;
@@ -289,6 +290,10 @@ public class CharCharacterServiceImpl implements CharCharacterService {
         charCharacter.setPublishStatus(PublishStatusEnum.UNPUBLISHED.getCode());
         charCharacter.setEditStatus(EditStatusEnum.DRAFT.getCode());
         charCharacter.setCharacter(resources.getCharacter());
+        // 自动补全繁体字（仅在未手动填写时）
+        if (resources.getTraditional() == null || resources.getTraditional().trim().isEmpty()) {
+            resources.setTraditional(OpenCcUtils.toTraditional(resources.getCharacter()));
+        }
         charCharacter.setDraftContent(JsonUtils.toJson(resources));
         charCharacter = charCharacterRepository.save(charCharacter);
         return charCharacter.getId();
@@ -319,6 +324,10 @@ public class CharCharacterServiceImpl implements CharCharacterService {
             charCharacter.setEditStatus(EditStatusEnum.DRAFT.getCode());
         }
 
+        // 自动补全繁体字（仅在未手动填写时）
+        if (resources.getTraditional() == null || resources.getTraditional().trim().isEmpty()) {
+            resources.setTraditional(OpenCcUtils.toTraditional(resources.getCharacter()));
+        }
         charCharacter.setDraftContent(JsonUtils.toJson(resources));
         charCharacterRepository.save(charCharacter);
     }

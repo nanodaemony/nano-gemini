@@ -23,11 +23,11 @@ public class DailyVocabularyQueryCriteria implements Serializable {
     private String publishStatus;
 
     @ApiModelProperty(value = "展示日期起始")
-    @Query(propName = "displayDate", type = Query.Type.GREATER_THAN_OR_EQUAL)
+    @Query(propName = "displayDate", type = Query.Type.GREATER_THAN)
     private LocalDate displayDateStart;
 
     @ApiModelProperty(value = "展示日期截止")
-    @Query(propName = "displayDate", type = Query.Type.LESS_THAN_OR_EQUAL)
+    @Query(propName = "displayDate", type = Query.Type.LESS_THAN)
     private LocalDate displayDateEnd;
 
     @ApiModelProperty(value = "仅查已发布（App端使用）")

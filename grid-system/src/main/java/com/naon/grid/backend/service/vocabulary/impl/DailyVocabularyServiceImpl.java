@@ -89,6 +89,7 @@ public class DailyVocabularyServiceImpl implements DailyVocabularyService {
         entity.setEditStatus(EditStatusEnum.DRAFT.getCode());
         entity.setPhrase(dto.getPhrase());
         entity.setPhraseType(dto.getPhraseType());
+        entity.setSortOrder(dto.getSortOrder() != null ? dto.getSortOrder() : 0);
         entity.setDraftContent(JsonUtils.toJson(dto));
         entity = dailyVocabularyRepository.save(entity);
         return entity.getId();

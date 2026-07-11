@@ -20,21 +20,21 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 /**
- * 用户端汉字游戏接口。
+ * 用户端汉字大挑战接口。
  * <p>
  * 三种游戏各返回 10 道题目，匿名访问，复用 {@link AppExerciseQuestionDetailVO} 通用题目结构。
  */
 @Slf4j
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/app/character/game")
-@Api(tags = "用户：汉字游戏接口")
-public class AppGameController {
+@RequestMapping("/api/app/character/challenge")
+@Api(tags = "用户：汉字大挑战")
+public class AppCharacterChallengeController {
 
     private final GameCharacterService gameCharacterService;
 
     @AnonymousGetMapping("/radical")
-    @ApiOperation("获取部首识记题目（10题）")
+    @ApiOperation("部首识记（10题）")
     public ResponseEntity<List<AppExerciseQuestionDetailVO>> getRadicalQuestions(
             @RequestParam @ApiParam(value = "难度: elementary|intermediate|advanced", required = true)
             String level) {
@@ -44,14 +44,14 @@ public class AppGameController {
     }
 
     @AnonymousGetMapping("/comparison")
-    @ApiOperation("获取形近字辨析题目（10题）")
+    @ApiOperation("形近字辨析（10题）")
     public ResponseEntity<List<AppExerciseQuestionDetailVO>> getComparisonQuestions() {
         List<GameQuestionDTO> dtos = gameCharacterService.generateComparisonQuestions();
         return new ResponseEntity<>(AppGameWrapper.toQuestionVOList(dtos), HttpStatus.OK);
     }
 
     @AnonymousGetMapping("/word-formation")
-    @ApiOperation("获取组词游戏题目（10题）")
+    @ApiOperation("汉字组词（10题）")
     public ResponseEntity<List<AppExerciseQuestionDetailVO>> getWordFormationQuestions(
             @RequestParam @ApiParam(value = "难度: elementary|intermediate|advanced", required = true)
             String level) {

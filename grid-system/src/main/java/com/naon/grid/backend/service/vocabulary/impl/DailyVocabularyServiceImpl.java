@@ -108,7 +108,8 @@ public class DailyVocabularyServiceImpl implements DailyVocabularyService {
         }
 
         // 回退到草稿
-        if (EditStatusEnum.REVIEWED.getCode().equals(entity.getEditStatus())) {
+        if (EditStatusEnum.REVIEWED.getCode().equals(entity.getEditStatus()) ||
+                EditStatusEnum.PUBLISHED.getCode().equals(entity.getEditStatus())) {
             entity.setEditStatus(EditStatusEnum.DRAFT.getCode());
         }
 

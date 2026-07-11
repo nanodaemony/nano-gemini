@@ -131,6 +131,8 @@ public class AppAuthServiceImpl implements AppAuthService {
         user.setRegion(region);
         user.setRegisterIp(ip);
         user.setRegisterAuditStatus("APPROVED");
+        user.setCreateTime(java.time.LocalDateTime.now());
+        user.setUpdateTime(java.time.LocalDateTime.now());
 
         // Generate referral code
         user.setReferralCode(generateReferralCode(userRepository));
@@ -393,6 +395,8 @@ public class AppAuthServiceImpl implements AppAuthService {
         user.setRegion(region);
         user.setRegisterIp(ip);
         user.setRegisterAuditStatus("APPROVED");
+        user.setCreateTime(java.time.LocalDateTime.now());
+        user.setUpdateTime(java.time.LocalDateTime.now());
         user.setReferralCode(generateReferralCode(userRepository));
         userRepository.save(user);
 
@@ -534,6 +538,8 @@ public class AppAuthServiceImpl implements AppAuthService {
             user.setRegion(region);
             user.setRegisterIp(ip);
             user.setRegisterAuditStatus("APPROVED");
+            user.setCreateTime(java.time.LocalDateTime.now());
+            user.setUpdateTime(java.time.LocalDateTime.now());
             user.setReferralCode(generateReferralCode(userRepository));
             userRepository.save(user);
 

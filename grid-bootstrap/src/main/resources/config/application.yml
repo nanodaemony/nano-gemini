@@ -55,15 +55,15 @@ spring:
         # 连接池中的最小空闲连接数
         min-idle: 1
 
-  # ─── 邮件服务 ───
+  # ─── 邮件服务（阿里云 DirectMail SMTP）───
   mail:
-    host: ${MAIL_HOST:smtp.example.com}
-    port: ${MAIL_PORT:587}
-    username: ${MAIL_USERNAME:noreply@yourroad.com}
+    host: ${MAIL_HOST:smtpdm.aliyun.com}
+    port: ${MAIL_PORT:465}
+    username: ${MAIL_USERNAME:noreply@mail.yourroad.cn}
     password: ${MAIL_PASSWORD:}
     properties:
       mail.smtp.auth: true
-      mail.smtp.starttls.enable: true
+      mail.smtp.ssl.enable: true
 
 task:
   pool:

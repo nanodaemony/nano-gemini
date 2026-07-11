@@ -4,7 +4,7 @@ import com.naon.grid.annotation.rest.AnonymousGetMapping;
 import com.naon.grid.backend.service.game.GameCharacterService;
 import com.naon.grid.backend.service.game.dto.GameQuestionDTO;
 import com.naon.grid.enums.HskLevelRange;
-import com.naon.grid.modules.app.rest.vo.AppGameQuestionVO;
+import com.naon.grid.modules.app.rest.vo.AppExerciseQuestionDetailVO;
 import com.naon.grid.modules.app.rest.wrapper.AppGameWrapper;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -22,7 +22,7 @@ import java.util.List;
 /**
  * 用户端汉字游戏接口。
  * <p>
- * 三种游戏各返回 10 道题目，匿名访问。
+ * 三种游戏各返回 10 道题目，匿名访问，复用 {@link AppExerciseQuestionDetailVO} 通用题目结构。
  */
 @Slf4j
 @RestController
@@ -35,46 +35,28 @@ public class AppGameController {
 
     @AnonymousGetMapping("/radical")
     @ApiOperation("获取部首识记题目（10题）")
-    public ResponseEntity<List<AppGameQuestionVO>> getRadicalQuestions(
+    public ResponseEntity<List<AppExerciseQuestionDetailVO>> getRadicalQuestions(
             @RequestParam @ApiParam(value = "难度: elementary|intermediate|advanced", required = true)
-            String level,
-            @RequestParam @ApiParam(value = "语言: zh|en", required = true)
-            String language) {
-        if (language == null || language.trim().isEmpty()) {
-            throw new IllegalArgumentException("language 参数不能为空");
-        }
+            String level) {
         List<String> hskLevels = HskLevelRange.fromKey(level);
         List<GameQuestionDTO> dtos = gameCharacterService.generateRadicalQuestions(hskLevels);
-        List<AppGameQuestionVO> vos = AppGameWrapper.toQuestionVOList(dtos, language);
-        return new ResponseEntity<>(vos, HttpStatus.OK);
+        return new ResponseEntity<>(AppGameWrapper.toQuestionVOList(dtos), HttpStatus.OK);
     }
 
     @AnonymousGetMapping("/comparison")
     @ApiOperation("获取形近字辨析题目（10题）")
-    public ResponseEntity<List<AppGameQuestionVO>> getComparisonQuestions(
-            @RequestParam @ApiParam(value = "语言: zh|en", required = true)
-            String language) {
-        if (language == null || language.trim().isEmpty()) {
-            throw new IllegalArgumentException("language 参数不能为空");
-        }
+    public ResponseEntity<List<AppExerciseQuestionDetailVO>> getComparisonQuestions() {
         List<GameQuestionDTO> dtos = gameCharacterService.generateComparisonQuestions();
-        List<AppGameQuestionVO> vos = AppGameWrapper.toQuestionVOList(dtos, language);
-        return new ResponseEntity<>(vos, HttpStatus.OK);
+        return new ResponseEntity<>(AppGameWrapper.toQuestionVOList(dtos), HttpStatus.OK);
     }
 
     @AnonymousGetMapping("/word-formation")
     @ApiOperation("获取组词游戏题目（10题）")
-    public ResponseEntity<List<AppGameQuestionVO>> getWordFormationQuestions(
+    public ResponseEntity<List<AppExerciseQuestionDetailVO>> getWordFormationQuestions(
             @RequestParam @ApiParam(value = "难度: elementary|intermediate|advanced", required = true)
-            String level,
-            @RequestParam @ApiParam(value = "语言: zh|en", required = true)
-            String language) {
-        if (language == null || language.trim().isEmpty()) {
-            throw new IllegalArgumentException("language 参数不能为空");
-        }
+            String level) {
         List<String> hskLevels = HskLevelRange.fromKey(level);
         List<GameQuestionDTO> dtos = gameCharacterService.generateWordFormationQuestions(hskLevels);
-        List<AppGameQuestionVO> vos = AppGameWrapper.toQuestionVOList(dtos, language);
-        return new ResponseEntity<>(vos, HttpStatus.OK);
+        return new ResponseEntity<>(AppGameWrapper.toQuestionVOList(dtos), HttpStatus.OK);
     }
 }

@@ -1,116 +1,86 @@
 package com.naon.grid.modules.app.rest.wrapper;
 
-import com.naon.grid.backend.rest.vo.TextTranslationVO;
 import com.naon.grid.backend.service.game.dto.GameQuestionDTO;
-import com.naon.grid.backend.service.game.dto.GameQuestionDTO.GameExplanationDTO;
 import com.naon.grid.backend.service.game.dto.GameQuestionDTO.GameOptionDTO;
-import com.naon.grid.domain.common.TextTranslation;
-import com.naon.grid.modules.app.rest.vo.AppGameQuestionVO;
-import com.naon.grid.modules.app.rest.vo.AppGameQuestionVO.GameExplanationVO;
-import com.naon.grid.modules.app.rest.vo.AppGameQuestionVO.GameOptionVO;
+import com.naon.grid.modules.app.rest.vo.AppExerciseQuestionDetailVO;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 /**
- * 用户端游戏包装器 — DTO → VO 转换 + 单语言筛选。
+ * 用户端游戏包装器 — GameQuestionDTO → AppExerciseQuestionDetailVO。
  * <p>
- * 遵循 AppCharCharacterWrapper 的静态工具类模式。
+ * 复用项目通用题目结构，与词汇大挑战（AppVocabChallengeWrapper）输出一致。
  */
 public class AppGameWrapper {
 
+    private static final String QUESTION_TYPE_PREFIX = "char_";
+
     /**
-     * 批量转换题目 DTO 列表为单语言 VO 列表。
+     * 批量转换题目 DTO 列表为通用题目 VO 列表。
      *
-     * @param dtos     多语言题目 DTO 列表
-     * @param language 目标语言，如 "zh"、"en"
-     * @return 单语言 VO 列表
+     * @param dtos 题目 DTO 列表
+     * @return 通用题目 VO 列表
      */
-    public static List<AppGameQuestionVO> toQuestionVOList(List<GameQuestionDTO> dtos, String language) {
+    public static List<AppExerciseQuestionDetailVO> toQuestionVOList(List<GameQuestionDTO> dtos) {
         if (dtos == null) {
             return Collections.emptyList();
         }
-        List<AppGameQuestionVO> vos = new ArrayList<>(dtos.size());
+        List<AppExerciseQuestionDetailVO> vos = new ArrayList<>(dtos.size());
         for (GameQuestionDTO dto : dtos) {
-            vos.add(toQuestionVO(dto, language));
+            vos.add(toQuestionVO(dto));
         }
         return vos;
     }
 
     /**
-     * 转换单个题目 DTO 为单语言 VO。
+     * 转换单个题目 DTO 为通用题目 VO。
      */
-    public static AppGameQuestionVO toQuestionVO(GameQuestionDTO dto, String language) {
-        AppGameQuestionVO vo = new AppGameQuestionVO();
-        vo.setGameType(dto.getGameType());
-        vo.setQuestionIndex(dto.getQuestionIndex());
+    public static AppExerciseQuestionDetailVO toQuestionVO(GameQuestionDTO dto) {
+        AppExerciseQuestionDetailVO vo = new AppExerciseQuestionDetailVO();
+        vo.setId(dto.getQuestionIndex() != null ? (long) dto.getQuestionIndex() : null);
+        vo.setQuestionType(QUESTION_TYPE_PREFIX + dto.getGameType());
         vo.setStem(dto.getStem());
-        vo.setCharacter(dto.getCharacter());
-        vo.setPinyin(dto.getPinyin());
-        vo.setCorrectKey(dto.getCorrectKey());
-        vo.setOptions(toOptionVOList(dto.getOptions()));
-        vo.setExplanation(toExplanationVO(dto.getExplanation(), language));
+        vo.setContent(buildContent(dto));
+        vo.setOptions(buildOptions(dto.getOptions()));
+        vo.setAnswer(Collections.singletonList(dto.getCorrectKey()));
+        vo.setExplanation(null);
+        vo.setAudio(null);
+        vo.setAudioText(null);
+        vo.setSort(dto.getQuestionIndex());
+        vo.setChildren(null);
         return vo;
     }
 
-    private static List<GameOptionVO> toOptionVOList(List<GameOptionDTO> dtos) {
+    private static AppExerciseQuestionDetailVO.QuestionContentVO buildContent(GameQuestionDTO dto) {
+        AppExerciseQuestionDetailVO.QuestionContentVO content =
+                new AppExerciseQuestionDetailVO.QuestionContentVO();
+        if (dto.getCharacter() != null) {
+            StringBuilder sb = new StringBuilder(dto.getCharacter());
+            if (dto.getPinyin() != null) {
+                sb.append(" (").append(dto.getPinyin()).append(")");
+            }
+            content.setContentText(sb.toString());
+        }
+        content.setImage(null);
+        return content;
+    }
+
+    private static List<AppExerciseQuestionDetailVO.QuestionOptionVO> buildOptions(
+            List<GameOptionDTO> dtos) {
         if (dtos == null) {
             return Collections.emptyList();
         }
-        List<GameOptionVO> vos = new ArrayList<>(dtos.size());
+        List<AppExerciseQuestionDetailVO.QuestionOptionVO> vos = new ArrayList<>(dtos.size());
         for (GameOptionDTO dto : dtos) {
-            GameOptionVO vo = new GameOptionVO();
-            vo.setKey(dto.getKey());
-            vo.setText(dto.getText());
-            vo.setIsCorrect(dto.getIsCorrect());
+            AppExerciseQuestionDetailVO.QuestionOptionVO vo =
+                    new AppExerciseQuestionDetailVO.QuestionOptionVO();
+            vo.setOption(dto.getKey());
+            vo.setOptionText(dto.getText());
+            vo.setImage(null);
             vos.add(vo);
         }
         return vos;
-    }
-
-    private static GameExplanationVO toExplanationVO(GameExplanationDTO dto, String language) {
-        if (dto == null) {
-            return null;
-        }
-        GameExplanationVO vo = new GameExplanationVO();
-
-        // 部首游戏解析
-        vo.setRadical(dto.getRadical());
-        vo.setRadicalName(dto.getRadicalName());
-        vo.setRadicalMeaning(filterByLanguage(dto.getRadicalMeaning(), language));
-
-        // 形近字辨析解析
-        vo.setComparisonChar(dto.getComparisonChar());
-        vo.setComparisonPinyin(dto.getComparisonPinyin());
-        vo.setComparisonDesc(filterByLanguage(dto.getComparisonDesc(), language));
-
-        // 组词游戏解析
-        vo.setCorrectWord(dto.getCorrectWord());
-        vo.setCorrectWordPinyin(dto.getCorrectWordPinyin());
-        vo.setCorrectWordPos(dto.getCorrectWordPos());
-        vo.setCorrectWordMeaning(filterByLanguage(dto.getCorrectWordMeaning(), language));
-
-        return vo;
-    }
-
-    /**
-     * 从多语言翻译列表中筛选匹配目标语言的单个翻译 VO。
-     * <p>
-     * 复刻 AppCharCharacterWrapper.filterByLanguage 的实现逻辑。
-     */
-    private static TextTranslationVO filterByLanguage(List<TextTranslation> translations, String language) {
-        if (translations == null || language == null) {
-            return null;
-        }
-        for (TextTranslation t : translations) {
-            if (language.equals(t.getLanguage())) {
-                TextTranslationVO vo = new TextTranslationVO();
-                vo.setLanguage(t.getLanguage());
-                vo.setTranslation(t.getTranslation());
-                return vo;
-            }
-        }
-        return null;
     }
 }

@@ -11,6 +11,7 @@ import com.naon.grid.enums.StatusEnum;
 import com.naon.grid.enums.VocabRelationTypeEnum;
 import lombok.RequiredArgsConstructor;
 import com.naon.grid.utils.JsonUtils;
+import com.naon.grid.utils.OpenCcUtils;
 import com.alibaba.fastjson2.JSON;
 import com.naon.grid.utils.PageResult;
 import com.naon.grid.utils.PageUtil;
@@ -257,6 +258,10 @@ public class VocabWordServiceImpl implements VocabWordService {
         vocabWord.setPublishStatus(PublishStatusEnum.UNPUBLISHED.getCode());
         vocabWord.setEditStatus(EditStatusEnum.DRAFT.getCode());
         vocabWord.setWord(resources.getWord());
+        // 自动补全繁体词汇（仅在未手动填写时）
+        if (resources.getWordTraditional() == null || resources.getWordTraditional().trim().isEmpty()) {
+            resources.setWordTraditional(OpenCcUtils.toTraditional(resources.getWord()));
+        }
         vocabWord.setDraftContent(JsonUtils.toJson(resources));
         vocabWord = vocabWordRepository.save(vocabWord);
         return vocabWord.getId();
@@ -284,6 +289,10 @@ public class VocabWordServiceImpl implements VocabWordService {
         if (EditStatusEnum.REVIEWED.getCode().equals(vocabWord.getEditStatus()) ||
             EditStatusEnum.PUBLISHED.getCode().equals(vocabWord.getEditStatus())) {
             vocabWord.setEditStatus(EditStatusEnum.DRAFT.getCode());
+        }
+        // 自动补全繁体词汇（仅在未手动填写时）
+        if (resources.getWordTraditional() == null || resources.getWordTraditional().trim().isEmpty()) {
+            resources.setWordTraditional(OpenCcUtils.toTraditional(resources.getWord()));
         }
         vocabWord.setDraftContent(JsonUtils.toJson(resources));
         vocabWordRepository.save(vocabWord);

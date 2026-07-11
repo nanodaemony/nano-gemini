@@ -133,7 +133,7 @@ CREATE TABLE `daily_vocabulary` (
   `origin_story` text DEFAULT NULL COMMENT '出处/典故/背景故事',
   `example_sentence_id` bigint DEFAULT NULL COMMENT '例句ID，关联 example_sentence.id',
   `display_date` date DEFAULT NULL COMMENT '计划展示日期',
-  `sort_order` int NOT NULL DEFAULT 0 COMMENT '同日期排序，最小为主推，其余为备选',
+  `order` int NOT NULL DEFAULT 0 COMMENT '同日期排序，最小为主推，其余为备选',
   `related_word_id` bigint DEFAULT NULL COMMENT '关联词汇ID，关联 vocab_word.id',
   `draft_content` text DEFAULT NULL COMMENT '草稿内容JSON',
   `edit_status` varchar(20) NOT NULL DEFAULT 'draft' COMMENT '编辑状态: draft=草稿, reviewed=已审核',

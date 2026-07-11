@@ -29,7 +29,7 @@ public class DailyVocabularyBaseVO implements Serializable {
     private LocalDate displayDate;
 
     @ApiModelProperty(value = "排序")
-    private Integer sortOrder;
+    private Integer order;
 
     @ApiModelProperty(value = "发布状态")
     private String publishStatus;

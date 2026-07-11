@@ -15,9 +15,9 @@ public interface DailyVocabularyRepository
                 JpaSpecificationExecutor<DailyVocabulary> {
 
     /**
-     * 按展示日期、发布状态、有效状态查询（按 sort_order 排序）
+     * 按展示日期、发布状态、有效状态查询（按 order 排序）
      */
-    List<DailyVocabulary> findByDisplayDateAndPublishStatusAndStatusOrderBySortOrderAsc(
+    List<DailyVocabulary> findByDisplayDateAndPublishStatusAndStatusOrderByOrderAsc(
             LocalDate displayDate, String publishStatus, Integer status);
 
     /**

@@ -42,7 +42,7 @@ public class DailyVocabularyWrapper {
         dto.setOriginStory(request.getOriginStory());
         dto.setExampleSentenceId(request.getExampleSentenceId());
         dto.setDisplayDate(request.getDisplayDate());
-        dto.setSortOrder(request.getSortOrder());
+        dto.setOrder(request.getOrder());
         dto.setRelatedWordId(request.getRelatedWordId());
         return dto;
     }
@@ -59,7 +59,7 @@ public class DailyVocabularyWrapper {
         vo.setPhraseType(dto.getPhraseType());
         vo.setPinyin(dto.getPinyin());
         vo.setDisplayDate(dto.getDisplayDate());
-        vo.setSortOrder(dto.getSortOrder());
+        vo.setOrder(dto.getOrder());
         vo.setPublishStatus(dto.getPublishStatus());
         vo.setEditStatus(dto.getEditStatus());
         vo.setCreateBy(dto.getCreateBy());
@@ -85,7 +85,7 @@ public class DailyVocabularyWrapper {
             vo.setExampleSentence(toExampleSentenceVO(dto.getExampleSentence()));
         }
         vo.setDisplayDate(dto.getDisplayDate());
-        vo.setSortOrder(dto.getSortOrder());
+        vo.setOrder(dto.getOrder());
         vo.setRelatedWordId(dto.getRelatedWordId());
         vo.setPublishStatus(dto.getPublishStatus());
         vo.setEditStatus(dto.getEditStatus());

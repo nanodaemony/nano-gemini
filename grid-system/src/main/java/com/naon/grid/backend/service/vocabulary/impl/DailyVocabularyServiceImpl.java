@@ -89,7 +89,7 @@ public class DailyVocabularyServiceImpl implements DailyVocabularyService {
         entity.setEditStatus(EditStatusEnum.DRAFT.getCode());
         entity.setPhrase(dto.getPhrase());
         entity.setPhraseType(dto.getPhraseType());
-        entity.setSortOrder(dto.getSortOrder() != null ? dto.getSortOrder() : 0);
+        entity.setOrder(dto.getOrder() != null ? dto.getOrder() : 0);
         entity.setDraftContent(JsonUtils.toJson(dto));
         entity = dailyVocabularyRepository.save(entity);
         return entity.getId();
@@ -170,7 +170,7 @@ public class DailyVocabularyServiceImpl implements DailyVocabularyService {
         entity.setOriginStory(draft.getOriginStory());
         entity.setExampleSentenceId(draft.getExampleSentenceId());
         entity.setDisplayDate(draft.getDisplayDate());
-        entity.setSortOrder(draft.getSortOrder() != null ? draft.getSortOrder() : 0);
+        entity.setOrder(draft.getOrder() != null ? draft.getOrder() : 0);
         entity.setRelatedWordId(draft.getRelatedWordId());
 
         entity.setPublishStatus(PublishStatusEnum.PUBLISHED.getCode());
@@ -235,7 +235,7 @@ public class DailyVocabularyServiceImpl implements DailyVocabularyService {
         }
 
         List<DailyVocabulary> list = dailyVocabularyRepository
-                .findByDisplayDateAndPublishStatusAndStatusOrderBySortOrderAsc(
+                .findByDisplayDateAndPublishStatusAndStatusOrderByOrderAsc(
                         LocalDate.now(), PublishStatusEnum.PUBLISHED.getCode(), StatusEnum.ENABLED.getCode());
 
         if (list.isEmpty()) {
@@ -256,7 +256,7 @@ public class DailyVocabularyServiceImpl implements DailyVocabularyService {
         }
 
         List<DailyVocabulary> list = dailyVocabularyRepository
-                .findByDisplayDateAndPublishStatusAndStatusOrderBySortOrderAsc(
+                .findByDisplayDateAndPublishStatusAndStatusOrderByOrderAsc(
                         LocalDate.now(), PublishStatusEnum.PUBLISHED.getCode(), StatusEnum.ENABLED.getCode());
 
         if (list.size() <= 1) {
@@ -364,7 +364,7 @@ public class DailyVocabularyServiceImpl implements DailyVocabularyService {
                 if (draft.getPhraseType() != null) dto.setPhraseType(draft.getPhraseType());
                 if (draft.getPinyin() != null) dto.setPinyin(draft.getPinyin());
                 if (draft.getDisplayDate() != null) dto.setDisplayDate(draft.getDisplayDate());
-                if (draft.getSortOrder() != null) dto.setSortOrder(draft.getSortOrder());
+                if (draft.getOrder() != null) dto.setOrder(draft.getOrder());
             }
         }
         return dto;
@@ -400,7 +400,7 @@ public class DailyVocabularyServiceImpl implements DailyVocabularyService {
         dto.setOriginStory(entity.getOriginStory());
         dto.setExampleSentenceId(entity.getExampleSentenceId());
         dto.setDisplayDate(entity.getDisplayDate());
-        dto.setSortOrder(entity.getSortOrder());
+        dto.setOrder(entity.getOrder());
         dto.setRelatedWordId(entity.getRelatedWordId());
         dto.setStatus(entity.getStatus());
         dto.setPublishStatus(entity.getPublishStatus());

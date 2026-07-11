@@ -70,9 +70,9 @@ public class DailyVocabulary extends BaseEntity implements Serializable {
     @ApiModelProperty(value = "计划展示日期")
     private LocalDate displayDate;
 
-    @Column(name = "sort_order")
+    @Column(name = "`order`")
     @ApiModelProperty(value = "同日期排序权重")
-    private Integer sortOrder;
+    private Integer order;
 
     @Column(name = "related_word_id")
     @ApiModelProperty(value = "关联词汇ID")

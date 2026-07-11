@@ -48,7 +48,7 @@ public class DailyVocabularyCreateRequest implements Serializable {
     private LocalDate displayDate;
 
     @ApiModelProperty(value = "排序（同日期最小=主推）")
-    private Integer sortOrder;
+    private Integer order;
 
     @ApiModelProperty(value = "关联词汇ID")
     private Long relatedWordId;

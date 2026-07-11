@@ -51,7 +51,7 @@ public class DailyVocabularyVO implements Serializable {
     private LocalDate displayDate;
 
     @ApiModelProperty(value = "排序")
-    private Integer sortOrder;
+    private Integer order;
 
     @ApiModelProperty(value = "关联词汇ID")
     private Long relatedWordId;

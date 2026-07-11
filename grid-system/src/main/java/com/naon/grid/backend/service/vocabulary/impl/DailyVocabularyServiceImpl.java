@@ -88,9 +88,7 @@ public class DailyVocabularyServiceImpl implements DailyVocabularyService {
         entity.setPublishStatus(PublishStatusEnum.UNPUBLISHED.getCode());
         entity.setEditStatus(EditStatusEnum.DRAFT.getCode());
         entity.setPhrase(dto.getPhrase());
-        if (dto.getPhraseType() != null) {
-            entity.setPhraseType(dto.getPhraseType());
-        }
+        entity.setPhraseType(dto.getPhraseType());
         entity.setDraftContent(JsonUtils.toJson(dto));
         entity = dailyVocabularyRepository.save(entity);
         return entity.getId();

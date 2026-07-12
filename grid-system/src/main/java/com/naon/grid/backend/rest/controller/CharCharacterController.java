@@ -19,8 +19,12 @@ import com.naon.grid.backend.service.character.CharCharacterService;
 import com.naon.grid.backend.service.character.CharStrokeService;
 import com.naon.grid.backend.service.character.dto.CharCharacterDto;
 import com.naon.grid.backend.service.character.dto.CharCharacterQueryCriteria;
+import com.naon.grid.backend.service.character.dto.CharComparisonDto;
 import com.naon.grid.backend.service.character.dto.CharWordDto;
+import com.naon.grid.backend.service.common.dto.ExampleSentenceDto;
 import com.naon.grid.domain.common.TextTranslation;
+import com.naon.grid.modules.system.service.AiContentMarkerHelper;
+import com.naon.grid.modules.system.service.AiContentMarkerService;
 import com.naon.grid.utils.PageResult;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -35,8 +39,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import static com.naon.grid.backend.rest.wrapper.CharCharacterWrapper.toBaseVOList;
@@ -49,6 +55,7 @@ public class CharCharacterController {
 
     private final CharCharacterService charCharacterService;
     private final CharStrokeService charStrokeService;
+    private final AiContentMarkerService aiContentMarkerService;
 
     @Log("新增汉字")
     @ApiOperation("新增汉字")
@@ -87,7 +94,30 @@ public class CharCharacterController {
     @ApiOperation("根据ID查询汉字详情")
     @AnonymousGetMapping("/{id}")
     public ResponseEntity<CharCharacterVO> findById(@PathVariable Integer id) {
-        return new ResponseEntity<>(CharCharacterWrapper.toVO(charCharacterService.findById(id)), HttpStatus.OK);
+        CharCharacterDto dto = charCharacterService.findById(id);
+        List<String> entityKeys = collectCharEntityKeys(dto);
+        Map<String, List<String>> aiMarkers = aiContentMarkerService.batchQuery(entityKeys);
+        return new ResponseEntity<>(CharCharacterWrapper.toVO(dto, aiMarkers), HttpStatus.OK);
+    }
+
+    /** 从 CharCharacterDto 树中收集所有子实体的 entity key */
+    private List<String> collectCharEntityKeys(CharCharacterDto dto) {
+        List<String> keys = new ArrayList<>();
+        if (dto.getComparisons() != null) {
+            for (CharComparisonDto c : dto.getComparisons()) {
+                keys.addAll(AiContentMarkerHelper.collectOne("char_comparison", c.getId()));
+            }
+        }
+        if (dto.getWords() != null) {
+            for (CharWordDto w : dto.getWords()) {
+                keys.addAll(AiContentMarkerHelper.collectOne("char_word", w.getId()));
+                if (w.getWordItemSentence() != null) {
+                    keys.addAll(AiContentMarkerHelper.collectOne("example_sentence",
+                            w.getWordItemSentence().getId()));
+                }
+            }
+        }
+        return keys;
     }
 
     @Log("查询汉字列表")

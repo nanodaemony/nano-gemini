@@ -14,6 +14,7 @@ import com.naon.grid.backend.service.character.dto.CharWordDto;
 import com.naon.grid.backend.service.character.mapstruct.CharCharacterMapper;
 import com.naon.grid.backend.service.common.ExampleSentenceService;
 import com.naon.grid.backend.service.common.dto.ExampleSentenceDto;
+import com.naon.grid.modules.system.service.AiContentMarkerService;
 import com.naon.grid.enums.EditStatusEnum;
 import com.naon.grid.enums.PublishStatusEnum;
 import com.naon.grid.enums.StatusEnum;
@@ -51,6 +52,7 @@ public class CharCharacterServiceImpl implements CharCharacterService {
     private final CharWordRepository charWordRepository;
     private final CharCharacterMapper charCharacterMapper;
     private final ExampleSentenceService exampleSentenceService;
+    private final AiContentMarkerService aiContentMarkerService;
 
     @Override
     public PageResult<CharCharacterDto> queryAll(CharCharacterQueryCriteria criteria, Pageable pageable) {
@@ -664,6 +666,12 @@ public class CharCharacterServiceImpl implements CharCharacterService {
         List<CharWord> savedWords = syncWords(id, draftDto.getWords());
         syncWordSentences(savedWords, draftDto.getWords());
 
+        // 物化 AI 内容标记
+        List<AiContentMarkerService.MarkerEntry> markerEntries = new ArrayList<>();
+        collectComparisonMarkers(draftDto.getComparisons(), markerEntries);
+        collectWordMarkers(draftDto.getWords(), markerEntries);
+        aiContentMarkerService.batchReplace(markerEntries);
+
         // Update status
         charCharacter.setPublishStatus(PublishStatusEnum.PUBLISHED.getCode());
         charCharacter.setEditStatus(EditStatusEnum.PUBLISHED.getCode());
@@ -683,6 +691,44 @@ public class CharCharacterServiceImpl implements CharCharacterService {
         List<CharCharacter> list = charCharacterRepository.findByRadicalIdAndStatusAndPublishStatus(
                 radicalId, StatusEnum.ENABLED.getCode(), PublishStatusEnum.PUBLISHED.getCode());
         return list.stream().map(charCharacterMapper::toDto).collect(Collectors.toList());
+    }
+
+    /**
+     * 从草稿的辨析列表中收集 AI 标记到 MarkerEntry 列表。
+     */
+    private void collectComparisonMarkers(List<CharComparisonDto> comparisons,
+                                          List<AiContentMarkerService.MarkerEntry> entries) {
+        if (comparisons == null) return;
+        for (CharComparisonDto c : comparisons) {
+            if (c.getId() != null && c.getAiGeneratedFields() != null
+                    && !c.getAiGeneratedFields().isEmpty()) {
+                entries.add(new AiContentMarkerService.MarkerEntry(
+                        "char_comparison", c.getId().longValue(), c.getAiGeneratedFields()));
+            }
+        }
+    }
+
+    /**
+     * 从草稿的组词列表中收集 AI 标记到 MarkerEntry 列表（含例句）。
+     */
+    private void collectWordMarkers(List<CharWordDto> words,
+                                    List<AiContentMarkerService.MarkerEntry> entries) {
+        if (words == null) return;
+        for (CharWordDto w : words) {
+            if (w.getId() != null && w.getAiGeneratedFields() != null
+                    && !w.getAiGeneratedFields().isEmpty()) {
+                entries.add(new AiContentMarkerService.MarkerEntry(
+                        "char_word", w.getId().longValue(), w.getAiGeneratedFields()));
+            }
+            // 例句
+            if (w.getWordItemSentence() != null && w.getWordItemSentence().getId() != null
+                    && w.getWordItemSentence().getAiGeneratedFields() != null
+                    && !w.getWordItemSentence().getAiGeneratedFields().isEmpty()) {
+                entries.add(new AiContentMarkerService.MarkerEntry(
+                        "example_sentence", w.getWordItemSentence().getId(),
+                        w.getWordItemSentence().getAiGeneratedFields()));
+            }
+        }
     }
 
     @Override

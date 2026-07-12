@@ -17,7 +17,10 @@ import com.naon.grid.domain.common.TextTranslation;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
+
+import com.naon.grid.modules.system.service.AiContentMarkerHelper;
 
 /**
  * 汉字包装器
@@ -67,6 +70,7 @@ public class CharCharacterWrapper {
         dto.setComparisonPinyin(request.getComparisonPinyin());
         dto.setComparisonCharTranslations(toTextTranslationList(request.getComparisonCharTranslations()));
         dto.setComparisonDescTranslations(toTextTranslationList(request.getComparisonDescTranslations()));
+        dto.setAiGeneratedFields(request.getAiGeneratedFields());
         dto.setOrder(request.getOrder());
         return dto;
     }
@@ -87,6 +91,7 @@ public class CharCharacterWrapper {
         dto.setPartOfSpeech(request.getPartOfSpeech());
         dto.setWordItemTranslations(toTextTranslationList(request.getWordItemTranslations()));
         dto.setWordItemSentence(toExampleSentenceDto(request.getSentenceContent()));
+        dto.setAiGeneratedFields(request.getAiGeneratedFields());
         dto.setWordOrder(request.getOrder() != null ? request.getOrder() : 0);
         return dto;
     }
@@ -137,7 +142,7 @@ public class CharCharacterWrapper {
         return vo;
     }
 
-    public static CharCharacterVO toVO(CharCharacterDto dto) {
+    public static CharCharacterVO toVO(CharCharacterDto dto, Map<String, List<String>> aiMarkers) {
         CharCharacterVO vo = new CharCharacterVO();
         vo.setId(dto.getId());
         vo.setCharacter(dto.getCharacter());
@@ -152,8 +157,8 @@ public class CharCharacterWrapper {
         vo.setCharDescTranslations(toTextTranslationVOList(dto.getDescTranslations()));
         vo.setPublishStatus(dto.getPublishStatus());
         vo.setEditStatus(dto.getEditStatus());
-        vo.setComparisons(toComparisonVOList(dto.getComparisons()));
-        vo.setWords(toWordVOList(dto.getWords()));
+        vo.setComparisons(toComparisonVOList(dto.getComparisons(), aiMarkers));
+        vo.setWords(toWordVOList(dto.getWords(), aiMarkers));
         vo.setCreateBy(dto.getCreateBy());
         vo.setUpdateBy(dto.getUpdateBy());
         vo.setCreateTime(dto.getCreateTime());
@@ -161,14 +166,16 @@ public class CharCharacterWrapper {
         return vo;
     }
 
-    private static List<CharCharacterVO.CharComparisonVO> toComparisonVOList(List<CharComparisonDto> resources) {
+    private static List<CharCharacterVO.CharComparisonVO> toComparisonVOList(List<CharComparisonDto> resources,
+            Map<String, List<String>> aiMarkers) {
         if (resources == null) {
             return Collections.emptyList();
         }
-        return resources.stream().map(CharCharacterWrapper::toComparisonVO).collect(Collectors.toList());
+        return resources.stream().map(dto -> toComparisonVO(dto, aiMarkers)).collect(Collectors.toList());
     }
 
-    private static CharCharacterVO.CharComparisonVO toComparisonVO(CharComparisonDto dto) {
+    private static CharCharacterVO.CharComparisonVO toComparisonVO(CharComparisonDto dto,
+            Map<String, List<String>> aiMarkers) {
         CharCharacterVO.CharComparisonVO vo = new CharCharacterVO.CharComparisonVO();
         vo.setId(dto.getId());
         vo.setComparisonChar(dto.getComparisonChar());
@@ -178,17 +185,23 @@ public class CharCharacterWrapper {
         vo.setOrder(dto.getOrder());
         vo.setCreateTime(dto.getCreateTime());
         vo.setUpdateTime(dto.getUpdateTime());
+        String key = AiContentMarkerHelper.key("char_comparison", dto.getId());
+        if (key != null && aiMarkers != null) {
+            vo.setAiGeneratedFields(aiMarkers.getOrDefault(key, Collections.emptyList()));
+        }
         return vo;
     }
 
-    private static List<CharCharacterVO.CharWordVO> toWordVOList(List<CharWordDto> resources) {
+    private static List<CharCharacterVO.CharWordVO> toWordVOList(List<CharWordDto> resources,
+            Map<String, List<String>> aiMarkers) {
         if (resources == null) {
             return Collections.emptyList();
         }
-        return resources.stream().map(CharCharacterWrapper::toWordVO).collect(Collectors.toList());
+        return resources.stream().map(dto -> toWordVO(dto, aiMarkers)).collect(Collectors.toList());
     }
 
-    private static CharCharacterVO.CharWordVO toWordVO(CharWordDto dto) {
+    private static CharCharacterVO.CharWordVO toWordVO(CharWordDto dto,
+            Map<String, List<String>> aiMarkers) {
         CharCharacterVO.CharWordVO vo = new CharCharacterVO.CharWordVO();
         vo.setId(dto.getId());
         vo.setCharId(dto.getCharId());
@@ -197,14 +210,19 @@ public class CharCharacterWrapper {
         vo.setPinyin(dto.getPinyin());
         vo.setPartOfSpeech(dto.getPartOfSpeech());
         vo.setWordItemTranslations(toTextTranslationVOList(dto.getWordItemTranslations()));
-        vo.setWordItemSentence(toExampleSentenceVO(dto.getWordItemSentence()));
+        vo.setWordItemSentence(toExampleSentenceVO(dto.getWordItemSentence(), aiMarkers));
         vo.setOrder(dto.getWordOrder());
         vo.setCreateTime(dto.getCreateTime());
         vo.setUpdateTime(dto.getUpdateTime());
+        String key = AiContentMarkerHelper.key("char_word", dto.getId());
+        if (key != null && aiMarkers != null) {
+            vo.setAiGeneratedFields(aiMarkers.getOrDefault(key, Collections.emptyList()));
+        }
         return vo;
     }
 
-    private static ExampleSentenceVO toExampleSentenceVO(ExampleSentenceDto dto) {
+    private static ExampleSentenceVO toExampleSentenceVO(ExampleSentenceDto dto,
+            Map<String, List<String>> aiMarkers) {
         if (dto == null) {
             return null;
         }
@@ -218,6 +236,10 @@ public class CharCharacterWrapper {
         vo.setOrder(dto.getOrder());
         vo.setCreateTime(dto.getCreateTime());
         vo.setUpdateTime(dto.getUpdateTime());
+        String key = AiContentMarkerHelper.key("example_sentence", dto.getId());
+        if (key != null && aiMarkers != null) {
+            vo.setAiGeneratedFields(aiMarkers.getOrDefault(key, Collections.emptyList()));
+        }
         return vo;
     }
 

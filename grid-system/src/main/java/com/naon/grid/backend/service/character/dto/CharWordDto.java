@@ -50,6 +50,9 @@ public class CharWordDto implements Serializable {
     @ApiModelProperty(value = "组词排序权重（值大的排前面）")
     private Integer wordOrder;
 
+    @ApiModelProperty(value = "AI生成的字段名列表（Java字段名驼峰）")
+    private List<String> aiGeneratedFields;
+
     @ApiModelProperty(value = "状态: 1=可用, 0=不可用")
     private Integer status;
 }

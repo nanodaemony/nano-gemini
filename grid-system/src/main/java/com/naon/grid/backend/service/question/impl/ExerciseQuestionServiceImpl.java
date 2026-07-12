@@ -11,6 +11,7 @@ import com.naon.grid.enums.PublishStatusEnum;
 import com.naon.grid.enums.StatusEnum;
 import com.naon.grid.exception.BadRequestException;
 import com.naon.grid.exception.EntityNotFoundException;
+import com.naon.grid.modules.system.service.AiContentMarkerService;
 import com.naon.grid.utils.JsonUtils;
 import com.naon.grid.utils.PageResult;
 import com.naon.grid.utils.PageUtil;
@@ -36,6 +37,8 @@ import java.util.stream.Collectors;
 public class ExerciseQuestionServiceImpl implements ExerciseQuestionService {
 
     private final ExerciseQuestionRepository exerciseQuestionRepository;
+
+    private final AiContentMarkerService aiContentMarkerService;
 
     @Override
     @Transactional(readOnly = true, rollbackFor = Exception.class)
@@ -183,6 +186,20 @@ public class ExerciseQuestionServiceImpl implements ExerciseQuestionService {
         entity.setStem(dto.getStem());
         entity.setDraftContent(JsonUtils.toJson(dto));
         entity = exerciseQuestionRepository.save(entity);
+
+        // AI 标记：练习题无草稿流程，直接保存标记
+        aiContentMarkerService.replaceFields("exercise_question",
+                entity.getId(), dto.getAiGeneratedFields());
+        // 递归处理子题
+        if (dto.getChildren() != null) {
+            for (ExerciseQuestionDto child : dto.getChildren()) {
+                if (child.getId() != null) {
+                    aiContentMarkerService.replaceFields("exercise_question",
+                            child.getId(), child.getAiGeneratedFields());
+                }
+            }
+        }
+
         return entity.getId();
     }
 
@@ -211,6 +228,19 @@ public class ExerciseQuestionServiceImpl implements ExerciseQuestionService {
 
         entity.setDraftContent(JsonUtils.toJson(dto));
         exerciseQuestionRepository.save(entity);
+
+        // AI 标记：练习题无草稿流程，直接保存标记
+        aiContentMarkerService.replaceFields("exercise_question",
+                id, dto.getAiGeneratedFields());
+        // 递归处理子题
+        if (dto.getChildren() != null) {
+            for (ExerciseQuestionDto child : dto.getChildren()) {
+                if (child.getId() != null) {
+                    aiContentMarkerService.replaceFields("exercise_question",
+                            child.getId(), child.getAiGeneratedFields());
+                }
+            }
+        }
     }
 
     @Override

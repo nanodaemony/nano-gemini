@@ -13,9 +13,11 @@ import com.naon.grid.backend.service.grammarcomparison.dto.GrammarComparisonGrou
 import com.naon.grid.backend.service.grammarcomparison.dto.GrammarComparisonGroupQueryCriteria;
 import com.naon.grid.backend.service.grammarcomparison.dto.GrammarComparisonItemDto;
 import com.naon.grid.domain.common.TextTranslation;
+import com.naon.grid.modules.system.service.AiContentMarkerHelper;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class GrammarComparisonGroupWrapper {
@@ -57,6 +59,7 @@ public class GrammarComparisonGroupWrapper {
         dto.setExampleSentences(req.getExampleSentences());
         dto.setUsageSentenceId(req.getUsageSentenceId());
         dto.setOrder(req.getOrder());
+        dto.setAiGeneratedFields(req.getAiGeneratedFields());
         return dto;
     }
 
@@ -74,6 +77,7 @@ public class GrammarComparisonGroupWrapper {
         dto.setTranslations(toTextTranslationList(req.getTranslations()));
         dto.setAudioId(req.getAudioId());
         dto.setOrder(req.getOrder());
+        dto.setAiGeneratedFields(req.getAiGeneratedFields());
         return dto;
     }
 
@@ -99,7 +103,8 @@ public class GrammarComparisonGroupWrapper {
         return vo;
     }
 
-    public static GrammarComparisonGroupVO toVO(GrammarComparisonGroupDto dto) {
+    public static GrammarComparisonGroupVO toVO(GrammarComparisonGroupDto dto,
+            Map<String, List<String>> aiMarkers) {
         GrammarComparisonGroupVO vo = new GrammarComparisonGroupVO();
         vo.setId(dto.getId());
         vo.setGroupKey(dto.getGroupKey());
@@ -107,8 +112,8 @@ public class GrammarComparisonGroupWrapper {
         vo.setGroupOrder(dto.getGroupOrder());
         vo.setPublishStatus(dto.getPublishStatus());
         vo.setEditStatus(dto.getEditStatus());
-        vo.setItems(toItemVOList(dto.getItems()));
-        vo.setChats(toChatVOList(dto.getChats()));
+        vo.setItems(toItemVOList(dto.getItems(), aiMarkers));
+        vo.setChats(toChatVOList(dto.getChats(), aiMarkers));
         vo.setCreateBy(dto.getCreateBy());
         vo.setUpdateBy(dto.getUpdateBy());
         vo.setCreateTime(dto.getCreateTime());
@@ -116,12 +121,14 @@ public class GrammarComparisonGroupWrapper {
         return vo;
     }
 
-    private static List<GrammarComparisonItemVO> toItemVOList(List<GrammarComparisonItemDto> dtos) {
+    private static List<GrammarComparisonItemVO> toItemVOList(List<GrammarComparisonItemDto> dtos,
+            Map<String, List<String>> aiMarkers) {
         if (dtos == null) return Collections.emptyList();
-        return dtos.stream().map(GrammarComparisonGroupWrapper::toItemVO).collect(Collectors.toList());
+        return dtos.stream().map(dto -> toItemVO(dto, aiMarkers)).collect(Collectors.toList());
     }
 
-    private static GrammarComparisonItemVO toItemVO(GrammarComparisonItemDto dto) {
+    private static GrammarComparisonItemVO toItemVO(GrammarComparisonItemDto dto,
+            Map<String, List<String>> aiMarkers) {
         GrammarComparisonItemVO vo = new GrammarComparisonItemVO();
         vo.setId(dto.getId());
         vo.setGrammarId(dto.getGrammarId());
@@ -131,15 +138,21 @@ public class GrammarComparisonGroupWrapper {
         vo.setExampleSentences(dto.getExampleSentences());
         vo.setUsageSentenceId(dto.getUsageSentenceId());
         vo.setOrder(dto.getOrder());
+        String key = AiContentMarkerHelper.key("grammar_comparison_item", dto.getId());
+        if (key != null && aiMarkers != null) {
+            vo.setAiGeneratedFields(aiMarkers.getOrDefault(key, Collections.emptyList()));
+        }
         return vo;
     }
 
-    private static List<GrammarComparisonChatVO> toChatVOList(List<GrammarComparisonChatDto> dtos) {
+    private static List<GrammarComparisonChatVO> toChatVOList(List<GrammarComparisonChatDto> dtos,
+            Map<String, List<String>> aiMarkers) {
         if (dtos == null) return Collections.emptyList();
-        return dtos.stream().map(GrammarComparisonGroupWrapper::toChatVO).collect(Collectors.toList());
+        return dtos.stream().map(dto -> toChatVO(dto, aiMarkers)).collect(Collectors.toList());
     }
 
-    private static GrammarComparisonChatVO toChatVO(GrammarComparisonChatDto dto) {
+    private static GrammarComparisonChatVO toChatVO(GrammarComparisonChatDto dto,
+            Map<String, List<String>> aiMarkers) {
         GrammarComparisonChatVO vo = new GrammarComparisonChatVO();
         vo.setId(dto.getId());
         vo.setRole(dto.getRole());
@@ -148,6 +161,10 @@ public class GrammarComparisonGroupWrapper {
         vo.setTranslations(toTextTranslationVOList(dto.getTranslations()));
         vo.setAudioId(dto.getAudioId());
         vo.setOrder(dto.getOrder());
+        String key = AiContentMarkerHelper.key("grammar_comparison_chat", dto.getId());
+        if (key != null && aiMarkers != null) {
+            vo.setAiGeneratedFields(aiMarkers.getOrDefault(key, Collections.emptyList()));
+        }
         return vo;
     }
 

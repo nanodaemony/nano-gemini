@@ -14,6 +14,8 @@ import com.naon.grid.backend.rest.vo.ExerciseQuestionVO;
 import com.naon.grid.backend.rest.wrapper.ExerciseQuestionWrapper;
 import com.naon.grid.backend.service.question.ExerciseQuestionService;
 import com.naon.grid.backend.service.question.dto.ExerciseQuestionDto;
+import com.naon.grid.modules.system.service.AiContentMarkerHelper;
+import com.naon.grid.modules.system.service.AiContentMarkerService;
 import com.naon.grid.utils.PageResult;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -27,6 +29,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
@@ -35,6 +40,8 @@ import javax.validation.Valid;
 public class ExerciseQuestionController {
 
     private final ExerciseQuestionService exerciseQuestionService;
+
+    private final AiContentMarkerService aiContentMarkerService;
 
     @Log("新增题目")
     @ApiOperation("新增题目")
@@ -73,7 +80,22 @@ public class ExerciseQuestionController {
     @ApiOperation("根据ID查询题目详情")
     @AnonymousGetMapping("/{id}")
     public ResponseEntity<ExerciseQuestionVO> findById(@PathVariable Long id) {
-        return new ResponseEntity<>(ExerciseQuestionWrapper.toVO(exerciseQuestionService.findById(id)), HttpStatus.OK);
+        ExerciseQuestionDto dto = exerciseQuestionService.findById(id);
+        List<String> entityKeys = collectExerciseQuestionEntityKeys(dto);
+        Map<String, List<String>> aiMarkers = aiContentMarkerService.batchQuery(entityKeys);
+        return new ResponseEntity<>(ExerciseQuestionWrapper.toVO(dto, aiMarkers), HttpStatus.OK);
+    }
+
+    /** 从 ExerciseQuestionDto 树中递归收集所有实体的 entity key */
+    private List<String> collectExerciseQuestionEntityKeys(ExerciseQuestionDto dto) {
+        List<String> keys = new ArrayList<>();
+        keys.addAll(AiContentMarkerHelper.collectOne("exercise_question", dto.getId()));
+        if (dto.getChildren() != null) {
+            for (ExerciseQuestionDto child : dto.getChildren()) {
+                keys.addAll(collectExerciseQuestionEntityKeys(child));
+            }
+        }
+        return keys;
     }
 
     @Log("查询题目列表")

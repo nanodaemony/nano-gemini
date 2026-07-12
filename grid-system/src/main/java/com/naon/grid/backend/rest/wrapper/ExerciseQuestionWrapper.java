@@ -8,9 +8,11 @@ import com.naon.grid.backend.service.question.dto.ExerciseQuestionDto;
 import com.naon.grid.backend.service.question.dto.ExerciseQuestionQueryCriteria;
 import com.naon.grid.domain.common.QuestionContent;
 import com.naon.grid.domain.common.QuestionOption;
+import com.naon.grid.modules.system.service.AiContentMarkerHelper;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class ExerciseQuestionWrapper {
@@ -37,6 +39,7 @@ public class ExerciseQuestionWrapper {
         dto.setAudioId(request.getAudioId());
         dto.setAudioText(request.getAudioText());
         dto.setSort(request.getSort());
+        dto.setAiGeneratedFields(request.getAiGeneratedFields());
         dto.setChildren(toDtoList(request.getChildren()));
         return dto;
     }
@@ -92,7 +95,7 @@ public class ExerciseQuestionWrapper {
         return vo;
     }
 
-    public static ExerciseQuestionVO toVO(ExerciseQuestionDto dto) {
+    public static ExerciseQuestionVO toVO(ExerciseQuestionDto dto, Map<String, List<String>> aiMarkers) {
         if (dto == null) return null;
         ExerciseQuestionVO vo = new ExerciseQuestionVO();
         vo.setId(dto.getId());
@@ -111,13 +114,18 @@ public class ExerciseQuestionWrapper {
         vo.setUpdateBy(dto.getUpdateBy());
         vo.setCreateTime(dto.getCreateTime());
         vo.setUpdateTime(dto.getUpdateTime());
-        vo.setChildren(toVOList(dto.getChildren()));
+        vo.setChildren(toVOList(dto.getChildren(), aiMarkers));
+        String key = AiContentMarkerHelper.key("exercise_question", dto.getId());
+        if (key != null && aiMarkers != null) {
+            vo.setAiGeneratedFields(aiMarkers.getOrDefault(key, Collections.emptyList()));
+        }
         return vo;
     }
 
-    private static List<ExerciseQuestionVO> toVOList(List<ExerciseQuestionDto> children) {
+    private static List<ExerciseQuestionVO> toVOList(List<ExerciseQuestionDto> children,
+            Map<String, List<String>> aiMarkers) {
         if (children == null) return Collections.emptyList();
-        return children.stream().map(ExerciseQuestionWrapper::toVO).collect(Collectors.toList());
+        return children.stream().map(dto -> toVO(dto, aiMarkers)).collect(Collectors.toList());
     }
 
     private static ExerciseQuestionVO.QuestionContentVO toQuestionContentVO(QuestionContent content) {

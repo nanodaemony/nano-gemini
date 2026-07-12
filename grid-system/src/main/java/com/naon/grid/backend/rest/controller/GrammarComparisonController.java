@@ -12,7 +12,11 @@ import com.naon.grid.backend.rest.vo.GrammarComparisonGroupCreateVO;
 import com.naon.grid.backend.rest.vo.GrammarComparisonGroupVO;
 import com.naon.grid.backend.rest.wrapper.GrammarComparisonGroupWrapper;
 import com.naon.grid.backend.service.grammarcomparison.GrammarComparisonGroupService;
+import com.naon.grid.backend.service.grammarcomparison.dto.GrammarComparisonChatDto;
 import com.naon.grid.backend.service.grammarcomparison.dto.GrammarComparisonGroupDto;
+import com.naon.grid.backend.service.grammarcomparison.dto.GrammarComparisonItemDto;
+import com.naon.grid.modules.system.service.AiContentMarkerHelper;
+import com.naon.grid.modules.system.service.AiContentMarkerService;
 import com.naon.grid.utils.PageResult;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -26,6 +30,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
@@ -34,6 +41,8 @@ import javax.validation.Valid;
 public class GrammarComparisonController {
 
     private final GrammarComparisonGroupService grammarComparisonGroupService;
+
+    private final AiContentMarkerService aiContentMarkerService;
 
     @Log("新增语法辨析组")
     @ApiOperation("新增语法辨析组")
@@ -72,8 +81,27 @@ public class GrammarComparisonController {
     @ApiOperation("根据ID查询语法辨析组详情")
     @AnonymousGetMapping("/{id}")
     public ResponseEntity<GrammarComparisonGroupVO> findById(@PathVariable Long id) {
+        GrammarComparisonGroupDto dto = grammarComparisonGroupService.findById(id);
+        List<String> entityKeys = collectGrammarComparisonEntityKeys(dto);
+        Map<String, List<String>> aiMarkers = aiContentMarkerService.batchQuery(entityKeys);
         return new ResponseEntity<>(
-                GrammarComparisonGroupWrapper.toVO(grammarComparisonGroupService.findById(id)), HttpStatus.OK);
+                GrammarComparisonGroupWrapper.toVO(dto, aiMarkers), HttpStatus.OK);
+    }
+
+    /** 从 GrammarComparisonGroupDto 树中收集所有子实体的 entity key */
+    private List<String> collectGrammarComparisonEntityKeys(GrammarComparisonGroupDto dto) {
+        List<String> keys = new ArrayList<>();
+        if (dto.getItems() != null) {
+            for (GrammarComparisonItemDto item : dto.getItems()) {
+                keys.addAll(AiContentMarkerHelper.collectOne("grammar_comparison_item", item.getId()));
+            }
+        }
+        if (dto.getChats() != null) {
+            for (GrammarComparisonChatDto chat : dto.getChats()) {
+                keys.addAll(AiContentMarkerHelper.collectOne("grammar_comparison_chat", chat.getId()));
+            }
+        }
+        return keys;
     }
 
     @Log("查询语法辨析组列表")

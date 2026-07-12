@@ -33,4 +33,7 @@ public class ExerciseQuestionDto extends BaseDTO {
 
     // 列表统计
     private Integer childCount;
+
+    // AI生成的字段名列表
+    private List<String> aiGeneratedFields;
 }

@@ -18,6 +18,7 @@ import com.naon.grid.enums.PublishStatusEnum;
 import com.naon.grid.enums.StatusEnum;
 import com.naon.grid.exception.BadRequestException;
 import com.naon.grid.exception.EntityNotFoundException;
+import com.naon.grid.modules.system.service.AiContentMarkerService;
 import com.naon.grid.utils.JsonUtils;
 import com.naon.grid.utils.PageResult;
 import com.naon.grid.utils.PageUtil;
@@ -42,6 +43,7 @@ public class GrammarComparisonGroupServiceImpl implements GrammarComparisonGroup
     private final GrammarComparisonItemRepository itemRepository;
     private final GrammarComparisonChatRepository chatRepository;
     private final ExampleSentenceService exampleSentenceService;
+    private final AiContentMarkerService aiContentMarkerService;
 
     @Override
     public PageResult<GrammarComparisonGroupDto> queryAll(GrammarComparisonGroupQueryCriteria criteria, Pageable pageable) {
@@ -225,8 +227,12 @@ public class GrammarComparisonGroupServiceImpl implements GrammarComparisonGroup
         entity.setExerciseQuestionIds(draftDto.getExerciseQuestionIds());
 
         // 同步子表
-        syncItems(id, draftDto.getItems());
-        syncChats(id, draftDto.getChats());
+        List<GrammarComparisonItem> savedItems = syncItems(id, draftDto.getItems());
+        List<GrammarComparisonChat> savedChats = syncChats(id, draftDto.getChats());
+
+        // 物化 AI 标记
+        collectGrammarComparisonMarkers(draftDto.getItems(), savedItems,
+                draftDto.getChats(), savedChats);
 
         // 更新状态并清除草稿
         entity.setPublishStatus(PublishStatusEnum.PUBLISHED.getCode());
@@ -459,8 +465,9 @@ public class GrammarComparisonGroupServiceImpl implements GrammarComparisonGroup
 
     /**
      * 发布时同步条目：软删除旧条目，从草稿创建新条目。
+     * @return 保存后的条目列表（含新的数据库ID）
      */
-    private void syncItems(Long groupId, List<GrammarComparisonItemDto> submittedDtos) {
+    private List<GrammarComparisonItem> syncItems(Long groupId, List<GrammarComparisonItemDto> submittedDtos) {
         // 软删除旧条目
         List<GrammarComparisonItem> existing = itemRepository.findByGroupIdAndStatus(
                 groupId, StatusEnum.ENABLED.getCode());
@@ -472,7 +479,7 @@ public class GrammarComparisonGroupServiceImpl implements GrammarComparisonGroup
         }
 
         if (submittedDtos == null || submittedDtos.isEmpty()) {
-            return;
+            return Collections.emptyList();
         }
 
         List<GrammarComparisonItem> toSave = new ArrayList<>();
@@ -491,15 +498,17 @@ public class GrammarComparisonGroupServiceImpl implements GrammarComparisonGroup
             toSave.add(item);
         }
         if (!toSave.isEmpty()) {
-            itemRepository.saveAll(toSave);
+            return itemRepository.saveAll(toSave);
         }
+        return Collections.emptyList();
     }
 
     /**
      * 发布时同步对话：
      * 软删除旧对话 + 禁用其例句 → 创建新对话 → 创建 example_sentence → 回填 exampleSentenceId。
+     * @return 保存后的对话列表（含新的数据库ID）
      */
-    private void syncChats(Long groupId, List<GrammarComparisonChatDto> submittedDtos) {
+    private List<GrammarComparisonChat> syncChats(Long groupId, List<GrammarComparisonChatDto> submittedDtos) {
         // 1. 软删除旧的 chats 及其例句
         List<GrammarComparisonChat> existing = chatRepository.findByGroupIdAndStatus(
                 groupId, StatusEnum.ENABLED.getCode());
@@ -519,9 +528,10 @@ public class GrammarComparisonGroupServiceImpl implements GrammarComparisonGroup
 
         // 2. 创建新 chats
         if (submittedDtos == null || submittedDtos.isEmpty()) {
-            return;
+            return Collections.emptyList();
         }
 
+        List<GrammarComparisonChat> savedChats = new ArrayList<>();
         for (GrammarComparisonChatDto dto : submittedDtos) {
             GrammarComparisonChat chat = new GrammarComparisonChat();
             chat.setGroupId(groupId);
@@ -542,8 +552,48 @@ public class GrammarComparisonGroupServiceImpl implements GrammarComparisonGroup
             ExampleSentenceDto savedSentence = exampleSentenceService.save(sentenceDto);
             if (savedSentence != null && savedSentence.getId() != null) {
                 chat.setExampleSentenceId(savedSentence.getId());
-                chatRepository.save(chat);
+                chat = chatRepository.save(chat);
             }
+            savedChats.add(chat);
+        }
+        return savedChats;
+    }
+
+    /**
+     * 收集草稿 DTO 中的 AI 标记并物化到 ai_content_marker 表。
+     * 使用发布后实体的新数据库ID。
+     */
+    private void collectGrammarComparisonMarkers(
+            List<GrammarComparisonItemDto> itemDtos, List<GrammarComparisonItem> savedItems,
+            List<GrammarComparisonChatDto> chatDtos, List<GrammarComparisonChat> savedChats) {
+        List<AiContentMarkerService.MarkerEntry> entries = new ArrayList<>();
+
+        if (itemDtos != null && savedItems != null) {
+            int size = Math.min(itemDtos.size(), savedItems.size());
+            for (int i = 0; i < size; i++) {
+                GrammarComparisonItemDto dto = itemDtos.get(i);
+                if (dto.getAiGeneratedFields() != null && !dto.getAiGeneratedFields().isEmpty()) {
+                    entries.add(new AiContentMarkerService.MarkerEntry(
+                            "grammar_comparison_item", savedItems.get(i).getId(),
+                            dto.getAiGeneratedFields()));
+                }
+            }
+        }
+
+        if (chatDtos != null && savedChats != null) {
+            int size = Math.min(chatDtos.size(), savedChats.size());
+            for (int i = 0; i < size; i++) {
+                GrammarComparisonChatDto dto = chatDtos.get(i);
+                if (dto.getAiGeneratedFields() != null && !dto.getAiGeneratedFields().isEmpty()) {
+                    entries.add(new AiContentMarkerService.MarkerEntry(
+                            "grammar_comparison_chat", savedChats.get(i).getId(),
+                            dto.getAiGeneratedFields()));
+                }
+            }
+        }
+
+        if (!entries.isEmpty()) {
+            aiContentMarkerService.batchReplace(entries);
         }
     }
 

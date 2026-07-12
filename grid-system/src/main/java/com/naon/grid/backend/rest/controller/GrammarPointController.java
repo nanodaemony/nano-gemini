@@ -20,6 +20,7 @@ import com.naon.grid.backend.service.grammar.dto.GrammarPointDto;
 import com.naon.grid.backend.service.grammar.dto.GrammarStructureDto;
 import com.naon.grid.modules.system.service.AiContentMarkerHelper;
 import com.naon.grid.modules.system.service.AiContentMarkerService;
+import com.naon.grid.modules.system.service.AiContentMarkerService.MarkerFields;
 import com.naon.grid.utils.PageResult;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -89,7 +90,7 @@ public class GrammarPointController {
     public ResponseEntity<GrammarPointVO> findById(@PathVariable Long id) {
         GrammarPointDto dto = grammarPointService.findById(id);
         List<String> entityKeys = collectGrammarEntityKeys(dto);
-        Map<String, List<String>> aiMarkers = aiContentMarkerService.batchQuery(entityKeys);
+        Map<String, MarkerFields> aiMarkers = aiContentMarkerService.batchQuery(entityKeys);
         return new ResponseEntity<>(GrammarPointWrapper.toVO(dto, aiMarkers), HttpStatus.OK);
     }
 

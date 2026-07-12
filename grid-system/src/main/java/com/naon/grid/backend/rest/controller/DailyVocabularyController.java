@@ -15,6 +15,7 @@ import com.naon.grid.backend.service.vocabulary.DailyVocabularyService;
 import com.naon.grid.backend.service.vocabulary.dto.DailyVocabularyDto;
 import com.naon.grid.modules.system.service.AiContentMarkerHelper;
 import com.naon.grid.modules.system.service.AiContentMarkerService;
+import com.naon.grid.modules.system.service.AiContentMarkerService.MarkerFields;
 import com.naon.grid.utils.PageResult;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -66,7 +67,7 @@ public class DailyVocabularyController {
     public ResponseEntity<DailyVocabularyVO> findById(@PathVariable Integer id) {
         DailyVocabularyDto dto = dailyVocabularyService.findById(id);
         List<String> keys = AiContentMarkerHelper.collectOne("daily_vocabulary", dto.getId());
-        Map<String, List<String>> aiMarkers = aiContentMarkerService.batchQuery(keys);
+        Map<String, MarkerFields> aiMarkers = aiContentMarkerService.batchQuery(keys);
         return new ResponseEntity<>(DailyVocabularyWrapper.toVO(dto, aiMarkers), HttpStatus.OK);
     }
 

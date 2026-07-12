@@ -17,6 +17,7 @@ import com.naon.grid.backend.service.vocabcomparison.dto.VocabComparisonGroupDto
 import com.naon.grid.backend.service.vocabcomparison.dto.VocabComparisonItemDto;
 import com.naon.grid.modules.system.service.AiContentMarkerHelper;
 import com.naon.grid.modules.system.service.AiContentMarkerService;
+import com.naon.grid.modules.system.service.AiContentMarkerService.MarkerFields;
 import com.naon.grid.utils.PageResult;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -84,7 +85,7 @@ public class VocabComparisonController {
     public ResponseEntity<VocabComparisonGroupVO> findById(@PathVariable Long id) {
         VocabComparisonGroupDto dto = vocabComparisonGroupService.findById(id);
         List<String> entityKeys = collectComparisonEntityKeys(dto);
-        Map<String, List<String>> aiMarkers = aiContentMarkerService.batchQuery(entityKeys);
+        Map<String, MarkerFields> aiMarkers = aiContentMarkerService.batchQuery(entityKeys);
         return new ResponseEntity<>(
                 VocabComparisonGroupWrapper.toVO(dto, aiMarkers), HttpStatus.OK);
     }

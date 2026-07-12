@@ -17,6 +17,7 @@ import com.naon.grid.backend.service.grammar.dto.GrammarPointQueryCriteria;
 import com.naon.grid.backend.service.grammar.dto.GrammarStructureDto;
 import com.naon.grid.domain.common.TextTranslation;
 import com.naon.grid.modules.system.service.AiContentMarkerHelper;
+import com.naon.grid.modules.system.service.AiContentMarkerService.MarkerFields;
 
 import java.util.Collections;
 import java.util.List;
@@ -53,7 +54,7 @@ public class GrammarPointWrapper {
     }
 
     // ===== Dto -> VO (detail) =====
-    public static GrammarPointVO toVO(GrammarPointDto dto, Map<String, List<String>> aiMarkers) {
+    public static GrammarPointVO toVO(GrammarPointDto dto, Map<String, MarkerFields> aiMarkers) {
         if (dto == null) return null;
         GrammarPointVO vo = new GrammarPointVO();
         vo.setId(dto.getId());
@@ -171,13 +172,13 @@ public class GrammarPointWrapper {
 
     // ===== Sub VO conversion methods =====
     private static List<GrammarPointVO.GrammarMeaningVO> toMeaningVOList(List<GrammarMeaningDto> dtos,
-            Map<String, List<String>> aiMarkers) {
+            Map<String, MarkerFields> aiMarkers) {
         if (dtos == null) return Collections.emptyList();
         return dtos.stream().map(dto -> toMeaningVO(dto, aiMarkers)).collect(Collectors.toList());
     }
 
     private static GrammarPointVO.GrammarMeaningVO toMeaningVO(GrammarMeaningDto dto,
-            Map<String, List<String>> aiMarkers) {
+            Map<String, MarkerFields> aiMarkers) {
         GrammarPointVO.GrammarMeaningVO vo = new GrammarPointVO.GrammarMeaningVO();
         vo.setId(dto.getId());
         vo.setGrammarId(dto.getGrammarId());
@@ -190,19 +191,23 @@ public class GrammarPointWrapper {
         vo.setUpdateTime(dto.getUpdateTime());
         String key = AiContentMarkerHelper.key("grammar_meaning", dto.getId());
         if (key != null && aiMarkers != null) {
-            vo.setAiGeneratedFields(aiMarkers.getOrDefault(key, Collections.emptyList()));
+            MarkerFields fields = aiMarkers.get(key);
+            if (fields != null) {
+                vo.setAiGeneratedFields(fields.getGenerated());
+                vo.setAiReviewedFields(fields.getReviewed());
+            }
         }
         return vo;
     }
 
     private static List<GrammarPointVO.GrammarStructureVO> toStructureVOList(List<GrammarStructureDto> dtos,
-            Map<String, List<String>> aiMarkers) {
+            Map<String, MarkerFields> aiMarkers) {
         if (dtos == null) return Collections.emptyList();
         return dtos.stream().map(dto -> toStructureVO(dto, aiMarkers)).collect(Collectors.toList());
     }
 
     private static GrammarPointVO.GrammarStructureVO toStructureVO(GrammarStructureDto dto,
-            Map<String, List<String>> aiMarkers) {
+            Map<String, MarkerFields> aiMarkers) {
         GrammarPointVO.GrammarStructureVO vo = new GrammarPointVO.GrammarStructureVO();
         vo.setId(dto.getId());
         vo.setGrammarId(dto.getGrammarId());
@@ -213,19 +218,23 @@ public class GrammarPointWrapper {
         vo.setUpdateTime(dto.getUpdateTime());
         String key = AiContentMarkerHelper.key("grammar_structure", dto.getId());
         if (key != null && aiMarkers != null) {
-            vo.setAiGeneratedFields(aiMarkers.getOrDefault(key, Collections.emptyList()));
+            MarkerFields fields = aiMarkers.get(key);
+            if (fields != null) {
+                vo.setAiGeneratedFields(fields.getGenerated());
+                vo.setAiReviewedFields(fields.getReviewed());
+            }
         }
         return vo;
     }
 
     private static List<GrammarPointVO.GrammarNoticeVO> toNoticeVOList(List<GrammarNoticeDto> dtos,
-            Map<String, List<String>> aiMarkers) {
+            Map<String, MarkerFields> aiMarkers) {
         if (dtos == null) return Collections.emptyList();
         return dtos.stream().map(dto -> toNoticeVO(dto, aiMarkers)).collect(Collectors.toList());
     }
 
     private static GrammarPointVO.GrammarNoticeVO toNoticeVO(GrammarNoticeDto dto,
-            Map<String, List<String>> aiMarkers) {
+            Map<String, MarkerFields> aiMarkers) {
         GrammarPointVO.GrammarNoticeVO vo = new GrammarPointVO.GrammarNoticeVO();
         vo.setId(dto.getId());
         vo.setGrammarId(dto.getGrammarId());
@@ -237,19 +246,23 @@ public class GrammarPointWrapper {
         vo.setUpdateTime(dto.getUpdateTime());
         String key = AiContentMarkerHelper.key("grammar_notice", dto.getId());
         if (key != null && aiMarkers != null) {
-            vo.setAiGeneratedFields(aiMarkers.getOrDefault(key, Collections.emptyList()));
+            MarkerFields fields = aiMarkers.get(key);
+            if (fields != null) {
+                vo.setAiGeneratedFields(fields.getGenerated());
+                vo.setAiReviewedFields(fields.getReviewed());
+            }
         }
         return vo;
     }
 
     private static List<GrammarPointVO.GrammarErrorVO> toErrorVOList(List<GrammarErrorDto> dtos,
-            Map<String, List<String>> aiMarkers) {
+            Map<String, MarkerFields> aiMarkers) {
         if (dtos == null) return Collections.emptyList();
         return dtos.stream().map(dto -> toErrorVO(dto, aiMarkers)).collect(Collectors.toList());
     }
 
     private static GrammarPointVO.GrammarErrorVO toErrorVO(GrammarErrorDto dto,
-            Map<String, List<String>> aiMarkers) {
+            Map<String, MarkerFields> aiMarkers) {
         GrammarPointVO.GrammarErrorVO vo = new GrammarPointVO.GrammarErrorVO();
         vo.setId(dto.getId());
         vo.setGrammarId(dto.getGrammarId());
@@ -261,7 +274,11 @@ public class GrammarPointWrapper {
         vo.setUpdateTime(dto.getUpdateTime());
         String key = AiContentMarkerHelper.key("grammar_error", dto.getId());
         if (key != null && aiMarkers != null) {
-            vo.setAiGeneratedFields(aiMarkers.getOrDefault(key, Collections.emptyList()));
+            MarkerFields fields = aiMarkers.get(key);
+            if (fields != null) {
+                vo.setAiGeneratedFields(fields.getGenerated());
+                vo.setAiReviewedFields(fields.getReviewed());
+            }
         }
         return vo;
     }
@@ -287,13 +304,13 @@ public class GrammarPointWrapper {
     }
 
     private static List<ExampleSentenceVO> toExampleSentenceVOList(List<ExampleSentenceDto> dtos,
-            Map<String, List<String>> aiMarkers) {
+            Map<String, MarkerFields> aiMarkers) {
         if (dtos == null) return Collections.emptyList();
         return dtos.stream().map(dto -> toExampleSentenceVO(dto, aiMarkers)).collect(Collectors.toList());
     }
 
     private static ExampleSentenceVO toExampleSentenceVO(ExampleSentenceDto dto,
-            Map<String, List<String>> aiMarkers) {
+            Map<String, MarkerFields> aiMarkers) {
         if (dto == null) return null;
         ExampleSentenceVO vo = new ExampleSentenceVO();
         vo.setId(dto.getId());
@@ -307,7 +324,11 @@ public class GrammarPointWrapper {
         vo.setUpdateTime(dto.getUpdateTime());
         String key = AiContentMarkerHelper.key("example_sentence", dto.getId());
         if (key != null && aiMarkers != null) {
-            vo.setAiGeneratedFields(aiMarkers.getOrDefault(key, Collections.emptyList()));
+            MarkerFields fields = aiMarkers.get(key);
+            if (fields != null) {
+                vo.setAiGeneratedFields(fields.getGenerated());
+                vo.setAiReviewedFields(fields.getReviewed());
+            }
         }
         return vo;
     }

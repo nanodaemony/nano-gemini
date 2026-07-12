@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import com.naon.grid.modules.system.service.AiContentMarkerHelper;
+import com.naon.grid.modules.system.service.AiContentMarkerService.MarkerFields;
 
 /**
  * 汉字包装器
@@ -142,7 +143,7 @@ public class CharCharacterWrapper {
         return vo;
     }
 
-    public static CharCharacterVO toVO(CharCharacterDto dto, Map<String, List<String>> aiMarkers) {
+    public static CharCharacterVO toVO(CharCharacterDto dto, Map<String, MarkerFields> aiMarkers) {
         CharCharacterVO vo = new CharCharacterVO();
         vo.setId(dto.getId());
         vo.setCharacter(dto.getCharacter());
@@ -167,7 +168,7 @@ public class CharCharacterWrapper {
     }
 
     private static List<CharCharacterVO.CharComparisonVO> toComparisonVOList(List<CharComparisonDto> resources,
-            Map<String, List<String>> aiMarkers) {
+            Map<String, MarkerFields> aiMarkers) {
         if (resources == null) {
             return Collections.emptyList();
         }
@@ -175,7 +176,7 @@ public class CharCharacterWrapper {
     }
 
     private static CharCharacterVO.CharComparisonVO toComparisonVO(CharComparisonDto dto,
-            Map<String, List<String>> aiMarkers) {
+            Map<String, MarkerFields> aiMarkers) {
         CharCharacterVO.CharComparisonVO vo = new CharCharacterVO.CharComparisonVO();
         vo.setId(dto.getId());
         vo.setComparisonChar(dto.getComparisonChar());
@@ -187,13 +188,17 @@ public class CharCharacterWrapper {
         vo.setUpdateTime(dto.getUpdateTime());
         String key = AiContentMarkerHelper.key("char_comparison", dto.getId());
         if (key != null && aiMarkers != null) {
-            vo.setAiGeneratedFields(aiMarkers.getOrDefault(key, Collections.emptyList()));
+            MarkerFields fields = aiMarkers.get(key);
+            if (fields != null) {
+                vo.setAiGeneratedFields(fields.getGenerated());
+                vo.setAiReviewedFields(fields.getReviewed());
+            }
         }
         return vo;
     }
 
     private static List<CharCharacterVO.CharWordVO> toWordVOList(List<CharWordDto> resources,
-            Map<String, List<String>> aiMarkers) {
+            Map<String, MarkerFields> aiMarkers) {
         if (resources == null) {
             return Collections.emptyList();
         }
@@ -201,7 +206,7 @@ public class CharCharacterWrapper {
     }
 
     private static CharCharacterVO.CharWordVO toWordVO(CharWordDto dto,
-            Map<String, List<String>> aiMarkers) {
+            Map<String, MarkerFields> aiMarkers) {
         CharCharacterVO.CharWordVO vo = new CharCharacterVO.CharWordVO();
         vo.setId(dto.getId());
         vo.setCharId(dto.getCharId());
@@ -216,13 +221,17 @@ public class CharCharacterWrapper {
         vo.setUpdateTime(dto.getUpdateTime());
         String key = AiContentMarkerHelper.key("char_word", dto.getId());
         if (key != null && aiMarkers != null) {
-            vo.setAiGeneratedFields(aiMarkers.getOrDefault(key, Collections.emptyList()));
+            MarkerFields fields = aiMarkers.get(key);
+            if (fields != null) {
+                vo.setAiGeneratedFields(fields.getGenerated());
+                vo.setAiReviewedFields(fields.getReviewed());
+            }
         }
         return vo;
     }
 
     private static ExampleSentenceVO toExampleSentenceVO(ExampleSentenceDto dto,
-            Map<String, List<String>> aiMarkers) {
+            Map<String, MarkerFields> aiMarkers) {
         if (dto == null) {
             return null;
         }
@@ -238,7 +247,11 @@ public class CharCharacterWrapper {
         vo.setUpdateTime(dto.getUpdateTime());
         String key = AiContentMarkerHelper.key("example_sentence", dto.getId());
         if (key != null && aiMarkers != null) {
-            vo.setAiGeneratedFields(aiMarkers.getOrDefault(key, Collections.emptyList()));
+            MarkerFields fields = aiMarkers.get(key);
+            if (fields != null) {
+                vo.setAiGeneratedFields(fields.getGenerated());
+                vo.setAiReviewedFields(fields.getReviewed());
+            }
         }
         return vo;
     }

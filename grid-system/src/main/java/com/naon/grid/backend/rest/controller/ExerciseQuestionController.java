@@ -16,6 +16,7 @@ import com.naon.grid.backend.service.question.ExerciseQuestionService;
 import com.naon.grid.backend.service.question.dto.ExerciseQuestionDto;
 import com.naon.grid.modules.system.service.AiContentMarkerHelper;
 import com.naon.grid.modules.system.service.AiContentMarkerService;
+import com.naon.grid.modules.system.service.AiContentMarkerService.MarkerFields;
 import com.naon.grid.utils.PageResult;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -82,7 +83,7 @@ public class ExerciseQuestionController {
     public ResponseEntity<ExerciseQuestionVO> findById(@PathVariable Long id) {
         ExerciseQuestionDto dto = exerciseQuestionService.findById(id);
         List<String> entityKeys = collectExerciseQuestionEntityKeys(dto);
-        Map<String, List<String>> aiMarkers = aiContentMarkerService.batchQuery(entityKeys);
+        Map<String, MarkerFields> aiMarkers = aiContentMarkerService.batchQuery(entityKeys);
         return new ResponseEntity<>(ExerciseQuestionWrapper.toVO(dto, aiMarkers), HttpStatus.OK);
     }
 

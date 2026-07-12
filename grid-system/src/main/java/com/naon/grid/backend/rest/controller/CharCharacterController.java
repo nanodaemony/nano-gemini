@@ -25,6 +25,7 @@ import com.naon.grid.backend.service.common.dto.ExampleSentenceDto;
 import com.naon.grid.domain.common.TextTranslation;
 import com.naon.grid.modules.system.service.AiContentMarkerHelper;
 import com.naon.grid.modules.system.service.AiContentMarkerService;
+import com.naon.grid.modules.system.service.AiContentMarkerService.MarkerFields;
 import com.naon.grid.utils.PageResult;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -96,7 +97,7 @@ public class CharCharacterController {
     public ResponseEntity<CharCharacterVO> findById(@PathVariable Integer id) {
         CharCharacterDto dto = charCharacterService.findById(id);
         List<String> entityKeys = collectCharEntityKeys(dto);
-        Map<String, List<String>> aiMarkers = aiContentMarkerService.batchQuery(entityKeys);
+        Map<String, MarkerFields> aiMarkers = aiContentMarkerService.batchQuery(entityKeys);
         return new ResponseEntity<>(CharCharacterWrapper.toVO(dto, aiMarkers), HttpStatus.OK);
     }
 

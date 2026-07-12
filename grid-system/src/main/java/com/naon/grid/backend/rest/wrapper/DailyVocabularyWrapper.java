@@ -13,6 +13,7 @@ import com.naon.grid.backend.service.vocabulary.dto.DailyVocabularyDto;
 import com.naon.grid.backend.service.vocabulary.dto.DailyVocabularyQueryCriteria;
 import com.naon.grid.domain.common.TextTranslation;
 import com.naon.grid.modules.system.service.AiContentMarkerHelper;
+import com.naon.grid.modules.system.service.AiContentMarkerService.MarkerFields;
 
 import java.util.Collections;
 import java.util.List;
@@ -72,7 +73,7 @@ public class DailyVocabularyWrapper {
         return vo;
     }
 
-    public static DailyVocabularyVO toVO(DailyVocabularyDto dto, Map<String, List<String>> aiMarkers) {
+    public static DailyVocabularyVO toVO(DailyVocabularyDto dto, Map<String, MarkerFields> aiMarkers) {
         DailyVocabularyVO vo = new DailyVocabularyVO();
         vo.setId(dto.getId());
         vo.setPhrase(dto.getPhrase());
@@ -98,7 +99,11 @@ public class DailyVocabularyWrapper {
         vo.setUpdateTime(dto.getUpdateTime());
         String key = AiContentMarkerHelper.key("daily_vocabulary", dto.getId());
         if (key != null && aiMarkers != null) {
-            vo.setAiGeneratedFields(aiMarkers.getOrDefault(key, Collections.emptyList()));
+            MarkerFields fields = aiMarkers.get(key);
+            if (fields != null) {
+                vo.setAiGeneratedFields(fields.getGenerated());
+                vo.setAiReviewedFields(fields.getReviewed());
+            }
         }
         return vo;
     }

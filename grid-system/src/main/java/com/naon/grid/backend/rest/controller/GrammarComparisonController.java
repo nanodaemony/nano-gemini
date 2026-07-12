@@ -17,6 +17,7 @@ import com.naon.grid.backend.service.grammarcomparison.dto.GrammarComparisonGrou
 import com.naon.grid.backend.service.grammarcomparison.dto.GrammarComparisonItemDto;
 import com.naon.grid.modules.system.service.AiContentMarkerHelper;
 import com.naon.grid.modules.system.service.AiContentMarkerService;
+import com.naon.grid.modules.system.service.AiContentMarkerService.MarkerFields;
 import com.naon.grid.utils.PageResult;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -83,7 +84,7 @@ public class GrammarComparisonController {
     public ResponseEntity<GrammarComparisonGroupVO> findById(@PathVariable Long id) {
         GrammarComparisonGroupDto dto = grammarComparisonGroupService.findById(id);
         List<String> entityKeys = collectGrammarComparisonEntityKeys(dto);
-        Map<String, List<String>> aiMarkers = aiContentMarkerService.batchQuery(entityKeys);
+        Map<String, MarkerFields> aiMarkers = aiContentMarkerService.batchQuery(entityKeys);
         return new ResponseEntity<>(
                 GrammarComparisonGroupWrapper.toVO(dto, aiMarkers), HttpStatus.OK);
     }

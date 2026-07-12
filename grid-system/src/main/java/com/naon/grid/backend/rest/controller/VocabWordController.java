@@ -26,6 +26,7 @@ import com.naon.grid.backend.service.vocabulary.mapstruct.VocabOutlineRecordMapp
 import com.naon.grid.domain.common.TextTranslation;
 import com.naon.grid.modules.system.service.AiContentMarkerHelper;
 import com.naon.grid.modules.system.service.AiContentMarkerService;
+import com.naon.grid.modules.system.service.AiContentMarkerService.MarkerFields;
 import com.naon.grid.utils.PageResult;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -102,7 +103,7 @@ public class VocabWordController {
     public ResponseEntity<VocabWordVO> findById(@PathVariable Integer id) {
         VocabWordDto dto = vocabWordService.findById(id);
         List<String> entityKeys = collectVocabEntityKeys(dto);
-        Map<String, List<String>> aiMarkers = aiContentMarkerService.batchQuery(entityKeys);
+        Map<String, MarkerFields> aiMarkers = aiContentMarkerService.batchQuery(entityKeys);
         return new ResponseEntity<>(VocabWordWrapper.toVO(dto, aiMarkers), HttpStatus.OK);
     }
 

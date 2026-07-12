@@ -54,6 +54,7 @@ CREATE TABLE `ai_content_marker` (
     `entity_id`       BIGINT       NOT NULL COMMENT '实体记录ID',
     `field_name`      VARCHAR(255) NOT NULL COMMENT 'Java字段名(驼峰)',
     `ai_generated`    TINYINT      NOT NULL DEFAULT 1 COMMENT '1=AI生成 0=人工',
+    `reviewed`        TINYINT      NOT NULL DEFAULT 0 COMMENT '是否已人工审核: 1=已审核 0=未审核',
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_entity_field` (`entity_type`, `entity_id`, `field_name`),
     KEY `idx_entity` (`entity_type`, `entity_id`)

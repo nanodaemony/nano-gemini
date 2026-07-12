@@ -33,4 +33,8 @@ public class AiContentMarker implements Serializable {
     @Column(name = "ai_generated", nullable = false)
     @ApiModelProperty(value = "1=AI生成 0=人工")
     private Integer aiGenerated = 1;
+
+    @Column(name = "reviewed", nullable = false)
+    @ApiModelProperty(value = "是否已人工审核: 1=已审核 0=未审核")
+    private Integer reviewed = 0;
 }

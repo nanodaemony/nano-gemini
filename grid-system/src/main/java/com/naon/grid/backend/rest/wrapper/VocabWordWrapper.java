@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import com.naon.grid.modules.system.service.AiContentMarkerHelper;
+import com.naon.grid.modules.system.service.AiContentMarkerService.MarkerFields;
 
 public class VocabWordWrapper {
 
@@ -178,7 +179,7 @@ public class VocabWordWrapper {
         return vo;
     }
 
-    public static VocabWordVO toVO(VocabWordDto dto, Map<String, List<String>> aiMarkers) {
+    public static VocabWordVO toVO(VocabWordDto dto, Map<String, MarkerFields> aiMarkers) {
         VocabWordVO vo = new VocabWordVO();
         vo.setId(dto.getId());
         vo.setWord(dto.getWord());
@@ -197,13 +198,13 @@ public class VocabWordWrapper {
     }
 
     private static List<VocabWordVO.VocabSenseVO> toSenseVOList(List<VocabSenseDto> resources,
-            Map<String, List<String>> aiMarkers) {
+            Map<String, MarkerFields> aiMarkers) {
         if (resources == null) return Collections.emptyList();
         return resources.stream().map(dto -> toSenseVO(dto, aiMarkers)).collect(Collectors.toList());
     }
 
     private static VocabWordVO.VocabSenseVO toSenseVO(VocabSenseDto dto,
-            Map<String, List<String>> aiMarkers) {
+            Map<String, MarkerFields> aiMarkers) {
         VocabWordVO.VocabSenseVO vo = new VocabWordVO.VocabSenseVO();
         vo.setId(dto.getId());
         vo.setPartOfSpeech(dto.getPartOfSpeech());
@@ -223,19 +224,23 @@ public class VocabWordWrapper {
         vo.setUpdateTime(dto.getUpdateTime());
         String key = AiContentMarkerHelper.key("vocab_sense", dto.getId());
         if (key != null && aiMarkers != null) {
-            vo.setAiGeneratedFields(aiMarkers.getOrDefault(key, Collections.emptyList()));
+            MarkerFields fields = aiMarkers.get(key);
+            if (fields != null) {
+                vo.setAiGeneratedFields(fields.getGenerated());
+                vo.setAiReviewedFields(fields.getReviewed());
+            }
         }
         return vo;
     }
 
     private static List<VocabWordVO.VocabStructureVO> toStructureVOList(List<VocabStructureDto> resources,
-            Map<String, List<String>> aiMarkers) {
+            Map<String, MarkerFields> aiMarkers) {
         if (resources == null) return Collections.emptyList();
         return resources.stream().map(dto -> toStructureVO(dto, aiMarkers)).collect(Collectors.toList());
     }
 
     private static VocabWordVO.VocabStructureVO toStructureVO(VocabStructureDto dto,
-            Map<String, List<String>> aiMarkers) {
+            Map<String, MarkerFields> aiMarkers) {
         VocabWordVO.VocabStructureVO vo = new VocabWordVO.VocabStructureVO();
         vo.setId(dto.getId());
         vo.setWordId(dto.getWordId());
@@ -249,7 +254,11 @@ public class VocabWordWrapper {
         vo.setUpdateTime(dto.getUpdateTime());
         String key = AiContentMarkerHelper.key("vocab_structure", dto.getId());
         if (key != null && aiMarkers != null) {
-            vo.setAiGeneratedFields(aiMarkers.getOrDefault(key, Collections.emptyList()));
+            MarkerFields fields = aiMarkers.get(key);
+            if (fields != null) {
+                vo.setAiGeneratedFields(fields.getGenerated());
+                vo.setAiReviewedFields(fields.getReviewed());
+            }
         }
         return vo;
     }
@@ -272,7 +281,7 @@ public class VocabWordWrapper {
     }
 
     private static ExampleSentenceVO toExampleSentenceVO(ExampleSentenceDto dto,
-            Map<String, List<String>> aiMarkers) {
+            Map<String, MarkerFields> aiMarkers) {
         if (dto == null) return null;
         ExampleSentenceVO vo = new ExampleSentenceVO();
         vo.setId(dto.getId());
@@ -286,13 +295,17 @@ public class VocabWordWrapper {
         vo.setUpdateTime(dto.getUpdateTime());
         String key = AiContentMarkerHelper.key("example_sentence", dto.getId());
         if (key != null && aiMarkers != null) {
-            vo.setAiGeneratedFields(aiMarkers.getOrDefault(key, Collections.emptyList()));
+            MarkerFields fields = aiMarkers.get(key);
+            if (fields != null) {
+                vo.setAiGeneratedFields(fields.getGenerated());
+                vo.setAiReviewedFields(fields.getReviewed());
+            }
         }
         return vo;
     }
 
     private static List<ExampleSentenceVO> toExampleSentenceVOList(List<ExampleSentenceDto> resources,
-            Map<String, List<String>> aiMarkers) {
+            Map<String, MarkerFields> aiMarkers) {
         if (resources == null) return Collections.emptyList();
         return resources.stream().map(dto -> toExampleSentenceVO(dto, aiMarkers)).collect(Collectors.toList());
     }

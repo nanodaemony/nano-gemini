@@ -20,9 +20,14 @@ public interface AiContentMarkerService {
     /**
      * 批量查询 AI 标记。
      * @param entityKeys 格式 ["vocab_sense:88", "example_sentence:42"]
-     * @return key="entity_type:entity_id", value=AI生成的字段名列表
+     * @return key="entity_type:entity_id", value=标记字段（含 AI生成列表和已审核列表）
      */
-    Map<String, List<String>> batchQuery(List<String> entityKeys);
+    Map<String, MarkerFields> batchQuery(List<String> entityKeys);
+
+    /**
+     * 设置某个字段的审核状态。
+     */
+    void reviewField(String entityType, Long entityId, String fieldName, boolean reviewed);
 
     @Data
     @AllArgsConstructor
@@ -30,5 +35,14 @@ public interface AiContentMarkerService {
         private String entityType;
         private Long entityId;
         private List<String> aiFields;
+    }
+
+    @Data
+    @AllArgsConstructor
+    class MarkerFields {
+        /** AI生成的字段名列表 */
+        private List<String> generated;
+        /** 已人工审核的字段名列表（是 generated 的子集） */
+        private List<String> reviewed;
     }
 }

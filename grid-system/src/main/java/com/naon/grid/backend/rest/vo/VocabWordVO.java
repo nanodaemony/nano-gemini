@@ -102,6 +102,9 @@ public class VocabWordVO implements Serializable {
         @ApiModelProperty(value = "AI生成的字段名列表")
         private List<String> aiGeneratedFields;
 
+        @ApiModelProperty(value = "已人工审核的AI字段名列表（是 aiGeneratedFields 的子集）")
+        private List<String> aiReviewedFields;
+
         @ApiModelProperty(value = "创建时间: yyyy-MM-dd HH:mm:ss")
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
         private Timestamp createTime;
@@ -141,6 +144,9 @@ public class VocabWordVO implements Serializable {
 
         @ApiModelProperty(value = "AI生成的字段名列表")
         private List<String> aiGeneratedFields;
+
+        @ApiModelProperty(value = "已人工审核的AI字段名列表（是 aiGeneratedFields 的子集）")
+        private List<String> aiReviewedFields;
 
         @ApiModelProperty(value = "创建时间: yyyy-MM-dd HH:mm:ss")
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")

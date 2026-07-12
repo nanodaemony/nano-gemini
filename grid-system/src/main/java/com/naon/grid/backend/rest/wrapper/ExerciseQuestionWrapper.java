@@ -9,6 +9,7 @@ import com.naon.grid.backend.service.question.dto.ExerciseQuestionQueryCriteria;
 import com.naon.grid.domain.common.QuestionContent;
 import com.naon.grid.domain.common.QuestionOption;
 import com.naon.grid.modules.system.service.AiContentMarkerHelper;
+import com.naon.grid.modules.system.service.AiContentMarkerService.MarkerFields;
 
 import java.util.Collections;
 import java.util.List;
@@ -95,7 +96,7 @@ public class ExerciseQuestionWrapper {
         return vo;
     }
 
-    public static ExerciseQuestionVO toVO(ExerciseQuestionDto dto, Map<String, List<String>> aiMarkers) {
+    public static ExerciseQuestionVO toVO(ExerciseQuestionDto dto, Map<String, MarkerFields> aiMarkers) {
         if (dto == null) return null;
         ExerciseQuestionVO vo = new ExerciseQuestionVO();
         vo.setId(dto.getId());
@@ -117,13 +118,17 @@ public class ExerciseQuestionWrapper {
         vo.setChildren(toVOList(dto.getChildren(), aiMarkers));
         String key = AiContentMarkerHelper.key("exercise_question", dto.getId());
         if (key != null && aiMarkers != null) {
-            vo.setAiGeneratedFields(aiMarkers.getOrDefault(key, Collections.emptyList()));
+            MarkerFields fields = aiMarkers.get(key);
+            if (fields != null) {
+                vo.setAiGeneratedFields(fields.getGenerated());
+                vo.setAiReviewedFields(fields.getReviewed());
+            }
         }
         return vo;
     }
 
     private static List<ExerciseQuestionVO> toVOList(List<ExerciseQuestionDto> children,
-            Map<String, List<String>> aiMarkers) {
+            Map<String, MarkerFields> aiMarkers) {
         if (children == null) return Collections.emptyList();
         return children.stream().map(dto -> toVO(dto, aiMarkers)).collect(Collectors.toList());
     }

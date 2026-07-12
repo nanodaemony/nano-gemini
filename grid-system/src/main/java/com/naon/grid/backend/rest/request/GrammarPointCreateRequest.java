@@ -69,6 +69,9 @@ public class GrammarPointCreateRequest implements Serializable {
         @ApiModelProperty(value = "例句列表")
         private List<ExampleSentenceRequest> sentences;
 
+        @ApiModelProperty(value = "AI生成的字段名列表（Java字段名驼峰）")
+        private List<String> aiGeneratedFields;
+
         @ApiModelProperty(value = "排序权重（值大的排前面，不传默认 0）")
         private Integer order;
     }
@@ -87,6 +90,9 @@ public class GrammarPointCreateRequest implements Serializable {
         @Valid
         @ApiModelProperty(value = "例句列表")
         private List<ExampleSentenceRequest> sentences;
+
+        @ApiModelProperty(value = "AI生成的字段名列表（Java字段名驼峰）")
+        private List<String> aiGeneratedFields;
 
         @ApiModelProperty(value = "排序权重（值大的排前面，不传默认 0）")
         private Integer order;
@@ -110,6 +116,9 @@ public class GrammarPointCreateRequest implements Serializable {
         @ApiModelProperty(value = "例句列表")
         private List<ExampleSentenceRequest> sentences;
 
+        @ApiModelProperty(value = "AI生成的字段名列表（Java字段名驼峰）")
+        private List<String> aiGeneratedFields;
+
         @ApiModelProperty(value = "排序权重（值大的排前面，不传默认 0）")
         private Integer order;
     }
@@ -130,6 +139,9 @@ public class GrammarPointCreateRequest implements Serializable {
 
         @ApiModelProperty(value = "偏误分析外文翻译")
         private List<TextTranslationRequest> errorAnalysisTranslations;
+
+        @ApiModelProperty(value = "AI生成的字段名列表（Java字段名驼峰）")
+        private List<String> aiGeneratedFields;
 
         @ApiModelProperty(value = "排序权重（值大的排前面，不传默认 0）")
         private Integer order;

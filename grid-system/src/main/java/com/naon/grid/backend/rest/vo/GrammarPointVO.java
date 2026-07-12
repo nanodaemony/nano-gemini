@@ -91,6 +91,9 @@ public class GrammarPointVO implements Serializable {
         @ApiModelProperty(value = "排序权重（值大的排前面）")
         private Integer order;
 
+        @ApiModelProperty(value = "AI生成的字段名列表")
+        private List<String> aiGeneratedFields;
+
         @ApiModelProperty(value = "创建时间: yyyy-MM-dd HH:mm:ss", required = true)
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
         private Timestamp createTime;
@@ -118,6 +121,9 @@ public class GrammarPointVO implements Serializable {
 
         @ApiModelProperty(value = "排序权重（值大的排前面）")
         private Integer order;
+
+        @ApiModelProperty(value = "AI生成的字段名列表")
+        private List<String> aiGeneratedFields;
 
         @ApiModelProperty(value = "创建时间: yyyy-MM-dd HH:mm:ss", required = true)
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
@@ -150,6 +156,9 @@ public class GrammarPointVO implements Serializable {
         @ApiModelProperty(value = "排序权重（值大的排前面）")
         private Integer order;
 
+        @ApiModelProperty(value = "AI生成的字段名列表")
+        private List<String> aiGeneratedFields;
+
         @ApiModelProperty(value = "创建时间: yyyy-MM-dd HH:mm:ss", required = true)
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
         private Timestamp createTime;
@@ -180,6 +189,9 @@ public class GrammarPointVO implements Serializable {
 
         @ApiModelProperty(value = "排序权重（值大的排前面）")
         private Integer order;
+
+        @ApiModelProperty(value = "AI生成的字段名列表")
+        private List<String> aiGeneratedFields;
 
         @ApiModelProperty(value = "创建时间: yyyy-MM-dd HH:mm:ss", required = true)
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")

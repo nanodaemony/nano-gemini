@@ -13,9 +13,11 @@ import com.naon.grid.backend.service.vocabcomparison.dto.VocabComparisonGroupDto
 import com.naon.grid.backend.service.vocabcomparison.dto.VocabComparisonGroupQueryCriteria;
 import com.naon.grid.backend.service.vocabcomparison.dto.VocabComparisonItemDto;
 import com.naon.grid.domain.common.TextTranslation;
+import com.naon.grid.modules.system.service.AiContentMarkerHelper;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class VocabComparisonGroupWrapper {
@@ -55,6 +57,7 @@ public class VocabComparisonGroupWrapper {
         dto.setCommonUsage(req.getCommonUsage());
         dto.setCommonUsageTranslations(toTextTranslationList(req.getCommonUsageTranslations()));
         dto.setOrder(req.getOrder());
+        dto.setAiGeneratedFields(req.getAiGeneratedFields());
         return dto;
     }
 
@@ -72,6 +75,7 @@ public class VocabComparisonGroupWrapper {
         dto.setTranslations(toTextTranslationList(req.getTranslations()));
         dto.setAudioId(req.getAudioId());
         dto.setOrder(req.getOrder());
+        dto.setAiGeneratedFields(req.getAiGeneratedFields());
         return dto;
     }
 
@@ -97,7 +101,7 @@ public class VocabComparisonGroupWrapper {
         return vo;
     }
 
-    public static VocabComparisonGroupVO toVO(VocabComparisonGroupDto dto) {
+    public static VocabComparisonGroupVO toVO(VocabComparisonGroupDto dto, Map<String, List<String>> aiMarkers) {
         VocabComparisonGroupVO vo = new VocabComparisonGroupVO();
         vo.setId(dto.getId());
         vo.setGroupKey(dto.getGroupKey());
@@ -105,8 +109,8 @@ public class VocabComparisonGroupWrapper {
         vo.setGroupOrder(dto.getGroupOrder());
         vo.setPublishStatus(dto.getPublishStatus());
         vo.setEditStatus(dto.getEditStatus());
-        vo.setItems(toItemVOList(dto.getItems()));
-        vo.setChats(toChatVOList(dto.getChats()));
+        vo.setItems(toItemVOList(dto.getItems(), aiMarkers));
+        vo.setChats(toChatVOList(dto.getChats(), aiMarkers));
         vo.setCreateBy(dto.getCreateBy());
         vo.setUpdateBy(dto.getUpdateBy());
         vo.setCreateTime(dto.getCreateTime());
@@ -114,12 +118,14 @@ public class VocabComparisonGroupWrapper {
         return vo;
     }
 
-    private static List<VocabComparisonItemVO> toItemVOList(List<VocabComparisonItemDto> dtos) {
+    private static List<VocabComparisonItemVO> toItemVOList(List<VocabComparisonItemDto> dtos,
+            Map<String, List<String>> aiMarkers) {
         if (dtos == null) return Collections.emptyList();
-        return dtos.stream().map(VocabComparisonGroupWrapper::toItemVO).collect(Collectors.toList());
+        return dtos.stream().map(dto -> toItemVO(dto, aiMarkers)).collect(Collectors.toList());
     }
 
-    private static VocabComparisonItemVO toItemVO(VocabComparisonItemDto dto) {
+    private static VocabComparisonItemVO toItemVO(VocabComparisonItemDto dto,
+            Map<String, List<String>> aiMarkers) {
         VocabComparisonItemVO vo = new VocabComparisonItemVO();
         vo.setId(dto.getId());
         vo.setWordId(dto.getWordId());
@@ -130,15 +136,21 @@ public class VocabComparisonGroupWrapper {
         vo.setCommonUsage(dto.getCommonUsage());
         vo.setCommonUsageTranslations(toTextTranslationVOList(dto.getCommonUsageTranslations()));
         vo.setOrder(dto.getOrder());
+        String key = AiContentMarkerHelper.key("vocab_comparison_item", dto.getId());
+        if (key != null && aiMarkers != null) {
+            vo.setAiGeneratedFields(aiMarkers.getOrDefault(key, Collections.emptyList()));
+        }
         return vo;
     }
 
-    private static List<VocabComparisonChatVO> toChatVOList(List<VocabComparisonChatDto> dtos) {
+    private static List<VocabComparisonChatVO> toChatVOList(List<VocabComparisonChatDto> dtos,
+            Map<String, List<String>> aiMarkers) {
         if (dtos == null) return Collections.emptyList();
-        return dtos.stream().map(VocabComparisonGroupWrapper::toChatVO).collect(Collectors.toList());
+        return dtos.stream().map(dto -> toChatVO(dto, aiMarkers)).collect(Collectors.toList());
     }
 
-    private static VocabComparisonChatVO toChatVO(VocabComparisonChatDto dto) {
+    private static VocabComparisonChatVO toChatVO(VocabComparisonChatDto dto,
+            Map<String, List<String>> aiMarkers) {
         VocabComparisonChatVO vo = new VocabComparisonChatVO();
         vo.setId(dto.getId());
         vo.setRole(dto.getRole());
@@ -147,6 +159,10 @@ public class VocabComparisonGroupWrapper {
         vo.setTranslations(toTextTranslationVOList(dto.getTranslations()));
         vo.setAudioId(dto.getAudioId());
         vo.setOrder(dto.getOrder());
+        String key = AiContentMarkerHelper.key("vocab_comparison_chat", dto.getId());
+        if (key != null && aiMarkers != null) {
+            vo.setAiGeneratedFields(aiMarkers.getOrDefault(key, Collections.emptyList()));
+        }
         return vo;
     }
 

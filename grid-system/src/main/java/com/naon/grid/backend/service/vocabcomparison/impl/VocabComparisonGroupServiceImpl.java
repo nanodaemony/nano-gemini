@@ -18,6 +18,7 @@ import com.naon.grid.enums.PublishStatusEnum;
 import com.naon.grid.enums.StatusEnum;
 import com.naon.grid.exception.BadRequestException;
 import com.naon.grid.exception.EntityNotFoundException;
+import com.naon.grid.modules.system.service.AiContentMarkerService;
 import com.naon.grid.utils.JsonUtils;
 import com.naon.grid.utils.PageResult;
 import com.naon.grid.utils.PageUtil;
@@ -42,6 +43,7 @@ public class VocabComparisonGroupServiceImpl implements VocabComparisonGroupServ
     private final VocabComparisonItemRepository itemRepository;
     private final VocabComparisonChatRepository chatRepository;
     private final ExampleSentenceService exampleSentenceService;
+    private final AiContentMarkerService aiContentMarkerService;
 
     @Override
     public PageResult<VocabComparisonGroupDto> queryAll(VocabComparisonGroupQueryCriteria criteria, Pageable pageable) {
@@ -220,11 +222,17 @@ public class VocabComparisonGroupServiceImpl implements VocabComparisonGroupServ
         entity.setGroupOrder(draftDto.getGroupOrder() != null ? draftDto.getGroupOrder() : 0);
         entity.setExerciseQuestionIds(draftDto.getExerciseQuestionIds());
 
-        // Sync items: soft delete old → create new
-        syncItems(id, draftDto.getItems());
+        // Sync items: soft delete old → create new, capture saved items for marker collection
+        List<VocabComparisonItem> savedItems = syncItems(id, draftDto.getItems());
 
         // Sync chats: soft delete old + disable example_sentences → create new → sync
-        syncChats(id, draftDto.getChats());
+        List<VocabComparisonChat> savedChats = syncChats(id, draftDto.getChats());
+
+        // 物化 AI 内容标记
+        List<AiContentMarkerService.MarkerEntry> markerEntries = new ArrayList<>();
+        collectComparisonMarkers(draftDto.getItems(), savedItems,
+                draftDto.getChats(), savedChats, markerEntries);
+        aiContentMarkerService.batchReplace(markerEntries);
 
         // Update status and clear draft content
         entity.setPublishStatus(PublishStatusEnum.PUBLISHED.getCode());
@@ -457,8 +465,9 @@ public class VocabComparisonGroupServiceImpl implements VocabComparisonGroupServ
 
     /**
      * Sync items during publish: soft delete old items, create new items from draft.
+     * @return the list of saved items (with IDs assigned by the database)
      */
-    private void syncItems(Long groupId, List<VocabComparisonItemDto> submittedDtos) {
+    private List<VocabComparisonItem> syncItems(Long groupId, List<VocabComparisonItemDto> submittedDtos) {
         // Soft delete old items
         List<VocabComparisonItem> existing = itemRepository.findByGroupIdAndStatus(
                 groupId, StatusEnum.ENABLED.getCode());
@@ -471,7 +480,7 @@ public class VocabComparisonGroupServiceImpl implements VocabComparisonGroupServ
 
         // Create new items
         if (submittedDtos == null || submittedDtos.isEmpty()) {
-            return;
+            return Collections.emptyList();
         }
 
         List<VocabComparisonItem> toSave = new ArrayList<>();
@@ -492,6 +501,7 @@ public class VocabComparisonGroupServiceImpl implements VocabComparisonGroupServ
         if (!toSave.isEmpty()) {
             itemRepository.saveAll(toSave);
         }
+        return toSave;
     }
 
     /**
@@ -500,8 +510,9 @@ public class VocabComparisonGroupServiceImpl implements VocabComparisonGroupServ
      * → create new chats
      * → create example_sentences (without bizType)
      * → backfill chat.exampleSentenceId.
+     * @return the list of saved chats (with IDs assigned by the database)
      */
-    private void syncChats(Long groupId, List<VocabComparisonChatDto> submittedDtos) {
+    private List<VocabComparisonChat> syncChats(Long groupId, List<VocabComparisonChatDto> submittedDtos) {
         // 1. 软删除旧的 chats 及其例句
         List<VocabComparisonChat> existing = chatRepository.findByGroupIdAndStatus(
                 groupId, StatusEnum.ENABLED.getCode());
@@ -521,9 +532,10 @@ public class VocabComparisonGroupServiceImpl implements VocabComparisonGroupServ
 
         // 2. 创建新 chats
         if (submittedDtos == null || submittedDtos.isEmpty()) {
-            return;
+            return Collections.emptyList();
         }
 
+        List<VocabComparisonChat> savedChats = new ArrayList<>();
         for (VocabComparisonChatDto dto : submittedDtos) {
             VocabComparisonChat chat = new VocabComparisonChat();
             chat.setGroupId(groupId);
@@ -545,6 +557,42 @@ public class VocabComparisonGroupServiceImpl implements VocabComparisonGroupServ
             if (savedSentence != null && savedSentence.getId() != null) {
                 chat.setExampleSentenceId(savedSentence.getId());
                 chatRepository.save(chat);
+            }
+            savedChats.add(chat);
+        }
+        return savedChats;
+    }
+
+    /**
+     * 从草稿 DTO 和已保存的实体中收集 AI 内容标记。
+     * DTO 列表与已保存实体列表按索引一一对应（按提交顺序创建）。
+     */
+    private void collectComparisonMarkers(
+            List<VocabComparisonItemDto> itemDtos, List<VocabComparisonItem> savedItems,
+            List<VocabComparisonChatDto> chatDtos, List<VocabComparisonChat> savedChats,
+            List<AiContentMarkerService.MarkerEntry> entries) {
+        // 收集条目标记
+        if (itemDtos != null && savedItems != null) {
+            int size = Math.min(itemDtos.size(), savedItems.size());
+            for (int i = 0; i < size; i++) {
+                VocabComparisonItemDto dto = itemDtos.get(i);
+                if (dto.getAiGeneratedFields() != null && !dto.getAiGeneratedFields().isEmpty()) {
+                    entries.add(new AiContentMarkerService.MarkerEntry(
+                            "vocab_comparison_item", savedItems.get(i).getId(),
+                            dto.getAiGeneratedFields()));
+                }
+            }
+        }
+        // 收集对话标记
+        if (chatDtos != null && savedChats != null) {
+            int size = Math.min(chatDtos.size(), savedChats.size());
+            for (int i = 0; i < size; i++) {
+                VocabComparisonChatDto dto = chatDtos.get(i);
+                if (dto.getAiGeneratedFields() != null && !dto.getAiGeneratedFields().isEmpty()) {
+                    entries.add(new AiContentMarkerService.MarkerEntry(
+                            "vocab_comparison_chat", savedChats.get(i).getId(),
+                            dto.getAiGeneratedFields()));
+                }
             }
         }
     }

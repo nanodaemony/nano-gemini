@@ -12,7 +12,11 @@ import com.naon.grid.backend.rest.vo.VocabComparisonGroupCreateVO;
 import com.naon.grid.backend.rest.vo.VocabComparisonGroupVO;
 import com.naon.grid.backend.rest.wrapper.VocabComparisonGroupWrapper;
 import com.naon.grid.backend.service.vocabcomparison.VocabComparisonGroupService;
+import com.naon.grid.backend.service.vocabcomparison.dto.VocabComparisonChatDto;
 import com.naon.grid.backend.service.vocabcomparison.dto.VocabComparisonGroupDto;
+import com.naon.grid.backend.service.vocabcomparison.dto.VocabComparisonItemDto;
+import com.naon.grid.modules.system.service.AiContentMarkerHelper;
+import com.naon.grid.modules.system.service.AiContentMarkerService;
 import com.naon.grid.utils.PageResult;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -27,6 +31,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
 @RestController
 @RequiredArgsConstructor
 @Api(tags = "后台：词汇-词汇辨析")
@@ -34,6 +42,8 @@ import javax.validation.Valid;
 public class VocabComparisonController {
 
     private final VocabComparisonGroupService vocabComparisonGroupService;
+
+    private final AiContentMarkerService aiContentMarkerService;
 
     @Log("新增辨析组")
     @ApiOperation("新增辨析组")
@@ -72,8 +82,27 @@ public class VocabComparisonController {
     @ApiOperation("根据ID查询辨析组详情")
     @AnonymousGetMapping("/{id}")
     public ResponseEntity<VocabComparisonGroupVO> findById(@PathVariable Long id) {
+        VocabComparisonGroupDto dto = vocabComparisonGroupService.findById(id);
+        List<String> entityKeys = collectComparisonEntityKeys(dto);
+        Map<String, List<String>> aiMarkers = aiContentMarkerService.batchQuery(entityKeys);
         return new ResponseEntity<>(
-                VocabComparisonGroupWrapper.toVO(vocabComparisonGroupService.findById(id)), HttpStatus.OK);
+                VocabComparisonGroupWrapper.toVO(dto, aiMarkers), HttpStatus.OK);
+    }
+
+    /** 从 VocabComparisonGroupDto 树中收集所有子实体的 entity key */
+    private List<String> collectComparisonEntityKeys(VocabComparisonGroupDto dto) {
+        List<String> keys = new ArrayList<>();
+        if (dto.getItems() != null) {
+            for (VocabComparisonItemDto item : dto.getItems()) {
+                keys.addAll(AiContentMarkerHelper.collectOne("vocab_comparison_item", item.getId()));
+            }
+        }
+        if (dto.getChats() != null) {
+            for (VocabComparisonChatDto chat : dto.getChats()) {
+                keys.addAll(AiContentMarkerHelper.collectOne("vocab_comparison_chat", chat.getId()));
+            }
+        }
+        return keys;
     }
 
     @Log("查询辨析组列表")

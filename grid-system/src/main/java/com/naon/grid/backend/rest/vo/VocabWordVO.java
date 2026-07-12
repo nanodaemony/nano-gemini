@@ -99,6 +99,9 @@ public class VocabWordVO implements Serializable {
         @ApiModelProperty(value = "义项排序权重，值大的排前面")
         private Integer order;
 
+        @ApiModelProperty(value = "AI生成的字段名列表")
+        private List<String> aiGeneratedFields;
+
         @ApiModelProperty(value = "创建时间: yyyy-MM-dd HH:mm:ss")
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
         private Timestamp createTime;
@@ -135,6 +138,9 @@ public class VocabWordVO implements Serializable {
 
         @ApiModelProperty(value = "结构排序权重(值大的排前面)")
         private Integer order;
+
+        @ApiModelProperty(value = "AI生成的字段名列表")
+        private List<String> aiGeneratedFields;
 
         @ApiModelProperty(value = "创建时间: yyyy-MM-dd HH:mm:ss")
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")

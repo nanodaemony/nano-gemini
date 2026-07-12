@@ -186,13 +186,16 @@ public class CharCharacterWrapper {
         vo.setOrder(dto.getOrder());
         vo.setCreateTime(dto.getCreateTime());
         vo.setUpdateTime(dto.getUpdateTime());
+        // Default from DTO (draft entities have no DB IDs, use draft_content data)
+        vo.setAiGeneratedFields(dto.getAiGeneratedFields() != null ? dto.getAiGeneratedFields() : Collections.emptyList());
+        vo.setAiReviewedFields(Collections.emptyList());
+
+        // Override with authoritative ai_content_marker data for published entities
         String key = AiContentMarkerHelper.key("char_comparison", dto.getId());
-        if (key != null && aiMarkers != null) {
+        if (key != null && aiMarkers != null && aiMarkers.containsKey(key)) {
             MarkerFields fields = aiMarkers.get(key);
-            if (fields != null) {
-                vo.setAiGeneratedFields(fields.getGenerated());
-                vo.setAiReviewedFields(fields.getReviewed());
-            }
+            vo.setAiGeneratedFields(fields.getGenerated());
+            vo.setAiReviewedFields(fields.getReviewed());
         }
         return vo;
     }
@@ -219,13 +222,16 @@ public class CharCharacterWrapper {
         vo.setOrder(dto.getWordOrder());
         vo.setCreateTime(dto.getCreateTime());
         vo.setUpdateTime(dto.getUpdateTime());
+        // Default from DTO (draft entities have no DB IDs, use draft_content data)
+        vo.setAiGeneratedFields(dto.getAiGeneratedFields() != null ? dto.getAiGeneratedFields() : Collections.emptyList());
+        vo.setAiReviewedFields(Collections.emptyList());
+
+        // Override with authoritative ai_content_marker data for published entities
         String key = AiContentMarkerHelper.key("char_word", dto.getId());
-        if (key != null && aiMarkers != null) {
+        if (key != null && aiMarkers != null && aiMarkers.containsKey(key)) {
             MarkerFields fields = aiMarkers.get(key);
-            if (fields != null) {
-                vo.setAiGeneratedFields(fields.getGenerated());
-                vo.setAiReviewedFields(fields.getReviewed());
-            }
+            vo.setAiGeneratedFields(fields.getGenerated());
+            vo.setAiReviewedFields(fields.getReviewed());
         }
         return vo;
     }
@@ -245,13 +251,16 @@ public class CharCharacterWrapper {
         vo.setOrder(dto.getOrder());
         vo.setCreateTime(dto.getCreateTime());
         vo.setUpdateTime(dto.getUpdateTime());
+        // Default from DTO (draft entities have no DB IDs, use draft_content data)
+        vo.setAiGeneratedFields(dto.getAiGeneratedFields() != null ? dto.getAiGeneratedFields() : Collections.emptyList());
+        vo.setAiReviewedFields(Collections.emptyList());
+
+        // Override with authoritative ai_content_marker data for published entities
         String key = AiContentMarkerHelper.key("example_sentence", dto.getId());
-        if (key != null && aiMarkers != null) {
+        if (key != null && aiMarkers != null && aiMarkers.containsKey(key)) {
             MarkerFields fields = aiMarkers.get(key);
-            if (fields != null) {
-                vo.setAiGeneratedFields(fields.getGenerated());
-                vo.setAiReviewedFields(fields.getReviewed());
-            }
+            vo.setAiGeneratedFields(fields.getGenerated());
+            vo.setAiReviewedFields(fields.getReviewed());
         }
         return vo;
     }

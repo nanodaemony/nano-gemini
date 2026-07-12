@@ -46,3 +46,16 @@ CREATE TABLE `exercise_question` (
   INDEX `idx_question_type` (`question_type`)
 ) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '练习题目表';
 
+
+-- AI内容来源标记表
+CREATE TABLE `ai_content_marker` (
+    `id`              BIGINT AUTO_INCREMENT,
+    `entity_type`     VARCHAR(50)  NOT NULL COMMENT '实体表名',
+    `entity_id`       BIGINT       NOT NULL COMMENT '实体记录ID',
+    `field_name`      VARCHAR(255) NOT NULL COMMENT 'Java字段名(驼峰)',
+    `ai_generated`    TINYINT      NOT NULL DEFAULT 1 COMMENT '1=AI生成 0=人工',
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_entity_field` (`entity_type`, `entity_id`, `field_name`),
+    KEY `idx_entity` (`entity_type`, `entity_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='AI内容来源标记表';
+

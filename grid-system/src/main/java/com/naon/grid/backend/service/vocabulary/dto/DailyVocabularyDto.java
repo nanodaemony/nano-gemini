@@ -68,4 +68,7 @@ public class DailyVocabularyDto extends BaseDTO implements Serializable {
 
     @ApiModelProperty(value = "编辑状态")
     private String editStatus;
+
+    @ApiModelProperty(value = "AI生成的字段名列表（Java字段名驼峰）")
+    private List<String> aiGeneratedFields;
 }

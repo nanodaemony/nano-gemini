@@ -12,6 +12,7 @@ import com.naon.grid.enums.PublishStatusEnum;
 import com.naon.grid.enums.StatusEnum;
 import com.naon.grid.exception.BadRequestException;
 import com.naon.grid.exception.EntityNotFoundException;
+import com.naon.grid.modules.system.service.AiContentMarkerService;
 import com.naon.grid.utils.JsonUtils;
 import com.naon.grid.utils.PageResult;
 import com.naon.grid.utils.PageUtil;
@@ -44,6 +45,7 @@ public class DailyVocabularyServiceImpl implements DailyVocabularyService {
     private final DailyVocabularyRepository dailyVocabularyRepository;
     private final ExampleSentenceService exampleSentenceService;
     private final RedisUtils redisUtils;
+    private final AiContentMarkerService aiContentMarkerService;
 
     // ==================== 查询 ====================
 
@@ -177,6 +179,10 @@ public class DailyVocabularyServiceImpl implements DailyVocabularyService {
         entity.setEditStatus(EditStatusEnum.PUBLISHED.getCode());
         entity.setDraftContent(null);
         dailyVocabularyRepository.save(entity);
+
+        // 物化 AI 内容标记
+        aiContentMarkerService.replaceFields("daily_vocabulary",
+                Long.valueOf(entity.getId()), draft.getAiGeneratedFields());
 
         // 清缓存
         if (entity.getDisplayDate() != null && entity.getDisplayDate().equals(LocalDate.now())) {

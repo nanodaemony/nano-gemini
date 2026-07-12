@@ -13,6 +13,8 @@ import com.naon.grid.backend.rest.vo.DailyVocabularyVO;
 import com.naon.grid.backend.rest.wrapper.DailyVocabularyWrapper;
 import com.naon.grid.backend.service.vocabulary.DailyVocabularyService;
 import com.naon.grid.backend.service.vocabulary.dto.DailyVocabularyDto;
+import com.naon.grid.modules.system.service.AiContentMarkerHelper;
+import com.naon.grid.modules.system.service.AiContentMarkerService;
 import com.naon.grid.utils.PageResult;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -29,6 +31,7 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.validation.Valid;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
@@ -37,6 +40,7 @@ import java.util.List;
 public class DailyVocabularyController {
 
     private final DailyVocabularyService dailyVocabularyService;
+    private final AiContentMarkerService aiContentMarkerService;
 
     @Log("新增每日一词")
     @ApiOperation("新增每日一词")
@@ -60,8 +64,10 @@ public class DailyVocabularyController {
     @ApiOperation("根据ID查询每日一词详情")
     @AnonymousGetMapping("/{id}")
     public ResponseEntity<DailyVocabularyVO> findById(@PathVariable Integer id) {
-        return new ResponseEntity<>(
-                DailyVocabularyWrapper.toVO(dailyVocabularyService.findById(id)), HttpStatus.OK);
+        DailyVocabularyDto dto = dailyVocabularyService.findById(id);
+        List<String> keys = AiContentMarkerHelper.collectOne("daily_vocabulary", dto.getId());
+        Map<String, List<String>> aiMarkers = aiContentMarkerService.batchQuery(keys);
+        return new ResponseEntity<>(DailyVocabularyWrapper.toVO(dto, aiMarkers), HttpStatus.OK);
     }
 
     @Log("查询每日一词列表")

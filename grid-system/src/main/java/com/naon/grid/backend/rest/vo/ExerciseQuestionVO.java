@@ -66,6 +66,9 @@ public class ExerciseQuestionVO implements Serializable {
     @ApiModelProperty(value = "子题列表")
     private List<ExerciseQuestionVO> children;
 
+    @ApiModelProperty(value = "AI生成的字段名列表")
+    private List<String> aiGeneratedFields;
+
     @Getter
     @Setter
     public static class QuestionContentVO implements Serializable {

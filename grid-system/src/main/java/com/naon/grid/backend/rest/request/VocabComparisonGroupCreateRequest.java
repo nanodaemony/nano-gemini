@@ -53,6 +53,9 @@ public class VocabComparisonGroupCreateRequest {
 
         @ApiModelProperty(value = "组内排序权重")
         private Integer order;
+
+        @ApiModelProperty(value = "AI生成的字段名列表（Java字段名驼峰）")
+        private List<String> aiGeneratedFields;
     }
 
     @Data
@@ -76,5 +79,8 @@ public class VocabComparisonGroupCreateRequest {
 
         @ApiModelProperty(value = "组内排序权重")
         private Integer order;
+
+        @ApiModelProperty(value = "AI生成的字段名列表（Java字段名驼峰）")
+        private List<String> aiGeneratedFields;
     }
 }

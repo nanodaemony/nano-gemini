@@ -46,6 +46,9 @@ public class ExerciseQuestionCreateRequest implements Serializable {
     @ApiModelProperty(value = "子题列表")
     private List<ExerciseQuestionCreateRequest> children;
 
+    @ApiModelProperty(value = "AI生成的字段名列表（Java字段名驼峰）")
+    private List<String> aiGeneratedFields;
+
     @Getter
     @Setter
     public static class QuestionContentRequest implements Serializable {

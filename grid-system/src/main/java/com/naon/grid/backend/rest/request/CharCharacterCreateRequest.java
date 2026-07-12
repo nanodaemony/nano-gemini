@@ -52,6 +52,9 @@ public class CharCharacterCreateRequest implements Serializable {
     @ApiModelProperty(value = "汉字组词列表")
     private List<CharWordRequest> words;
 
+    @ApiModelProperty(value = "AI生成的字段名列表（Java字段名驼峰）")
+    private List<String> aiGeneratedFields;
+
     @ApiModelProperty(value = "创建人")
     private String createBy;
 
@@ -74,6 +77,9 @@ public class CharCharacterCreateRequest implements Serializable {
 
         @ApiModelProperty(value = "对比辨析说明外文翻译")
         private List<TextTranslationRequest> comparisonDescTranslations;
+
+        @ApiModelProperty(value = "AI生成的字段名列表（Java字段名驼峰）")
+        private List<String> aiGeneratedFields;
 
         @ApiModelProperty(value = "辨析排序权重（值大的排前面，不传默认 0）")
         private int order;
@@ -104,6 +110,9 @@ public class CharCharacterCreateRequest implements Serializable {
 
         @ApiModelProperty(value = "组词例句")
         private ExampleSentenceRequest sentenceContent;
+
+        @ApiModelProperty(value = "AI生成的字段名列表（Java字段名驼峰）")
+        private List<String> aiGeneratedFields;
 
         @ApiModelProperty(value = "组词排序权重（值大的排前面，不传默认 0）")
         private Integer order;

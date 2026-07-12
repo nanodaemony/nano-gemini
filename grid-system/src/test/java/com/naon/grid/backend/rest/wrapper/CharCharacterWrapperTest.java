@@ -103,7 +103,7 @@ class CharCharacterWrapperTest {
         wordDto.setWordItemSentence(sentenceDto);
         dto.setWords(Collections.singletonList(wordDto));
 
-        CharCharacterVO vo = CharCharacterWrapper.toVO(dto);
+        CharCharacterVO vo = CharCharacterWrapper.toVO(dto, java.util.Collections.emptyMap());
 
         assertEquals(Long.valueOf(3L), vo.getRadicalId());
         assertEquals("亻 + 尔", vo.getComponentCombination());
@@ -121,7 +121,7 @@ class CharCharacterWrapperTest {
         comparisonDto.setComparisonChar("您");
         dto.setComparisons(Collections.singletonList(comparisonDto));
 
-        CharCharacterVO vo = CharCharacterWrapper.toVO(dto);
+        CharCharacterVO vo = CharCharacterWrapper.toVO(dto, java.util.Collections.emptyMap());
 
         assertEquals(1, vo.getComparisons().size());
         assertEquals(null, vo.getComparisons().get(0).getId());

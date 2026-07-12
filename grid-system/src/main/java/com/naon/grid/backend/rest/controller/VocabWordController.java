@@ -13,6 +13,7 @@ import com.naon.grid.backend.rest.vo.VocabWordCreateVO;
 import com.naon.grid.backend.rest.vo.VocabWordBaseSearchVO;
 import com.naon.grid.backend.rest.vo.VocabWordVO;
 import com.naon.grid.backend.rest.wrapper.VocabWordWrapper;
+import com.naon.grid.backend.service.common.dto.ExampleSentenceDto;
 import com.naon.grid.backend.service.vocabulary.VocabOutlineRecordService;
 import com.naon.grid.backend.service.vocabulary.VocabWordService;
 import com.naon.grid.backend.service.vocabulary.dto.VocabOutlineRecordDto;
@@ -23,6 +24,8 @@ import com.naon.grid.backend.service.vocabulary.dto.VocabWordDto;
 import com.naon.grid.backend.service.vocabulary.dto.VocabWordQueryCriteria;
 import com.naon.grid.backend.service.vocabulary.mapstruct.VocabOutlineRecordMapper;
 import com.naon.grid.domain.common.TextTranslation;
+import com.naon.grid.modules.system.service.AiContentMarkerHelper;
+import com.naon.grid.modules.system.service.AiContentMarkerService;
 import com.naon.grid.utils.PageResult;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -40,8 +43,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestController
@@ -55,6 +60,8 @@ public class VocabWordController {
     private final VocabOutlineRecordService vocabOutlineRecordService;
 
     private final VocabOutlineRecordMapper vocabOutlineRecordMapper;
+
+    private final AiContentMarkerService aiContentMarkerService;
 
     @Log("新增词汇")
     @ApiOperation("新增词汇")
@@ -93,7 +100,36 @@ public class VocabWordController {
     @ApiOperation("根据ID查询词汇详情")
     @AnonymousGetMapping("/{id}")
     public ResponseEntity<VocabWordVO> findById(@PathVariable Integer id) {
-        return new ResponseEntity<>(VocabWordWrapper.toVO(vocabWordService.findById(id), null), HttpStatus.OK);
+        VocabWordDto dto = vocabWordService.findById(id);
+        List<String> entityKeys = collectVocabEntityKeys(dto);
+        Map<String, List<String>> aiMarkers = aiContentMarkerService.batchQuery(entityKeys);
+        return new ResponseEntity<>(VocabWordWrapper.toVO(dto, aiMarkers), HttpStatus.OK);
+    }
+
+    /** 从 VocabWordDto 树中收集所有子实体的 entity key */
+    private List<String> collectVocabEntityKeys(VocabWordDto dto) {
+        List<String> keys = new ArrayList<>();
+        if (dto.getSenses() != null) {
+            for (VocabSenseDto s : dto.getSenses()) {
+                keys.addAll(AiContentMarkerHelper.collectOne("vocab_sense", s.getId()));
+                if (s.getDefImageSentence() != null) {
+                    keys.addAll(AiContentMarkerHelper.collectOne("example_sentence",
+                            s.getDefImageSentence().getId()));
+                }
+                if (s.getStructures() != null) {
+                    for (VocabStructureDto st : s.getStructures()) {
+                        keys.addAll(AiContentMarkerHelper.collectOne("vocab_structure", st.getId()));
+                        if (st.getStructureSentences() != null) {
+                            keys.addAll(AiContentMarkerHelper.collect("example_sentence",
+                                    st.getStructureSentences().stream()
+                                            .map(ExampleSentenceDto::getId)
+                                            .collect(Collectors.toList())));
+                        }
+                    }
+                }
+            }
+        }
+        return keys;
     }
 
     @Log("查询词汇列表")

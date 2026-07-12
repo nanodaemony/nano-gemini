@@ -41,4 +41,7 @@ public class ExampleSentenceVO implements Serializable {
 
     @ApiModelProperty(value = "更新时间")
     private Timestamp updateTime;
+
+    @ApiModelProperty(value = "AI生成的字段名列表")
+    private List<String> aiGeneratedFields;
 }

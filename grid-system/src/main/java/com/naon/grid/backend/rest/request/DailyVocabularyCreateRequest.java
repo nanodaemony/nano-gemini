@@ -52,4 +52,7 @@ public class DailyVocabularyCreateRequest implements Serializable {
 
     @ApiModelProperty(value = "关联词汇ID")
     private Long relatedWordId;
+
+    @ApiModelProperty(value = "AI生成的字段名列表（Java字段名驼峰）")
+    private List<String> aiGeneratedFields;
 }

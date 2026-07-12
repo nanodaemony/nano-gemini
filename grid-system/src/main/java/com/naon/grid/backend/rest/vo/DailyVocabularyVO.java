@@ -75,4 +75,7 @@ public class DailyVocabularyVO implements Serializable {
     @ApiModelProperty(value = "更新时间")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     private Timestamp updateTime;
+
+    @ApiModelProperty(value = "AI生成的字段名列表")
+    private List<String> aiGeneratedFields;
 }

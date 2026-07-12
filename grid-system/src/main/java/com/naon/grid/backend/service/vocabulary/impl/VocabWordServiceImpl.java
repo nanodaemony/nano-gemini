@@ -20,6 +20,7 @@ import com.naon.grid.exception.BadRequestException;
 import com.naon.grid.exception.EntityNotFoundException;
 import com.naon.grid.backend.service.vocabulary.VocabWordService;
 import com.naon.grid.backend.service.vocabulary.mapstruct.VocabWordMapper;
+import com.naon.grid.modules.system.service.AiContentMarkerService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -40,6 +41,7 @@ public class VocabWordServiceImpl implements VocabWordService {
     private final VocabRelationRepository vocabRelationRepository;
     private final VocabWordMapper vocabWordMapper;
     private final ExampleSentenceService exampleSentenceService;
+    private final AiContentMarkerService aiContentMarkerService;
 
     @Override
     public PageResult<VocabWordDto> queryAll(VocabWordQueryCriteria criteria, Pageable pageable) {
@@ -743,11 +745,51 @@ public class VocabWordServiceImpl implements VocabWordService {
         // 更新子表
         syncSenses(id, draftDto.getWord(), draftDto.getSenses());
 
+        // 物化 AI 内容标记
+        List<AiContentMarkerService.MarkerEntry> markerEntries = new ArrayList<>();
+        collectSenseMarkers(draftDto.getSenses(), markerEntries);
+        aiContentMarkerService.batchReplace(markerEntries);
+
         // 更新状态
         vocabWord.setPublishStatus(PublishStatusEnum.PUBLISHED.getCode());
         vocabWord.setEditStatus(EditStatusEnum.PUBLISHED.getCode());
         vocabWord.setDraftContent(null);
         vocabWordRepository.save(vocabWord);
+    }
+
+    private void collectSenseMarkers(List<VocabSenseDto> senses,
+                                     List<AiContentMarkerService.MarkerEntry> entries) {
+        if (senses == null) return;
+        for (VocabSenseDto s : senses) {
+            if (s.getId() != null && s.getAiGeneratedFields() != null) {
+                entries.add(new AiContentMarkerService.MarkerEntry(
+                        "vocab_sense", s.getId().longValue(), s.getAiGeneratedFields()));
+            }
+            // 例句
+            if (s.getDefImageSentence() != null && s.getDefImageSentence().getId() != null
+                    && s.getDefImageSentence().getAiGeneratedFields() != null) {
+                entries.add(new AiContentMarkerService.MarkerEntry(
+                        "example_sentence", s.getDefImageSentence().getId(),
+                        s.getDefImageSentence().getAiGeneratedFields()));
+            }
+            // 结构及其例句
+            if (s.getStructures() != null) {
+                for (VocabStructureDto st : s.getStructures()) {
+                    if (st.getId() != null && st.getAiGeneratedFields() != null) {
+                        entries.add(new AiContentMarkerService.MarkerEntry(
+                                "vocab_structure", st.getId().longValue(), st.getAiGeneratedFields()));
+                    }
+                    if (st.getStructureSentences() != null) {
+                        for (ExampleSentenceDto es : st.getStructureSentences()) {
+                            if (es.getId() != null && es.getAiGeneratedFields() != null) {
+                                entries.add(new AiContentMarkerService.MarkerEntry(
+                                        "example_sentence", es.getId(), es.getAiGeneratedFields()));
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 
     @Override

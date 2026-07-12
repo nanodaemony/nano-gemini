@@ -40,6 +40,9 @@ public class ExampleSentenceDto implements Serializable {
     @ApiModelProperty(value = "更新时间")
     private Timestamp updateTime;
 
+    @ApiModelProperty(value = "AI生成的字段名列表（Java字段名驼峰）")
+    private List<String> aiGeneratedFields;
+
     @ApiModelProperty(value = "有效状态")
     private Integer status;
 }

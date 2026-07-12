@@ -67,6 +67,7 @@ public class VocabWordWrapper {
         dto.setReverseSequentialWords(toRelationDtoList(request.getReverseSequentialWords()));
         dto.setJumbledWords(toRelationDtoList(request.getJumbledWords()));
         dto.setSenseOrder(request.getOrder() != null ? request.getOrder() : 0);
+        dto.setAiGeneratedFields(request.getAiGeneratedFields());
         dto.setStructures(toStructureDtoList(request.getStructures()));
         return dto;
     }
@@ -83,6 +84,7 @@ public class VocabWordWrapper {
         dto.setPatternDef(request.getPatternDef());
         dto.setPatternDefTranslations(toTextTranslationList(request.getPatternDefTranslations()));
         dto.setStructureOrder(request.getOrder() != null ? request.getOrder() : 0);
+        dto.setAiGeneratedFields(request.getAiGeneratedFields());
         dto.setStructureSentences(toExampleSentenceDtoList(request.getStructureSentences()));
         return dto;
     }
@@ -113,6 +115,7 @@ public class VocabWordWrapper {
         dto.setTranslations(toTextTranslationList(request.getTranslations()));
         dto.setImageId(request.getImageId());
         dto.setOrder(request.getOrder());
+        dto.setAiGeneratedFields(request.getAiGeneratedFields());
         return dto;
     }
 

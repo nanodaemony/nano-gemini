@@ -40,6 +40,9 @@ public class VocabStructureDto extends BaseDTO implements Serializable {
     @ApiModelProperty(value = "结构例句列表（通过通用例句表存储）")
     private List<ExampleSentenceDto> structureSentences;
 
+    @ApiModelProperty(value = "AI生成的字段名列表（Java字段名驼峰）")
+    private List<String> aiGeneratedFields;
+
     @ApiModelProperty(value = "状态: 1=可用, 0=不可用")
     private Integer status;
 }

@@ -397,6 +397,14 @@ public class CharCharacterServiceImpl implements CharCharacterService {
             charComparisonRepository.save(comparison);
         }
         charComparisonRepository.saveAll(toSave);
+
+        // Set DTO IDs from saved entities for AI marker collection
+        for (int i = 0; i < submitted.size(); i++) {
+            CharComparisonDto dto = submitted.get(i);
+            if (dto.getId() == null) {
+                dto.setId(toSave.get(i).getId());
+            }
+        }
     }
 
     private List<CharWord> syncWords(Integer charId, List<CharWordDto> submittedDtos) {
@@ -446,6 +454,15 @@ public class CharCharacterServiceImpl implements CharCharacterService {
                 savedWords.add(word);
             }
         }
+
+        // Set DTO IDs from saved entities for AI marker collection
+        for (int i = 0; i < submitted.size(); i++) {
+            CharWordDto dto = submitted.get(i);
+            if (dto.getId() == null) {
+                dto.setId(savedWords.get(i).getId());
+            }
+        }
+
         return savedWords;
     }
 
@@ -482,6 +499,7 @@ public class CharCharacterServiceImpl implements CharCharacterService {
                 ExampleSentenceDto saved = exampleSentenceService.save(sentenceDto);
                 if (saved != null && saved.getId() != null) {
                     savedWord.setSentenceId(saved.getId());
+                    sentenceDto.setId(saved.getId());
                 }
             } else {
                 // 没有例句：禁用旧的，清空 sentenceId

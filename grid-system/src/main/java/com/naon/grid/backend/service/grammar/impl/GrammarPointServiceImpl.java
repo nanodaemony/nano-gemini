@@ -542,6 +542,14 @@ public class GrammarPointServiceImpl implements GrammarPointService {
         disableChildSentences(toDelete, GrammarMeaning::getMeaningSentenceIds);
 
         grammarMeaningRepository.saveAll(toSave);
+
+        // Set DTO IDs from saved entities for AI marker collection
+        for (int i = 0; i < submitted.size(); i++) {
+            GrammarMeaningDto dto = submitted.get(i);
+            if (dto.getId() == null || dto.getId() == 0) {
+                dto.setId(toSave.get(i).getId());
+            }
+        }
     }
 
     private void syncStructures(Long grammarId, List<GrammarStructureDto> submittedDtos) {
@@ -594,6 +602,14 @@ public class GrammarPointServiceImpl implements GrammarPointService {
         disableChildSentences(toDelete, GrammarStructure::getStructureSentenceIds);
 
         grammarStructureRepository.saveAll(toSave);
+
+        // Set DTO IDs from saved entities for AI marker collection
+        for (int i = 0; i < submitted.size(); i++) {
+            GrammarStructureDto dto = submitted.get(i);
+            if (dto.getId() == null || dto.getId() == 0) {
+                dto.setId(toSave.get(i).getId());
+            }
+        }
     }
 
     private void syncNotices(Long grammarId, List<GrammarNoticeDto> submittedDtos) {
@@ -647,6 +663,14 @@ public class GrammarPointServiceImpl implements GrammarPointService {
         disableChildSentences(toDelete, GrammarNotice::getNoticeSentenceIds);
 
         grammarNoticeRepository.saveAll(toSave);
+
+        // Set DTO IDs from saved entities for AI marker collection
+        for (int i = 0; i < submitted.size(); i++) {
+            GrammarNoticeDto dto = submitted.get(i);
+            if (dto.getId() == null || dto.getId() == 0) {
+                dto.setId(toSave.get(i).getId());
+            }
+        }
     }
 
     private void syncErrors(Long grammarId, List<GrammarErrorDto> submittedDtos) {
@@ -697,6 +721,14 @@ public class GrammarPointServiceImpl implements GrammarPointService {
         }
 
         grammarErrorRepository.saveAll(toSave);
+
+        // Set DTO IDs from saved entities for AI marker collection
+        for (int i = 0; i < submitted.size(); i++) {
+            GrammarErrorDto dto = submitted.get(i);
+            if (dto.getId() == null || dto.getId() == 0) {
+                dto.setId(toSave.get(i).getId());
+            }
+        }
     }
 
     private void syncQuestions(Long grammarId, List<Long> questionIds) {
@@ -712,6 +744,7 @@ public class GrammarPointServiceImpl implements GrammarPointService {
             if (s != null && s.getSentence() != null && !s.getSentence().trim().isEmpty()) {
                 ExampleSentenceDto saved = exampleSentenceService.save(s);
                 if (saved != null && saved.getId() != null) {
+                    s.setId(saved.getId());
                     ids.add(saved.getId());
                 }
             }

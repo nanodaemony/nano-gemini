@@ -501,6 +501,12 @@ public class VocabComparisonGroupServiceImpl implements VocabComparisonGroupServ
         if (!toSave.isEmpty()) {
             itemRepository.saveAll(toSave);
         }
+
+        // Set DTO IDs from saved entities for AI marker collection
+        for (int i = 0; i < submittedDtos.size(); i++) {
+            submittedDtos.get(i).setId(toSave.get(i).getId());
+        }
+
         return toSave;
     }
 
@@ -544,6 +550,7 @@ public class VocabComparisonGroupServiceImpl implements VocabComparisonGroupServ
             chat.setChatOrder(dto.getOrder() != null ? dto.getOrder() : 0);
             chat.setStatus(StatusEnum.ENABLED.getCode());
             chat = chatRepository.save(chat);
+            dto.setId(chat.getId());
 
             // 创建例句（不设 bizType）
             ExampleSentenceDto sentenceDto = new ExampleSentenceDto();

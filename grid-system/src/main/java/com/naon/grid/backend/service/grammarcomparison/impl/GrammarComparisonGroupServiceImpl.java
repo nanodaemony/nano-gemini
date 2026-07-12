@@ -498,9 +498,15 @@ public class GrammarComparisonGroupServiceImpl implements GrammarComparisonGroup
             toSave.add(item);
         }
         if (!toSave.isEmpty()) {
-            return itemRepository.saveAll(toSave);
+            itemRepository.saveAll(toSave);
         }
-        return Collections.emptyList();
+
+        // Set DTO IDs from saved entities for AI marker collection
+        for (int i = 0; i < submittedDtos.size(); i++) {
+            submittedDtos.get(i).setId(toSave.get(i).getId());
+        }
+
+        return toSave;
     }
 
     /**
@@ -540,6 +546,7 @@ public class GrammarComparisonGroupServiceImpl implements GrammarComparisonGroup
             chat.setChatOrder(dto.getOrder() != null ? dto.getOrder() : 0);
             chat.setStatus(StatusEnum.ENABLED.getCode());
             chat = chatRepository.save(chat);
+            dto.setId(chat.getId());
 
             // 创建例句（不设 bizType）
             ExampleSentenceDto sentenceDto = new ExampleSentenceDto();

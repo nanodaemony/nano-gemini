@@ -93,7 +93,7 @@ public class VocabWordController {
     @ApiOperation("根据ID查询词汇详情")
     @AnonymousGetMapping("/{id}")
     public ResponseEntity<VocabWordVO> findById(@PathVariable Integer id) {
-        return new ResponseEntity<>(VocabWordWrapper.toVO(vocabWordService.findById(id)), HttpStatus.OK);
+        return new ResponseEntity<>(VocabWordWrapper.toVO(vocabWordService.findById(id), null), HttpStatus.OK);
     }
 
     @Log("查询词汇列表")

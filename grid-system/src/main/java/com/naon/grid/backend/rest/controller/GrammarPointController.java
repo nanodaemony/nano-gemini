@@ -11,8 +11,15 @@ import com.naon.grid.backend.rest.vo.GrammarPointBaseVO;
 import com.naon.grid.backend.rest.vo.GrammarPointCreateVO;
 import com.naon.grid.backend.rest.vo.GrammarPointVO;
 import com.naon.grid.backend.rest.wrapper.GrammarPointWrapper;
+import com.naon.grid.backend.service.common.dto.ExampleSentenceDto;
 import com.naon.grid.backend.service.grammar.GrammarPointService;
+import com.naon.grid.backend.service.grammar.dto.GrammarErrorDto;
+import com.naon.grid.backend.service.grammar.dto.GrammarMeaningDto;
+import com.naon.grid.backend.service.grammar.dto.GrammarNoticeDto;
 import com.naon.grid.backend.service.grammar.dto.GrammarPointDto;
+import com.naon.grid.backend.service.grammar.dto.GrammarStructureDto;
+import com.naon.grid.modules.system.service.AiContentMarkerHelper;
+import com.naon.grid.modules.system.service.AiContentMarkerService;
 import com.naon.grid.utils.PageResult;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -26,6 +33,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import static com.naon.grid.backend.rest.wrapper.GrammarPointWrapper.toBaseVOList;
 
@@ -36,6 +47,8 @@ import static com.naon.grid.backend.rest.wrapper.GrammarPointWrapper.toBaseVOLis
 public class GrammarPointController {
 
     private final GrammarPointService grammarPointService;
+
+    private final AiContentMarkerService aiContentMarkerService;
 
     @Log("新增语法点")
     @ApiOperation("新增语法点")
@@ -74,7 +87,54 @@ public class GrammarPointController {
     @ApiOperation("根据ID查询语法点详情")
     @AnonymousGetMapping("/{id}")
     public ResponseEntity<GrammarPointVO> findById(@PathVariable Long id) {
-        return new ResponseEntity<>(GrammarPointWrapper.toVO(grammarPointService.findById(id)), HttpStatus.OK);
+        GrammarPointDto dto = grammarPointService.findById(id);
+        List<String> entityKeys = collectGrammarEntityKeys(dto);
+        Map<String, List<String>> aiMarkers = aiContentMarkerService.batchQuery(entityKeys);
+        return new ResponseEntity<>(GrammarPointWrapper.toVO(dto, aiMarkers), HttpStatus.OK);
+    }
+
+    /** 从 GrammarPointDto 树中收集所有子实体的 entity key */
+    private List<String> collectGrammarEntityKeys(GrammarPointDto dto) {
+        List<String> keys = new ArrayList<>();
+        if (dto.getMeanings() != null) {
+            for (GrammarMeaningDto m : dto.getMeanings()) {
+                keys.addAll(AiContentMarkerHelper.collectOne("grammar_meaning", m.getId()));
+                if (m.getSentences() != null) {
+                    keys.addAll(AiContentMarkerHelper.collect("example_sentence",
+                            m.getSentences().stream()
+                                    .map(ExampleSentenceDto::getId)
+                                    .collect(Collectors.toList())));
+                }
+            }
+        }
+        if (dto.getStructures() != null) {
+            for (GrammarStructureDto s : dto.getStructures()) {
+                keys.addAll(AiContentMarkerHelper.collectOne("grammar_structure", s.getId()));
+                if (s.getSentences() != null) {
+                    keys.addAll(AiContentMarkerHelper.collect("example_sentence",
+                            s.getSentences().stream()
+                                    .map(ExampleSentenceDto::getId)
+                                    .collect(Collectors.toList())));
+                }
+            }
+        }
+        if (dto.getNotices() != null) {
+            for (GrammarNoticeDto n : dto.getNotices()) {
+                keys.addAll(AiContentMarkerHelper.collectOne("grammar_notice", n.getId()));
+                if (n.getSentences() != null) {
+                    keys.addAll(AiContentMarkerHelper.collect("example_sentence",
+                            n.getSentences().stream()
+                                    .map(ExampleSentenceDto::getId)
+                                    .collect(Collectors.toList())));
+                }
+            }
+        }
+        if (dto.getErrors() != null) {
+            for (GrammarErrorDto e : dto.getErrors()) {
+                keys.addAll(AiContentMarkerHelper.collectOne("grammar_error", e.getId()));
+            }
+        }
+        return keys;
     }
 
     @Log("查询语法点列表")

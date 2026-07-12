@@ -21,6 +21,7 @@ import com.naon.grid.backend.service.grammar.dto.GrammarStructureDto;
 import com.naon.grid.backend.service.grammar.mapstruct.GrammarPointMapper;
 import com.naon.grid.backend.service.common.ExampleSentenceService;
 import com.naon.grid.backend.service.common.dto.ExampleSentenceDto;
+import com.naon.grid.modules.system.service.AiContentMarkerService;
 import com.naon.grid.enums.EditStatusEnum;
 import com.naon.grid.enums.PublishStatusEnum;
 import com.naon.grid.enums.StatusEnum;
@@ -61,6 +62,7 @@ public class GrammarPointServiceImpl implements GrammarPointService {
     private final GrammarPointMapper grammarPointMapper;
     private final ExampleSentenceService exampleSentenceService;
     private final GrammarQuestionService grammarQuestionService;
+    private final AiContentMarkerService aiContentMarkerService;
 
     @Override
     public PageResult<GrammarPointDto> queryAll(GrammarPointQueryCriteria criteria, Pageable pageable) {
@@ -454,6 +456,12 @@ public class GrammarPointServiceImpl implements GrammarPointService {
         syncNotices(grammarPoint.getId(), draftDto.getNotices());
         syncErrors(grammarPoint.getId(), draftDto.getErrors());
         syncQuestions(grammarPoint.getId(), draftDto.getQuestionIds());
+
+        // 物化 AI 内容标记
+        List<AiContentMarkerService.MarkerEntry> markerEntries = new ArrayList<>();
+        collectGrammarMarkers(draftDto.getMeanings(), draftDto.getStructures(),
+                draftDto.getNotices(), draftDto.getErrors(), markerEntries);
+        aiContentMarkerService.batchReplace(markerEntries);
 
         // Update status
         grammarPoint.setPublishStatus(PublishStatusEnum.PUBLISHED.getCode());
@@ -852,6 +860,71 @@ public class GrammarPointServiceImpl implements GrammarPointService {
             dtos.add(dto);
         }
         return dtos;
+    }
+
+    // ===== AI marker collection =====
+
+    private void collectGrammarMarkers(List<GrammarMeaningDto> meanings,
+                                       List<GrammarStructureDto> structures,
+                                       List<GrammarNoticeDto> notices,
+                                       List<GrammarErrorDto> errors,
+                                       List<AiContentMarkerService.MarkerEntry> entries) {
+        if (meanings != null) {
+            for (GrammarMeaningDto m : meanings) {
+                if (m.getId() != null && m.getAiGeneratedFields() != null) {
+                    entries.add(new AiContentMarkerService.MarkerEntry(
+                            "grammar_meaning", m.getId(), m.getAiGeneratedFields()));
+                }
+                if (m.getSentences() != null) {
+                    for (ExampleSentenceDto es : m.getSentences()) {
+                        if (es.getId() != null && es.getAiGeneratedFields() != null) {
+                            entries.add(new AiContentMarkerService.MarkerEntry(
+                                    "example_sentence", es.getId(), es.getAiGeneratedFields()));
+                        }
+                    }
+                }
+            }
+        }
+        if (structures != null) {
+            for (GrammarStructureDto s : structures) {
+                if (s.getId() != null && s.getAiGeneratedFields() != null) {
+                    entries.add(new AiContentMarkerService.MarkerEntry(
+                            "grammar_structure", s.getId(), s.getAiGeneratedFields()));
+                }
+                if (s.getSentences() != null) {
+                    for (ExampleSentenceDto es : s.getSentences()) {
+                        if (es.getId() != null && es.getAiGeneratedFields() != null) {
+                            entries.add(new AiContentMarkerService.MarkerEntry(
+                                    "example_sentence", es.getId(), es.getAiGeneratedFields()));
+                        }
+                    }
+                }
+            }
+        }
+        if (notices != null) {
+            for (GrammarNoticeDto n : notices) {
+                if (n.getId() != null && n.getAiGeneratedFields() != null) {
+                    entries.add(new AiContentMarkerService.MarkerEntry(
+                            "grammar_notice", n.getId(), n.getAiGeneratedFields()));
+                }
+                if (n.getSentences() != null) {
+                    for (ExampleSentenceDto es : n.getSentences()) {
+                        if (es.getId() != null && es.getAiGeneratedFields() != null) {
+                            entries.add(new AiContentMarkerService.MarkerEntry(
+                                    "example_sentence", es.getId(), es.getAiGeneratedFields()));
+                        }
+                    }
+                }
+            }
+        }
+        if (errors != null) {
+            for (GrammarErrorDto e : errors) {
+                if (e.getId() != null && e.getAiGeneratedFields() != null) {
+                    entries.add(new AiContentMarkerService.MarkerEntry(
+                            "grammar_error", e.getId(), e.getAiGeneratedFields()));
+                }
+            }
+        }
     }
 
     // ===== Sort helpers =====

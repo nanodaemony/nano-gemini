@@ -7,6 +7,7 @@ import java.util.Optional;
 
 public interface PaymentSubscriptionRepository extends JpaRepository<PaymentSubscription, Long> {
     List<PaymentSubscription> findByUserIdAndStatus(Long userId, String status);
+    List<PaymentSubscription> findByStatus(String status);
     Optional<PaymentSubscription> findByChannelAndChannelSubId(String channel, String channelSubId);
     Optional<PaymentSubscription> findByUserIdAndProductCodeAndStatus(Long userId, String productCode, String status);
 }

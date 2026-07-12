@@ -33,6 +33,15 @@ public class PaymentRecord {
     @Column(length = 20, nullable = false)
     private String status;
 
+    @Column(length = 30)
+    private String gateway;
+
+    @Column(precision = 12, scale = 2)
+    private BigDecimal gatewayFee;
+
+    @Column(precision = 12, scale = 2)
+    private BigDecimal netAmount;
+
     @Column(columnDefinition = "TEXT")
     private String rawCallback;
 

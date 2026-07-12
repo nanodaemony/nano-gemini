@@ -35,4 +35,8 @@ public class ProductServiceImpl implements ProductService {
     public Optional<RegionPricing> getPricing(Integer productId, String region, String billingCycle) {
         return pricingRepository.findByProductIdAndRegionAndBillingCycle(productId, region, billingCycle);
     }
+
+    public Optional<RegionPricing> getPricing(Integer productId, String region, String billingCycle, String currency) {
+        return pricingRepository.findByProductIdAndRegionAndBillingCycleAndCurrency(productId, region, billingCycle, currency);
+    }
 }

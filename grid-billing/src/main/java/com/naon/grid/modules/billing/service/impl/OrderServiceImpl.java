@@ -7,6 +7,7 @@ import com.naon.grid.modules.billing.domain.RegionPricing;
 import com.naon.grid.modules.billing.repository.GridOrderRepository;
 import com.naon.grid.modules.billing.repository.RegionPricingRepository;
 import com.naon.grid.modules.billing.service.OrderService;
+import com.naon.grid.modules.billing.service.GatewayRouter;
 import com.naon.grid.modules.billing.service.PaymentGateway;
 import com.naon.grid.modules.billing.service.ProductService;
 import com.naon.grid.modules.billing.service.dto.*;
@@ -26,7 +27,7 @@ public class OrderServiceImpl implements OrderService {
     private final GridOrderRepository orderRepository;
     private final RegionPricingRepository pricingRepository;
     private final ProductService productService;
-    private final PaymentGateway paymentGateway;
+    private final GatewayRouter gatewayRouter;
 
     private static final Set<String> SUBSCRIPTION_CYCLES = Collections.unmodifiableSet(
             new HashSet<>(Arrays.asList("MONTHLY", "QUARTERLY", "YEARLY")));
@@ -39,8 +40,18 @@ public class OrderServiceImpl implements OrderService {
         GridProduct product = productService.findByCode(request.getProductCode())
                 .orElseThrow(() -> new BadRequestException("产品不存在: " + request.getProductCode()));
 
-        RegionPricing pricing = pricingRepository
-                .findByProductIdAndRegionAndBillingCycle(product.getId(), region, request.getBillingCycle())
+        String currency = request.getCurrency();
+        if (currency == null || currency.isEmpty()) {
+            currency = "C".equals(region) ? "CNY" : "USD";
+        }
+        java.util.Optional<RegionPricing> pricingOpt = pricingRepository
+                .findByProductIdAndRegionAndBillingCycleAndCurrency(
+                        product.getId(), region, request.getBillingCycle(), currency);
+        if (!pricingOpt.isPresent()) {
+            pricingOpt = pricingRepository.findByProductIdAndRegionAndBillingCycle(
+                    product.getId(), region, request.getBillingCycle());
+        }
+        RegionPricing pricing = pricingOpt
                 .orElseThrow(() -> new BadRequestException(
                         "该产品在" + region + "区没有" + request.getBillingCycle() + "定价"));
 
@@ -53,14 +64,16 @@ public class OrderServiceImpl implements OrderService {
         order.setBillingCycle(request.getBillingCycle());
         order.setAmount(pricing.getPrice());
         order.setCurrency(pricing.getCurrency());
-        order.setChannel("PHOTONPAY");
+        order.setSubtotal(pricing.getPrice());
+        order.setChannel("FASTSPRING");
         order.setStatus("PENDING");
         order.setCreateTime(LocalDateTime.now());
         orderRepository.save(order);
 
+        PaymentGateway gateway = gatewayRouter.resolve();
         String redirectUrl;
         if (isSubscriptionBilling(request.getBillingCycle())) {
-            SubscriptionCreateResponse subResp = paymentGateway.createSubscription(
+            SubscriptionCreateResponse subResp = gateway.createSubscription(
                     SubscriptionCreateRequest.builder()
                             .orderNo(order.getOrderNo())
                             .productCode(order.getProductCode())
@@ -74,7 +87,7 @@ public class OrderServiceImpl implements OrderService {
             order.setChannelOrderId(subResp.getInitialOrderId());
             redirectUrl = subResp.getPaymentUrl();
         } else {
-            PaymentCreateResponse payResp = paymentGateway.createPayment(
+            PaymentCreateResponse payResp = gateway.createPayment(
                     PaymentCreateRequest.builder()
                             .orderNo(order.getOrderNo())
                             .productCode(order.getProductCode())

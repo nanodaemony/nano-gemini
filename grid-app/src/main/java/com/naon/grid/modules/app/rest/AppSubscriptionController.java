@@ -4,6 +4,7 @@ import com.naon.grid.modules.app.utils.AppSecurityUtils;
 import com.naon.grid.modules.billing.domain.PaymentSubscription;
 import com.naon.grid.modules.billing.repository.PaymentSubscriptionRepository;
 import com.naon.grid.modules.billing.service.EntitlementService;
+import com.naon.grid.modules.billing.service.GatewayRouter;
 import com.naon.grid.modules.billing.service.PaymentGateway;
 import com.naon.grid.modules.billing.service.dto.UserEntitlementVO;
 import com.naon.grid.modules.billing.service.dto.UserSubscriptionVO;
@@ -23,7 +24,7 @@ import java.util.List;
 public class AppSubscriptionController {
 
     private final EntitlementService entitlementService;
-    private final PaymentGateway paymentGateway;
+    private final GatewayRouter gatewayRouter;
     private final PaymentSubscriptionRepository subscriptionRepository;
 
     @ApiOperation("查询我的订阅/权益状态")
@@ -50,7 +51,8 @@ public class AppSubscriptionController {
                 subscriptionRepository.findByUserIdAndStatus(userId, "ACTIVE");
         for (PaymentSubscription sub : activeSubs) {
             if (sub.getChannelSubId() != null) {
-                paymentGateway.cancelSubscription(sub.getChannelSubId());
+                PaymentGateway gateway = gatewayRouter.resolve();
+                gateway.cancelSubscription(sub.getChannelSubId());
             }
             sub.setStatus("CANCELLED");
             sub.setCancelAt(LocalDateTime.now());

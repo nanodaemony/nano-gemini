@@ -150,7 +150,7 @@ public class VocabWordController {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
-    @Log("搜索已发布词汇")
+    @Log("搜索已发布的词汇")
     @ApiOperation("根据词汇文本搜索已发布词汇（用于关联词选择）")
     @AnonymousGetMapping("/search")
     public ResponseEntity<List<VocabWordBaseSearchVO>> search(@RequestParam String word) {

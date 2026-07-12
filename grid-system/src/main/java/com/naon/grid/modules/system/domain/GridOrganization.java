@@ -65,4 +65,13 @@ public class GridOrganization extends BaseEntity {
 
     @Column(precision = 5, scale = 2, nullable = false)
     private BigDecimal commissionRate = BigDecimal.ZERO;
+
+    @Column(length = 100)
+    private String taxId;
+
+    @Column(length = 500)
+    private String billingAddress;
+
+    @Column(length = 100)
+    private String billingEmail;
 }

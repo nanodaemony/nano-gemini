@@ -56,6 +56,7 @@ public class PaymentServiceImpl implements PaymentService {
         PaymentRecord record = new PaymentRecord();
         record.setOrderId(order.getId());
         record.setPaymentMethod(paymentMethod);
+        record.setGateway(order.getChannel());
         record.setTransactionId(
                 callbackData != null && callbackData.get("transactionId") != null
                         ? callbackData.get("transactionId").toString()
@@ -92,21 +93,22 @@ public class PaymentServiceImpl implements PaymentService {
         }
 
         if (order.getChannelSubId() != null) {
+            String channel = order.getChannel() != null ? order.getChannel() : "FASTSPRING";
             PaymentSubscription sub = subscriptionRepository
-                    .findByChannelAndChannelSubId("PHOTONPAY", order.getChannelSubId())
+                    .findByChannelAndChannelSubId(channel, order.getChannelSubId())
                     .orElseGet(() -> {
                         PaymentSubscription newSub = new PaymentSubscription();
                         newSub.setUserId(order.getUserId());
                         newSub.setProductCode(order.getProductCode());
-                        newSub.setChannel("PHOTONPAY");
+                        newSub.setChannel(channel);
                         newSub.setChannelSubId(order.getChannelSubId());
                         newSub.setCreateTime(LocalDateTime.now());
                         return newSub;
                     });
             sub.setStatus("ACTIVE");
             subscriptionRepository.save(sub);
-            log.info("Payment subscription processed: userId={}, product={}, subId={}",
-                    order.getUserId(), order.getProductCode(), order.getChannelSubId());
+            log.info("Payment subscription processed: userId={}, product={}, channel={}, subId={}",
+                    order.getUserId(), order.getProductCode(), channel, order.getChannelSubId());
         }
 
         log.info("Payment processed: orderNo={}, userId={}, product={}, days={}",

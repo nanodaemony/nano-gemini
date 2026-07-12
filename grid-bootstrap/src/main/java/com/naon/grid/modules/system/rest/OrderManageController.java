@@ -3,6 +3,7 @@ package com.naon.grid.modules.system.rest;
 import com.naon.grid.exception.BadRequestException;
 import com.naon.grid.modules.billing.domain.GridOrder;
 import com.naon.grid.modules.billing.repository.GridOrderRepository;
+import com.naon.grid.modules.billing.service.GatewayRouter;
 import com.naon.grid.modules.billing.service.PaymentGateway;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -21,7 +22,7 @@ import java.math.BigDecimal;
 public class OrderManageController {
 
     private final GridOrderRepository orderRepository;
-    private final PaymentGateway paymentGateway;
+    private final GatewayRouter gatewayRouter;
 
     @ApiOperation("订单列表")
     @GetMapping
@@ -43,7 +44,8 @@ public class OrderManageController {
                                              @RequestParam(required = false) BigDecimal amount) {
         GridOrder order = orderRepository.findByOrderNo(orderNo)
                 .orElseThrow(() -> new BadRequestException("订单不存在: " + orderNo));
-        paymentGateway.refund(order.getChannelOrderId(), amount);
+        PaymentGateway gateway = gatewayRouter.resolve();
+        gateway.refund(order.getChannelOrderId(), amount);
         order.setStatus("REFUNDING");
         orderRepository.save(order);
         return ResponseEntity.ok().build();

@@ -88,7 +88,7 @@ CREATE TABLE `region_pricing` (
     `create_by`       VARCHAR(50), `update_by` VARCHAR(50),
     `create_time`     DATETIME DEFAULT CURRENT_TIMESTAMP,
     `update_time`     DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    UNIQUE KEY `uk_product_region_cycle` (`product_id`, `region`, `billing_cycle`)
+    UNIQUE KEY `uk_product_region_cycle_cur` (`product_id`, `region`, `billing_cycle`, `currency`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='区域定价表';
 
 -- ----------------------------
@@ -98,7 +98,7 @@ CREATE TABLE `payment_subscription` (
     `id`              BIGINT AUTO_INCREMENT PRIMARY KEY,
     `user_id`         BIGINT NOT NULL,
     `product_code`    VARCHAR(50) NOT NULL COMMENT '商品代码',
-    `channel`         VARCHAR(30) NOT NULL COMMENT 'STRIPE/PHOTONPAY',
+    `channel`         VARCHAR(30) NOT NULL COMMENT 'FASTSPRING/STRIPE/PHOTONPAY',
     `channel_sub_id`  VARCHAR(200) COMMENT '渠道侧订阅ID',
     `status`          VARCHAR(20) NOT NULL DEFAULT 'ACTIVE' COMMENT 'ACTIVE/CANCELLED/EXPIRED',
     `create_time`     DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -118,7 +118,12 @@ CREATE TABLE `grid_order` (
     `product_code`    VARCHAR(50) NOT NULL,
     `region`          VARCHAR(10) NOT NULL,
     `billing_cycle`   VARCHAR(20) NOT NULL,
-    `amount`          DECIMAL(12,2) NOT NULL,
+    `amount`          DECIMAL(12,2) NOT NULL COMMENT '含税总金额',
+    `subtotal`        DECIMAL(12,2) COMMENT '税前金额',
+    `tax_amount`      DECIMAL(12,2) DEFAULT 0 COMMENT '税额',
+    `discount_amount` DECIMAL(12,2) DEFAULT 0 COMMENT '优惠金额',
+    `coupon_code`     VARCHAR(32) COMMENT '优惠券代码',
+    `tax_region`      VARCHAR(10) COMMENT '税务地区',
     `currency`        VARCHAR(10) NOT NULL,
     `status`          VARCHAR(30) NOT NULL DEFAULT 'PENDING' COMMENT 'PENDING/PAID/REFUNDING/REFUNDED/EXPIRED',
     `payment_method`  VARCHAR(30),
@@ -129,6 +134,7 @@ CREATE TABLE `grid_order` (
     `channel_order_id` VARCHAR(200),
     `channel_sub_id`  VARCHAR(200),
     `invoice_no`      VARCHAR(64),
+    `version`         INT DEFAULT 0 COMMENT '乐观锁版本号',
     UNIQUE KEY `uk_order_no` (`order_no`),
     KEY `idx_user_id` (`user_id`),
     KEY `idx_org_id` (`org_id`)
@@ -145,11 +151,67 @@ CREATE TABLE `payment_record` (
     `amount`          DECIMAL(12,2) NOT NULL,
     `currency`        VARCHAR(10) NOT NULL,
     `status`          VARCHAR(20) NOT NULL COMMENT 'SUCCESS/FAILED/REFUND',
+    `gateway`         VARCHAR(30) COMMENT '支付网关 FASTSPRING/PHOTONPAY',
+    `gateway_fee`     DECIMAL(12,2) COMMENT '网关手续费',
+    `net_amount`      DECIMAL(12,2) COMMENT '净收入（扣费后）',
     `raw_callback`    TEXT COMMENT '原始回调JSON',
     `create_time`     DATETIME DEFAULT CURRENT_TIMESTAMP,
     KEY `idx_order_id` (`order_id`),
     KEY `idx_transaction_id` (`transaction_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='支付流水表';
+
+-- ----------------------------
+-- 发票/收据表
+-- ----------------------------
+CREATE TABLE `billing_invoice` (
+    `id`               BIGINT AUTO_INCREMENT PRIMARY KEY,
+    `invoice_no`       VARCHAR(64) NOT NULL UNIQUE COMMENT '发票号 INV-YYYYMMDD-XXXXXX',
+    `order_id`         BIGINT NOT NULL COMMENT '关联订单',
+    `user_id`          BIGINT NOT NULL COMMENT '用户',
+    `org_id`           INT COMMENT '机构',
+    `invoice_type`     VARCHAR(30) NOT NULL DEFAULT 'FASTSPRING' COMMENT 'FASTSPRING/SELF_GEN',
+    `invoice_format`   VARCHAR(30) NOT NULL DEFAULT 'INTERNATIONAL' COMMENT 'INTERNATIONAL/CHINESE/INSTITUTION',
+    `currency`         VARCHAR(10) NOT NULL,
+    `subtotal`         DECIMAL(12,2) NOT NULL COMMENT '税前金额',
+    `tax_amount`       DECIMAL(12,2) DEFAULT 0 COMMENT '税额',
+    `total_amount`     DECIMAL(12,2) NOT NULL COMMENT '含税总金额',
+    `buyer_name`       VARCHAR(200) COMMENT '买方名称',
+    `buyer_tax_id`     VARCHAR(100) COMMENT '买方税号',
+    `buyer_address`    VARCHAR(500) COMMENT '买方地址',
+    `buyer_email`      VARCHAR(200) COMMENT '买方邮箱',
+    `seller_name`      VARCHAR(200) NOT NULL DEFAULT 'YourRoad 有路中文' COMMENT '卖方名称',
+    `seller_tax_id`    VARCHAR(100) COMMENT '卖方税号',
+    `seller_address`   VARCHAR(500) COMMENT '卖方地址',
+    `notes`            VARCHAR(1000) COMMENT '备注',
+    `pdf_url`          VARCHAR(500) COMMENT 'OSS PDF地址',
+    `fastspring_url`   VARCHAR(500) COMMENT 'FastSpring原始发票链接',
+    `region`           VARCHAR(10) COMMENT '区域',
+    `status`           VARCHAR(20) NOT NULL DEFAULT 'ISSUED' COMMENT 'DRAFT/ISSUED/VOIDED',
+    `issued_at`        DATETIME COMMENT '开具时间',
+    `create_time`      DATETIME DEFAULT CURRENT_TIMESTAMP,
+    KEY `idx_order` (`order_id`),
+    KEY `idx_user` (`user_id`),
+    KEY `idx_org` (`org_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='发票/收据表';
+
+-- ----------------------------
+-- 账单信息表
+-- ----------------------------
+CREATE TABLE `billing_profile` (
+    `id`               INT AUTO_INCREMENT PRIMARY KEY,
+    `user_id`          BIGINT COMMENT '用户（个人）',
+    `org_id`           INT COMMENT '机构',
+    `company_name`     VARCHAR(200) COMMENT '公司名称',
+    `tax_id`           VARCHAR(100) COMMENT '税号/VAT号',
+    `billing_address`  VARCHAR(500) COMMENT '账单地址',
+    `billing_email`    VARCHAR(200) COMMENT '账单邮箱',
+    `billing_phone`    VARCHAR(50) COMMENT '账单电话',
+    `region`           VARCHAR(10) COMMENT '区域',
+    `is_default`       TINYINT DEFAULT 1 COMMENT '默认',
+    `create_time`      DATETIME DEFAULT CURRENT_TIMESTAMP,
+    `update_time`      DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    UNIQUE KEY `uk_user_org` (`user_id`, `org_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='账单信息表';
 
 -- ----------------------------
 -- 种子数据
@@ -183,3 +245,66 @@ INSERT INTO `grid_product` (`code`, `name`, `product_type`, `entitlement_ids`, `
 ('INST_PRO', 'Institution Pro', 'INSTITUTION',
  '["VOCAB_ACCESS","GRAMMAR_ACCESS","CHARACTER_ACCESS","CONFUSING_WORDS_ACCESS","CULTURE_ACCESS","TOPIC_ACCESS"]',
  '{"maxMembers":500,"maxAdmins":5}', 12, 1);
+
+-- 区域定价 — PLUS 全平台会员 (product_id=1)
+INSERT INTO `region_pricing` (`product_id`, `region`, `billing_cycle`, `price`, `currency`, `status`) VALUES
+(1, 'A', 'MONTHLY',    11.99, 'USD', 1),
+(1, 'A', 'MONTHLY',    10.99, 'EUR', 1),
+(1, 'B', 'MONTHLY',     9.99, 'USD', 1),
+(1, 'C', 'MONTHLY',    69.00, 'CNY', 1),
+(1, 'D', 'MONTHLY',     7.99, 'USD', 1),
+(1, 'E', 'MONTHLY',     5.99, 'USD', 1),
+(1, 'A', 'QUARTERLY',  29.99, 'USD', 1),
+(1, 'A', 'QUARTERLY',  26.99, 'EUR', 1),
+(1, 'B', 'QUARTERLY',  22.99, 'USD', 1),
+(1, 'C', 'QUARTERLY', 129.00, 'CNY', 1),
+(1, 'D', 'QUARTERLY',  18.99, 'USD', 1),
+(1, 'E', 'QUARTERLY',  11.99, 'USD', 1),
+(1, 'A', 'YEARLY',     99.99, 'USD', 1),
+(1, 'A', 'YEARLY',     89.99, 'EUR', 1),
+(1, 'B', 'YEARLY',     79.99, 'USD', 1),
+(1, 'C', 'YEARLY',    399.00, 'CNY', 1),
+(1, 'D', 'YEARLY',     59.99, 'USD', 1),
+(1, 'E', 'YEARLY',     39.99, 'USD', 1);
+
+-- 单模块年度订阅 (product_id=2..7)
+INSERT INTO `region_pricing` (`product_id`, `region`, `billing_cycle`, `price`, `currency`, `status`) VALUES
+-- VOCAB
+(2, 'A', 'YEARLY', 39.99, 'USD', 1), (2, 'A', 'YEARLY', 35.99, 'EUR', 1),
+(2, 'B', 'YEARLY', 29.99, 'USD', 1), (2, 'C', 'YEARLY', 149.00, 'CNY', 1),
+(2, 'D', 'YEARLY', 24.99, 'USD', 1), (2, 'E', 'YEARLY', 16.99, 'USD', 1),
+-- GRAMMAR
+(3, 'A', 'YEARLY', 29.99, 'USD', 1), (3, 'A', 'YEARLY', 26.99, 'EUR', 1),
+(3, 'B', 'YEARLY', 24.99, 'USD', 1), (3, 'C', 'YEARLY', 169.00, 'CNY', 1),
+(3, 'D', 'YEARLY', 19.99, 'USD', 1), (3, 'E', 'YEARLY', 12.99, 'USD', 1),
+-- CHARACTER
+(4, 'A', 'YEARLY', 19.99, 'USD', 1), (4, 'A', 'YEARLY', 17.99, 'EUR', 1),
+(4, 'B', 'YEARLY', 14.99, 'USD', 1), (4, 'C', 'YEARLY', 99.00, 'CNY', 1),
+(4, 'D', 'YEARLY', 12.99, 'USD', 1), (4, 'E', 'YEARLY', 8.99, 'USD', 1),
+-- CONFUSING_WORDS
+(5, 'A', 'YEARLY', 19.99, 'USD', 1), (5, 'A', 'YEARLY', 17.99, 'EUR', 1),
+(5, 'B', 'YEARLY', 14.99, 'USD', 1), (5, 'C', 'YEARLY', 99.00, 'CNY', 1),
+(5, 'D', 'YEARLY', 12.99, 'USD', 1), (5, 'E', 'YEARLY', 8.99, 'USD', 1),
+-- CULTURE
+(6, 'A', 'YEARLY', 19.99, 'USD', 1), (6, 'A', 'YEARLY', 17.99, 'EUR', 1),
+(6, 'B', 'YEARLY', 14.99, 'USD', 1), (6, 'C', 'YEARLY', 99.00, 'CNY', 1),
+(6, 'D', 'YEARLY', 12.99, 'USD', 1), (6, 'E', 'YEARLY', 8.99, 'USD', 1),
+-- TOPIC
+(7, 'A', 'YEARLY', 24.99, 'USD', 1), (7, 'A', 'YEARLY', 22.99, 'EUR', 1),
+(7, 'B', 'YEARLY', 19.99, 'USD', 1), (7, 'C', 'YEARLY', 59.00, 'CNY', 1),
+(7, 'D', 'YEARLY', 16.99, 'USD', 1), (7, 'E', 'YEARLY', 11.99, 'USD', 1);
+
+-- 机构版套餐 (product_id=8..10)
+INSERT INTO `region_pricing` (`product_id`, `region`, `billing_cycle`, `price`, `currency`, `status`) VALUES
+-- INST_STARTER
+(8, 'A', 'YEARLY', 1199.00, 'USD', 1), (8, 'A', 'YEARLY', 1099.00, 'EUR', 1),
+(8, 'B', 'YEARLY',  999.00, 'USD', 1), (8, 'C', 'YEARLY', 6800.00, 'CNY', 1),
+(8, 'D', 'YEARLY',  799.00, 'USD', 1), (8, 'E', 'YEARLY',  599.00, 'USD', 1),
+-- INST_BASIC
+(9, 'A', 'YEARLY', 2499.00, 'USD', 1), (9, 'A', 'YEARLY', 2199.00, 'EUR', 1),
+(9, 'B', 'YEARLY', 1999.00, 'USD', 1), (9, 'C', 'YEARLY', 12800.00, 'CNY', 1),
+(9, 'D', 'YEARLY', 1499.00, 'USD', 1), (9, 'E', 'YEARLY',  999.00, 'USD', 1),
+-- INST_PRO
+(10, 'A', 'YEARLY', 9999.00, 'USD', 1), (10, 'A', 'YEARLY', 8999.00, 'EUR', 1),
+(10, 'B', 'YEARLY', 7999.00, 'USD', 1), (10, 'C', 'YEARLY', 49800.00, 'CNY', 1),
+(10, 'D', 'YEARLY', 5999.00, 'USD', 1), (10, 'E', 'YEARLY', 3999.00, 'USD', 1);

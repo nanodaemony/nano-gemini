@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 
 @Slf4j
+@Deprecated
 @Service
 @RequiredArgsConstructor
 public class PhotonPayPaymentGateway implements PaymentGateway {

@@ -111,27 +111,30 @@ volcengine:
     api-resource-id: seed-tts-2.0
     base-url: https://openspeech.bytedance.com/api/v3/tts/unidirectional
 
-# ─── 海外支付 ───
+# ─── 海外支付 (FastSpring MoR) ───
 billing:
   payment:
-    gateway: photonpay
+    gateway: fastspring
 
-  photonpay:
-    api-key: "${PHOTONPAY_API_KEY}"
-    api-secret: "${PHOTONPAY_API_SECRET}"
-    webhook-secret: "${PHOTONPAY_WEBHOOK_SECRET}"
-    base-url: "https://sandbox.photonpay.com"
+  fastspring:
+    api-key: "${FASTSPRING_API_KEY:}"
+    webhook-secret: "${FASTSPRING_WEBHOOK_SECRET:}"
+    store-id: "${FASTSPRING_STORE_ID:}"
+    base-url: "https://api.fastspring.com"
+    checkout-domain: "https://yourroad.onfastspring.com"
     merchant-display-name: "YourRoad 有路中文"
-    return-url: "https://yourroad.com/payment/return"
+    success-url: "https://yourroad.com/payment/success"
     cancel-url: "https://yourroad.com/payment/cancel"
-    webhook-url: "https://yourroad.com/api/app/payments/webhook/photonpay"
 
   subscription:
     auto-renewal: true
     renewal-reminder-days: 7
 
   tax:
-    enabled: false
+    enabled: true
+    china-vat-rate: 0.0
+    china-export-nature: "离岸服务外包"
+    evidence-retention-days: 1825
 
 # 大模型 Chat 配置
 chat:

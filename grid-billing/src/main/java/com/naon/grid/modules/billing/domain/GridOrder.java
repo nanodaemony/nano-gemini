@@ -59,6 +59,24 @@ public class GridOrder {
     @Column(length = 200)
     private String channelSubId;
 
+    @Column(precision = 12, scale = 2)
+    private BigDecimal subtotal;
+
+    @Column(precision = 12, scale = 2)
+    private BigDecimal taxAmount;
+
+    @Column(precision = 12, scale = 2)
+    private BigDecimal discountAmount;
+
+    @Column(length = 32)
+    private String couponCode;
+
+    @Column(length = 10)
+    private String taxRegion;
+
     @Column(length = 64)
     private String invoiceNo;
+
+    @Version
+    private Integer version;
 }

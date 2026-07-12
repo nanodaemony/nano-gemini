@@ -29,6 +29,7 @@ public class VocabComparisonGroupCreateRequest {
 
     @Data
     public static class VocabItemRequest {
+
         @ApiModelProperty(value = "词汇ID")
         private Long wordId;
 

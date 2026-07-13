@@ -215,6 +215,10 @@ public class TopicServiceImpl implements TopicService {
 
         // Collect AI markers
         List<AiContentMarkerService.MarkerEntry> markerEntries = new ArrayList<>();
+        if (draftDto.getAiGeneratedFields() != null && !draftDto.getAiGeneratedFields().isEmpty()) {
+            markerEntries.add(new AiContentMarkerService.MarkerEntry(
+                    "topic", entity.getId(), draftDto.getAiGeneratedFields()));
+        }
         collectTopicMarkers(draftDto.getPatterns(), savedPatterns, markerEntries);
         aiContentMarkerService.batchReplace(markerEntries);
 

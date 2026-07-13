@@ -232,9 +232,18 @@ public class TopicServiceImpl implements TopicService {
     public List<TopicDto> searchPublished(String blurry) {
         List<Topic> topics = topicRepository.findByNameContainingAndStatusAndPublishStatus(
                 blurry, StatusEnum.ENABLED.getCode(), PublishStatusEnum.PUBLISHED.getCode());
+        if (topics.isEmpty()) {
+            return Collections.emptyList();
+        }
+        // Batch-count patterns for all matching topics
+        List<Long> topicIds = topics.stream().map(Topic::getId).collect(Collectors.toList());
+        List<TopicPattern> allPatterns = patternRepository.findByTopicIdInAndStatus(
+                topicIds, StatusEnum.ENABLED.getCode());
+        Map<Long, Long> countMap = allPatterns.stream()
+                .collect(Collectors.groupingBy(TopicPattern::getTopicId, Collectors.counting()));
         return topics.stream().map(entity -> {
             TopicDto dto = toBaseDto(entity);
-            dto.setPatterns(loadPatterns(entity.getId()));
+            dto.setPatternCount(countMap.getOrDefault(entity.getId(), 0L).intValue());
             return dto;
         }).collect(Collectors.toList());
     }

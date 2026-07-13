@@ -22,6 +22,7 @@ import com.naon.grid.modules.system.service.AiContentMarkerService;
 import com.naon.grid.utils.JsonUtils;
 import com.naon.grid.utils.PageResult;
 import com.naon.grid.utils.PageUtil;
+import com.naon.grid.utils.QueryHelp;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -112,19 +113,12 @@ public class TopicServiceImpl implements TopicService {
 
     @Override
     public PageResult<TopicDto> queryAll(TopicQueryCriteria criteria, Pageable pageable) {
-        final String finalPublishStatus = criteria.getPublishStatus();
-        final String finalEditStatus = criteria.getEditStatus();
-
         Page<Topic> page = topicRepository.findAll((root, query, cb) -> {
-            List<Predicate> predicates = new ArrayList<>();
-            predicates.add(cb.equal(root.get("status"), StatusEnum.ENABLED.getCode()));
-            if (finalPublishStatus != null && !finalPublishStatus.trim().isEmpty()) {
-                predicates.add(cb.equal(root.get("publishStatus"), finalPublishStatus));
-            }
-            if (finalEditStatus != null && !finalEditStatus.trim().isEmpty()) {
-                predicates.add(cb.equal(root.get("editStatus"), finalEditStatus));
-            }
-            return cb.and(predicates.toArray(new Predicate[0]));
+            Predicate criteriaPredicate = QueryHelp.getPredicate(root, criteria, cb);
+            Predicate statusPredicate = cb.equal(root.get("status"), StatusEnum.ENABLED.getCode());
+            return criteriaPredicate != null
+                    ? cb.and(criteriaPredicate, statusPredicate)
+                    : statusPredicate;
         }, pageable);
 
         PageResult<TopicDto> pageResult = PageUtil.toPage(page.map(this::toDtoWithDraftOverlay));

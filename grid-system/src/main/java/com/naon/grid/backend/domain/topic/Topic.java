@@ -29,7 +29,7 @@ public class Topic extends BaseEntity implements Serializable {
     private Long id;
 
     @Column(name = "name", nullable = false, length = 128)
-    @ApiModelProperty(value = "话题名称（如"希望"）")
+    @ApiModelProperty(value = "话题名称（如：希望）")
     private String name;
 
     @Column(name = "pinyin", length = 256)

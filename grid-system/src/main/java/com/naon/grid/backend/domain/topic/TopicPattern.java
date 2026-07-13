@@ -33,7 +33,7 @@ public class TopicPattern implements Serializable {
     private Long topicId;
 
     @Column(name = "pattern", nullable = false, length = 512)
-    @ApiModelProperty(value = "句式文本（如"（某人）+希望……"）")
+    @ApiModelProperty(value = "句式文本（如：（某人）+希望……）")
     private String pattern;
 
     @Column(name = "image_id")

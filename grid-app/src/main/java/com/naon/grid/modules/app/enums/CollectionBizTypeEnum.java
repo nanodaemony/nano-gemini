@@ -14,7 +14,8 @@ public enum CollectionBizTypeEnum {
     GRAMMAR("GRAMMAR", "语法"),
     GRAMMAR_COMPARISON("GRAMMAR_COMPARISON", "语法辨析"),
     VOCAB_COMPARISON("VOCAB_COMPARISON", "词汇辨析"),
-    DAILY_VOCABULARY("DAILY_VOCABULARY", "每日一词");
+    DAILY_VOCABULARY("DAILY_VOCABULARY", "每日一词"),
+    TOPIC("TOPIC", "话题");
 
     private final String code;
     private final String description;

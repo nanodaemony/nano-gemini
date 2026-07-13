@@ -10,6 +10,8 @@ import com.naon.grid.backend.service.grammarcomparison.GrammarComparisonGroupSer
 import com.naon.grid.backend.service.grammarcomparison.dto.GrammarComparisonGroupDto;
 import com.naon.grid.backend.service.vocabcomparison.VocabComparisonGroupService;
 import com.naon.grid.backend.service.vocabcomparison.dto.VocabComparisonGroupDto;
+import com.naon.grid.backend.service.topic.TopicService;
+import com.naon.grid.backend.service.topic.dto.TopicDto;
 import com.naon.grid.backend.service.vocabulary.VocabWordService;
 import com.naon.grid.backend.service.vocabulary.dto.VocabWordDto;
 import com.naon.grid.modules.app.domain.BizCollectionFolder;
@@ -52,7 +54,8 @@ public class CollectionWrapper {
             CharRadicalService charRadicalService,
             GrammarPointService grammarPointService,
             GrammarComparisonGroupService grammarComparisonGroupService,
-            VocabComparisonGroupService vocabComparisonGroupService) {
+            VocabComparisonGroupService vocabComparisonGroupService,
+            TopicService topicService) {
 
         CollectionFolderDetailVO vo = new CollectionFolderDetailVO();
         vo.setId(folder.getId());
@@ -69,7 +72,8 @@ public class CollectionWrapper {
                 group.setBizType(entry.getKey());
                 group.setItems(toItemVOList(entry.getValue(),
                         charCharacterService, vocabWordService, charRadicalService,
-                        grammarPointService, grammarComparisonGroupService, vocabComparisonGroupService));
+                        grammarPointService, grammarComparisonGroupService, vocabComparisonGroupService,
+                        topicService));
                 groups.add(group);
             }
         }
@@ -84,13 +88,15 @@ public class CollectionWrapper {
             CharRadicalService charRadicalService,
             GrammarPointService grammarPointService,
             GrammarComparisonGroupService grammarComparisonGroupService,
-            VocabComparisonGroupService vocabComparisonGroupService) {
+            VocabComparisonGroupService vocabComparisonGroupService,
+            TopicService topicService) {
 
         if (items == null) return Collections.emptyList();
         return items.stream()
                 .map(item -> toItemVO(item,
                         charCharacterService, vocabWordService, charRadicalService,
-                        grammarPointService, grammarComparisonGroupService, vocabComparisonGroupService))
+                        grammarPointService, grammarComparisonGroupService, vocabComparisonGroupService,
+                        topicService))
                 .collect(Collectors.toList());
     }
 
@@ -101,7 +107,8 @@ public class CollectionWrapper {
             CharRadicalService charRadicalService,
             GrammarPointService grammarPointService,
             GrammarComparisonGroupService grammarComparisonGroupService,
-            VocabComparisonGroupService vocabComparisonGroupService) {
+            VocabComparisonGroupService vocabComparisonGroupService,
+            TopicService topicService) {
 
         CollectionItemVO vo = new CollectionItemVO();
         vo.setId(item.getId());
@@ -109,7 +116,8 @@ public class CollectionWrapper {
         vo.setContentText(item.getContentText());
         vo.setContentName(resolveContentName(item,
                 charCharacterService, vocabWordService, charRadicalService,
-                grammarPointService, grammarComparisonGroupService, vocabComparisonGroupService));
+                grammarPointService, grammarComparisonGroupService, vocabComparisonGroupService,
+                topicService));
         vo.setCreateTime(item.getCreateTime());
         return vo;
     }
@@ -138,7 +146,8 @@ public class CollectionWrapper {
             CharRadicalService charRadicalService,
             GrammarPointService grammarPointService,
             GrammarComparisonGroupService grammarComparisonGroupService,
-            VocabComparisonGroupService vocabComparisonGroupService) {
+            VocabComparisonGroupService vocabComparisonGroupService,
+            TopicService topicService) {
 
         // 纯文本类内容直接返回 contentText
         if (item.getContentId() == null && item.getContentText() != null) {
@@ -179,6 +188,10 @@ public class CollectionWrapper {
                     VocabComparisonGroupDto dto = vocabComparisonGroupService.findById(
                             item.getContentId());
                     return dto != null ? dto.getGroupKey() : null;
+                }
+                case "TOPIC": {
+                    TopicDto topicDto = topicService.findById(item.getContentId());
+                    return topicDto.getName();
                 }
                 default:
                     return null;

@@ -5,6 +5,7 @@ import com.naon.grid.backend.service.charradical.CharRadicalService;
 import com.naon.grid.backend.service.grammar.GrammarPointService;
 import com.naon.grid.backend.service.grammarcomparison.GrammarComparisonGroupService;
 import com.naon.grid.backend.service.vocabcomparison.VocabComparisonGroupService;
+import com.naon.grid.backend.service.topic.TopicService;
 import com.naon.grid.backend.service.vocabulary.VocabWordService;
 import com.naon.grid.exception.BadRequestException;
 import com.naon.grid.modules.app.domain.BizCollectionFolder;
@@ -37,6 +38,7 @@ public class CollectionServiceImpl implements CollectionService {
     private final GrammarPointService grammarPointService;
     private final GrammarComparisonGroupService grammarComparisonGroupService;
     private final VocabComparisonGroupService vocabComparisonGroupService;
+    private final TopicService topicService;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -238,6 +240,9 @@ public class CollectionServiceImpl implements CollectionService {
                     break;
                 case VOCAB_COMPARISON:
                     vocabComparisonGroupService.findById(contentId);
+                    break;
+                case TOPIC:
+                    topicService.findPublishedById(contentId);
                     break;
                 default:
                     return;

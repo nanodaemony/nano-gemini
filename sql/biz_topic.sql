@@ -26,6 +26,7 @@ CREATE TABLE `topic_pattern` (
   `id` bigint NOT NULL AUTO_INCREMENT COMMENT '句式ID',
   `topic_id` bigint NOT NULL COMMENT '所属话题ID',
   `pattern` varchar(512) NOT NULL COMMENT '句式文本（如"（某人）+希望……"）',
+  `tags` text COMMENT '句式标签（JSON字符串数组，如["口语","正式"]）',
   `image_id` bigint DEFAULT NULL COMMENT '句式示意图资源ID',
   `order` int NOT NULL DEFAULT 0 COMMENT '组内排序权重（大的在前）',
   `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
@@ -34,6 +35,9 @@ CREATE TABLE `topic_pattern` (
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `idx_pattern_topic_id`(`topic_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='话题句式表';
+
+-- 已存在的表需要手动执行：
+-- ALTER TABLE topic_pattern ADD COLUMN tags text COMMENT '句式标签（JSON字符串数组）' AFTER pattern;
 
 -- 话题情景对话表
 CREATE TABLE `topic_chat` (

@@ -54,6 +54,7 @@ public class TopicWrapper {
     private static TopicPatternDto toPatternDto(TopicCreateRequest.TopicPatternRequest req) {
         TopicPatternDto dto = new TopicPatternDto();
         dto.setPattern(req.getPattern());
+        dto.setTags(req.getTags());
         dto.setImageId(req.getImageId());
         dto.setOrder(req.getOrder());
         dto.setChats(toChatDtoList(req.getChats()));
@@ -139,6 +140,7 @@ public class TopicWrapper {
         TopicPatternVO vo = new TopicPatternVO();
         vo.setId(dto.getId());
         vo.setPattern(dto.getPattern());
+        vo.setTags(dto.getTags());
         vo.setImageId(dto.getImageId());
         vo.setOrder(dto.getOrder());
         vo.setChats(toChatVOList(dto.getChats(), aiMarkers));

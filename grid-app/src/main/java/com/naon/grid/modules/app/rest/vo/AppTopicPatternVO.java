@@ -11,6 +11,9 @@ public class AppTopicPatternVO {
     @ApiModelProperty(value = "句式文本")
     private String pattern;
 
+    @ApiModelProperty(value = "句式标签")
+    private List<String> tags;
+
     @ApiModelProperty(value = "示意图")
     private AppTopicBaseVO.ImageVO image;
 

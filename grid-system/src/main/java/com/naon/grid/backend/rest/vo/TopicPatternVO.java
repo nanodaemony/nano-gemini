@@ -14,6 +14,9 @@ public class TopicPatternVO {
     @ApiModelProperty(value = "句式文本")
     private String pattern;
 
+    @ApiModelProperty(value = "句式标签")
+    private List<String> tags;
+
     @ApiModelProperty(value = "示意图资源ID")
     private Long imageId;
 

@@ -36,6 +36,10 @@ public class TopicPattern implements Serializable {
     @ApiModelProperty(value = "句式文本（如：（某人）+希望……）")
     private String pattern;
 
+    @Column(name = "tags", columnDefinition = "text")
+    @ApiModelProperty(value = "句式标签（JSON字符串数组）")
+    private String tags;
+
     @Column(name = "image_id")
     @ApiModelProperty(value = "句式示意图资源ID")
     private Long imageId;

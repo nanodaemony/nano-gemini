@@ -369,6 +369,7 @@ public class TopicServiceImpl implements TopicService {
             TopicPatternDto patternDto = new TopicPatternDto();
             patternDto.setId(pattern.getId());
             patternDto.setPattern(pattern.getPattern());
+            patternDto.setTags(JsonUtils.parseStringList(pattern.getTags()));
             patternDto.setImageId(pattern.getImageId());
             patternDto.setOrder(pattern.getPatternOrder());
 
@@ -437,6 +438,7 @@ public class TopicServiceImpl implements TopicService {
             pattern.setTopicId(topicId);
             pattern.setPattern(patternDto.getPattern());
             pattern.setImageId(patternDto.getImageId());
+            pattern.setTags(JsonUtils.toStringListJson(patternDto.getTags()));
             pattern.setPatternOrder(patternDto.getOrder() != null ? patternDto.getOrder() : 0);
             pattern.setStatus(StatusEnum.ENABLED.getCode());
             pattern = patternRepository.save(pattern);

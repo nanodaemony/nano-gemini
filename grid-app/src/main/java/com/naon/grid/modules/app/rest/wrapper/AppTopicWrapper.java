@@ -90,6 +90,7 @@ public class AppTopicWrapper {
             String language) {
         AppTopicPatternVO vo = new AppTopicPatternVO();
         vo.setPattern(dto.getPattern());
+        vo.setTags(dto.getTags());
         vo.setOrder(dto.getOrder());
 
         if (dto.getImageId() != null && imageMap != null) {

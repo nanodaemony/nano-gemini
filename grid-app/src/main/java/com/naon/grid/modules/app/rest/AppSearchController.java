@@ -59,7 +59,7 @@ public class AppSearchController {
     private final VocabOutlineRecordService vocabOutlineRecordService;
     private final TopicService topicService;
 
-    @ApiOperation("统一搜索（词汇/汉字/语法/辨析）")
+    @ApiOperation("统一搜索（词汇/汉字/语法/辨析/话题）")
     @AnonymousGetMapping("/search")
     public ResponseEntity<AppSearchResultVO> search(@RequestParam(required = false) String q) {
         if (q == null || q.trim().isEmpty()) {

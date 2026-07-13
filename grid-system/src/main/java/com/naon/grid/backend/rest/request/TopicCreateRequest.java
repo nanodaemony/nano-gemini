@@ -40,6 +40,9 @@ public class TopicCreateRequest {
         @ApiModelProperty(value = "句式文本", required = true)
         private String pattern;
 
+        @ApiModelProperty(value = "句式标签（如[\"口语\",\"正式\"]）")
+        private List<String> tags;
+
         @ApiModelProperty(value = "句式示意图资源ID")
         private Long imageId;
 

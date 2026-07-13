@@ -1,0 +1,34 @@
+{
+  "name": "希望",
+  "pinyin": "xi wang",
+  "audioId": 1,
+  "coverImageId": 1,
+  "translations": [{"language":"en","translation":"hope"},{"language":"ru","translation":"nadezhda"}],
+  "patterns": [
+    {
+      "pattern": "某人+希望……",
+      "imageId": 10,
+      "order": 10,
+      "chats": [
+        {"role":"teacher","content":"你有什么希望","pinyin":"ni you shen me xi wang","translations":[{"language":"en","translation":"What do you hope for"}],"audioId":2,"order":1},
+        {"role":"student","content":"我希望学好中文","pinyin":"wo xi wang xue hao zhong wen","translations":[{"language":"en","translation":"I hope to learn Chinese well"}],"audioId":3,"order":2}
+      ]
+    },
+    {
+      "pattern": "某人+盼望……",
+      "imageId": 11,
+      "order": 8,
+      "chats": [
+        {"role":"teacher","content":"你盼望什么","pinyin":"ni pan wang shen me","translations":[{"language":"en","translation":"What do you look forward to"}],"audioId":4,"order":1}
+      ]
+    },
+    {
+      "pattern": "但愿+……",
+      "imageId": 12,
+      "order": 5,
+      "chats": [
+        {"role":"student","content":"但愿明天好天气","pinyin":"dan yuan ming tian hao tian qi","translations":[{"language":"en","translation":"Hopefully good weather tomorrow"}],"audioId":6,"order":1}
+      ]
+    }
+  ]
+}

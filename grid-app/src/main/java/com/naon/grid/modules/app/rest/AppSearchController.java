@@ -10,6 +10,8 @@ import com.naon.grid.backend.service.grammarcomparison.dto.GrammarComparisonGrou
 import com.naon.grid.backend.service.vocabcomparison.VocabComparisonGroupService;
 import com.naon.grid.backend.service.vocabcomparison.dto.VocabComparisonGroupDto;
 import com.naon.grid.backend.service.vocabulary.VocabOutlineRecordService;
+import com.naon.grid.backend.service.topic.TopicService;
+import com.naon.grid.backend.service.topic.dto.TopicDto;
 import com.naon.grid.backend.service.vocabulary.VocabWordService;
 import com.naon.grid.backend.service.vocabulary.dto.VocabWordDto;
 import com.naon.grid.backend.service.vocabulary.dto.VocabWordQueryCriteria;
@@ -18,10 +20,12 @@ import com.naon.grid.modules.app.rest.vo.AppComparisonGroupVO;
 import com.naon.grid.modules.app.rest.vo.AppComparisonItemVO;
 import com.naon.grid.modules.app.rest.vo.AppGrammarPointBaseVO;
 import com.naon.grid.modules.app.rest.vo.AppSearchResultVO;
+import com.naon.grid.modules.app.rest.vo.AppTopicBaseVO;
 import com.naon.grid.modules.app.rest.vo.AppVocabWordBaseVO;
 import com.naon.grid.modules.app.rest.wrapper.AppCharCharacterWrapper;
 import com.naon.grid.modules.app.rest.wrapper.AppGrammarPointWrapper;
 import com.naon.grid.modules.app.rest.wrapper.AppSearchWrapper;
+import com.naon.grid.modules.app.rest.wrapper.AppTopicWrapper;
 import com.naon.grid.modules.app.rest.wrapper.AppVocabWordWrapper;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -53,6 +57,7 @@ public class AppSearchController {
     private final VocabComparisonGroupService vocabComparisonGroupService;
     private final GrammarComparisonGroupService grammarComparisonGroupService;
     private final VocabOutlineRecordService vocabOutlineRecordService;
+    private final TopicService topicService;
 
     @ApiOperation("统一搜索（词汇/汉字/语法/辨析）")
     @AnonymousGetMapping("/search")
@@ -60,6 +65,7 @@ public class AppSearchController {
         if (q == null || q.trim().isEmpty()) {
             return new ResponseEntity<>(
                     AppSearchWrapper.toResultVO(
+                            Collections.emptyList(),
                             Collections.emptyList(),
                             Collections.emptyList(),
                             Collections.emptyList(),
@@ -73,9 +79,10 @@ public class AppSearchController {
         List<AppCharCharacterBaseVO> character = searchCharacter(keyword);
         List<AppGrammarPointBaseVO> grammar = searchGrammar(keyword);
         List<AppComparisonGroupVO> comparison = searchComparison(keyword);
+        List<AppTopicBaseVO> topic = searchTopic(keyword);
 
         return new ResponseEntity<>(
-                AppSearchWrapper.toResultVO(vocab, character, grammar, comparison),
+                AppSearchWrapper.toResultVO(vocab, character, grammar, comparison, topic),
                 HttpStatus.OK);
     }
 
@@ -132,5 +139,13 @@ public class AppSearchController {
             return result.subList(0, 20);
         }
         return result;
+    }
+
+    private List<AppTopicBaseVO> searchTopic(String keyword) {
+        List<TopicDto> dtos = topicService.searchPublished(keyword);
+        if (dtos.size() > 20) {
+            dtos = dtos.subList(0, 20);
+        }
+        return AppTopicWrapper.toBaseVOList(dtos);
     }
 }

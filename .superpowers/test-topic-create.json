@@ -1,0 +1,18 @@
+{
+  "name": "希望",
+  "pinyin": "xi wang",
+  "audioId": 1,
+  "coverImageId": 1,
+  "translations": [{"language":"en","translation":"hope"}],
+  "patterns": [
+    {
+      "pattern": "（某人）希望",
+      "imageId": 10,
+      "order": 10,
+      "chats": [
+        {"role":"teacher","content":"你有什么希望","pinyin":"ni you shen me xi wang","translations":[{"language":"en","translation":"What do you hope for"}],"audioId":2,"order":1},
+        {"role":"student","content":"我希望学好中文","pinyin":"wo xi wang xue hao zhong wen","translations":[{"language":"en","translation":"I hope to learn Chinese well"}],"audioId":3,"order":2}
+      ]
+    }
+  ]
+}

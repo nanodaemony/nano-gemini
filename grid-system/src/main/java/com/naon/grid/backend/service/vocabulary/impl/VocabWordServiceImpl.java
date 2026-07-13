@@ -335,6 +335,7 @@ public class VocabWordServiceImpl implements VocabWordService {
             if (dto.getId() == null) {
                 VocabSense sense = convertToSenseEntity(dto, wordId);
                 sense = vocabSenseRepository.save(sense);
+                dto.setId(sense.getId());
                 syncStructures(wordId, sense.getId(), dto.getStructures());
                 syncRelations(wordId, sense.getId(), word, dto);
                 syncDefImageSentence(sense.getId(), dto.getDefImageSentence());
@@ -400,6 +401,7 @@ public class VocabWordServiceImpl implements VocabWordService {
                 VocabStructure structure = convertToStructureEntity(dto, wordId, senseId);
                 structure = vocabStructureRepository.save(structure);
                 structureId = structure.getId();
+                dto.setId(structureId);
             } else {
                 VocabStructure structure = existingMap.get(dto.getId());
                 if (structure == null) {
@@ -458,6 +460,7 @@ public class VocabWordServiceImpl implements VocabWordService {
             dto.setId(null); // 每次都新建
             ExampleSentenceDto saved = exampleSentenceService.save(dto);
             if (saved != null && saved.getId() != null) {
+                dto.setId(saved.getId());
                 newIds.add(saved.getId());
             }
         }

@@ -9,6 +9,7 @@ import com.naon.grid.modules.app.rest.vo.AppComparisonGroupVO;
 import com.naon.grid.modules.app.rest.vo.AppComparisonItemVO;
 import com.naon.grid.modules.app.rest.vo.AppGrammarPointBaseVO;
 import com.naon.grid.modules.app.rest.vo.AppSearchResultVO;
+import com.naon.grid.modules.app.rest.vo.AppTopicBaseVO;
 import com.naon.grid.modules.app.rest.vo.AppVocabWordBaseVO;
 
 import java.util.Collections;
@@ -27,12 +28,14 @@ public class AppSearchWrapper {
             List<AppVocabWordBaseVO> vocab,
             List<AppCharCharacterBaseVO> character,
             List<AppGrammarPointBaseVO> grammar,
-            List<AppComparisonGroupVO> comparison) {
+            List<AppComparisonGroupVO> comparison,
+            List<AppTopicBaseVO> topic) {
         AppSearchResultVO vo = new AppSearchResultVO();
         vo.setVocab(vocab != null ? vocab : Collections.emptyList());
         vo.setCharacter(character != null ? character : Collections.emptyList());
         vo.setGrammar(grammar != null ? grammar : Collections.emptyList());
         vo.setComparison(comparison != null ? comparison : Collections.emptyList());
+        vo.setTopic(topic != null ? topic : Collections.emptyList());
         return vo;
     }
 

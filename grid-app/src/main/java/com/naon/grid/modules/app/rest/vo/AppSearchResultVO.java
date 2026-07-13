@@ -22,4 +22,7 @@ public class AppSearchResultVO implements Serializable {
 
     @ApiModelProperty(value = "辨析搜索结果")
     private List<AppComparisonGroupVO> comparison;
+
+    @ApiModelProperty(value = "话题搜索结果")
+    private List<AppTopicBaseVO> topic;
 }

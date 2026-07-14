@@ -398,6 +398,7 @@ public class VocabComparisonGroupServiceImpl implements VocabComparisonGroupServ
         dto.setUsageComparisonTranslations(JsonUtils.parseTranslationList(entity.getUsageComparisonTranslations()));
         dto.setCommonUsage(entity.getCommonUsage());
         dto.setCommonUsageTranslations(JsonUtils.parseTranslationList(entity.getCommonUsageTranslations()));
+        dto.setExampleSentences(entity.getExampleSentences());
         dto.setOrder(entity.getItemOrder());
         return dto;
     }
@@ -494,6 +495,7 @@ public class VocabComparisonGroupServiceImpl implements VocabComparisonGroupServ
             item.setUsageComparisonTranslations(JsonUtils.toTranslationJson(dto.getUsageComparisonTranslations()));
             item.setCommonUsage(dto.getCommonUsage());
             item.setCommonUsageTranslations(JsonUtils.toTranslationJson(dto.getCommonUsageTranslations()));
+            item.setExampleSentences(dto.getExampleSentences());
             item.setItemOrder(dto.getOrder() != null ? dto.getOrder() : 0);
             item.setStatus(StatusEnum.ENABLED.getCode());
             toSave.add(item);

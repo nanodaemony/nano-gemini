@@ -57,6 +57,7 @@ public class VocabComparisonGroupWrapper {
         dto.setUsageComparisonTranslations(toTextTranslationList(req.getUsageComparisonTranslations()));
         dto.setCommonUsage(req.getCommonUsage());
         dto.setCommonUsageTranslations(toTextTranslationList(req.getCommonUsageTranslations()));
+        dto.setExampleSentences(req.getExampleSentences());
         dto.setOrder(req.getOrder());
         dto.setAiGeneratedFields(req.getAiGeneratedFields());
         return dto;
@@ -136,6 +137,7 @@ public class VocabComparisonGroupWrapper {
         vo.setUsageComparisonTranslations(toTextTranslationVOList(dto.getUsageComparisonTranslations()));
         vo.setCommonUsage(dto.getCommonUsage());
         vo.setCommonUsageTranslations(toTextTranslationVOList(dto.getCommonUsageTranslations()));
+        vo.setExampleSentences(dto.getExampleSentences());
         vo.setOrder(dto.getOrder());
         // Default from DTO (draft entities have no DB IDs, use draft_content data)
         vo.setAiGeneratedFields(dto.getAiGeneratedFields() != null ? dto.getAiGeneratedFields() : Collections.emptyList());

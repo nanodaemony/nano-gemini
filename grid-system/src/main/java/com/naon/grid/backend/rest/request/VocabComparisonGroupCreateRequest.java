@@ -51,6 +51,9 @@ public class VocabComparisonGroupCreateRequest {
         @ApiModelProperty(value = "通用用法外文翻译")
         private List<TextTranslationRequest> commonUsageTranslations;
 
+        @ApiModelProperty(value = "例句（每行一条，含正误标记如✓✗）")
+        private String exampleSentences;
+
         @ApiModelProperty(value = "组内排序权重")
         private Integer order;
 

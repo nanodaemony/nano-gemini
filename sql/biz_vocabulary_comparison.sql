@@ -27,6 +27,7 @@ CREATE TABLE `vocab_comparison_item` (
   `usage_comparison_translations` text COMMENT '用法对比外文翻译',
   `common_usage` varchar(512) DEFAULT NULL COMMENT '通用用法',
   `common_usage_translations` text COMMENT '通用用法外文翻译',
+  `example_sentences` text COMMENT '例句（每行一条，含正误标记如✓✗）',
 
   `order` int NOT NULL DEFAULT '0' COMMENT '组内排序权重（大在前）',
   `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',

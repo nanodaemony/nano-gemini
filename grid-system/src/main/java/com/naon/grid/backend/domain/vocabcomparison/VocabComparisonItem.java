@@ -60,6 +60,10 @@ public class VocabComparisonItem implements Serializable {
     @ApiModelProperty(value = "通用用法外文翻译")
     private String commonUsageTranslations;
 
+    @Column(name = "example_sentences", columnDefinition = "text")
+    @ApiModelProperty(value = "例句（每行一条，含正误标记如✓✗）")
+    private String exampleSentences;
+
     @Column(name = "`order`", nullable = false)
     @ApiModelProperty(value = "组内排序权重（大在前）")
     private Integer itemOrder = 0;

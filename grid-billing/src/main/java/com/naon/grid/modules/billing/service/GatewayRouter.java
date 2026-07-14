@@ -1,6 +1,5 @@
 package com.naon.grid.modules.billing.service;
 
-import com.naon.grid.modules.billing.service.impl.PhotonPayPaymentGateway;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -34,17 +33,17 @@ public class GatewayRouter {
     }
 
     /**
-     * Resolve gateway by name (e.g. "fastspring", "photonpay").
+     * Resolve gateway by name (e.g. "fastspring").
      */
     public PaymentGateway resolve(String gatewayName) {
         String name = gatewayName != null ? gatewayName.toLowerCase() : defaultGateway;
         PaymentGateway gw = gatewayMap.get(name + "PaymentGateway");
-        if (gw != null && !(gw instanceof PhotonPayPaymentGateway)) {
+        if (gw != null) {
             return gw;
         }
         // Fallback: search by bean name containing the gateway name
         for (Map.Entry<String, PaymentGateway> entry : gatewayMap.entrySet()) {
-            if (entry.getKey().toLowerCase().contains(name) && !(entry.getValue() instanceof PhotonPayPaymentGateway)) {
+            if (entry.getKey().toLowerCase().contains(name)) {
                 return entry.getValue();
             }
         }

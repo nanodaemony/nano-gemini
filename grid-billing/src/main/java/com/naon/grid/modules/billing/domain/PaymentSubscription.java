@@ -24,7 +24,7 @@ public class PaymentSubscription {
     private String productCode;
 
     @Column(length = 30, nullable = false)
-    private String channel = "PHOTONPAY";
+    private String channel = "FASTSPRING";
 
     @Column(length = 200)
     private String channelSubId;

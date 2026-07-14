@@ -46,6 +46,7 @@ public class AppVocabComparisonWrapper {
         vo.setUsageComparisonTranslations(toTextTranslationVOList(dto.getUsageComparisonTranslations()));
         vo.setCommonUsage(dto.getCommonUsage());
         vo.setCommonUsageTranslations(toTextTranslationVOList(dto.getCommonUsageTranslations()));
+        vo.setExampleSentences(dto.getExampleSentences());
         vo.setOrder(dto.getOrder());
         return vo;
     }

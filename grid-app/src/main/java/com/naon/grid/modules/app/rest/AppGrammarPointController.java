@@ -85,6 +85,10 @@ public class AppGrammarPointController {
         audioMap = mergeAudioMap(audioMap, comparisonAudioIds);
         imageMap = mergeImageMap(imageMap, comparisonImageIds);
 
+        // 收集情景对话的音频资源
+        List<Long> chatAudioIds = collectChatAudioIds(comparisons);
+        audioMap = mergeAudioMap(audioMap, chatAudioIds);
+
         AppGrammarPointDetailVO vo = AppGrammarPointWrapper.toDetailVO(dto, audioMap, imageMap, sentenceMap, comparisons, language);
         return new ResponseEntity<>(vo, HttpStatus.OK);
     }
@@ -218,6 +222,22 @@ public class AppGrammarPointController {
             }
         }
         return imageIds;
+    }
+
+    private List<Long> collectChatAudioIds(List<GrammarComparisonGroupDto> comparisons) {
+        List<Long> audioIds = new ArrayList<>();
+        if (comparisons != null) {
+            for (GrammarComparisonGroupDto group : comparisons) {
+                if (group.getChats() != null) {
+                    for (GrammarComparisonChatDto chat : group.getChats()) {
+                        if (chat.getAudioId() != null) {
+                            audioIds.add(chat.getAudioId());
+                        }
+                    }
+                }
+            }
+        }
+        return audioIds;
     }
 
     private Map<Long, AudioResourceDto> mergeAudioMap(Map<Long, AudioResourceDto> existing, List<Long> newIds) {

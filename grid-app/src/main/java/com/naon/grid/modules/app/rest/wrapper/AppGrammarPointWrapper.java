@@ -187,6 +187,7 @@ public class AppGrammarPointWrapper {
         vo.setId(dto.getId());
         vo.setGroupKey(dto.getGroupKey());
         vo.setItems(toComparisonItemVOList(dto.getItems(), audioMap, imageMap, sentenceMap, language));
+        vo.setChats(toComparisonChatVOList(dto.getChats(), audioMap, language));
         return vo;
     }
 
@@ -218,6 +219,39 @@ public class AppGrammarPointWrapper {
                 log.error("辨析条目的用法例句未找到, usageSentenceId={}", dto.getUsageSentenceId());
             }
         }
+        return vo;
+    }
+
+    // ===== 情景对话 =====
+
+    private static List<AppGrammarPointDetailVO.ComparisonChatVO> toComparisonChatVOList(
+            List<GrammarComparisonChatDto> dtos, Map<Long, AudioResourceDto> audioMap,
+            String language) {
+        if (dtos == null) {
+            return Collections.emptyList();
+        }
+        return dtos.stream().map(d -> toComparisonChatVO(d, audioMap, language)).collect(Collectors.toList());
+    }
+
+    private static AppGrammarPointDetailVO.ComparisonChatVO toComparisonChatVO(
+            GrammarComparisonChatDto dto, Map<Long, AudioResourceDto> audioMap,
+            String language) {
+        AppGrammarPointDetailVO.ComparisonChatVO vo = new AppGrammarPointDetailVO.ComparisonChatVO();
+        vo.setRole(dto.getRole());
+        vo.setContent(dto.getContent());
+        vo.setPinyin(dto.getPinyin());
+        vo.setTranslation(filterByLanguage(dto.getTranslations(), language));
+        if (dto.getAudioId() != null && audioMap != null) {
+            AudioResourceDto audioDto = audioMap.get(dto.getAudioId());
+            if (audioDto != null) {
+                AppGrammarPointDetailVO.AudioVO audioVO = new AppGrammarPointDetailVO.AudioVO();
+                audioVO.setAudioUrl(audioDto.getFileUrl());
+                vo.setAudio(audioVO);
+            } else {
+                log.error("情景对话音频资源未找到, audioId={}", dto.getAudioId());
+            }
+        }
+        vo.setOrder(dto.getOrder());
         return vo;
     }
 

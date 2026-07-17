@@ -173,6 +173,9 @@ public class AppGrammarPointDetailVO implements Serializable {
 
         @ApiModelProperty(value = "辨析条目列表")
         private List<ComparisonItemVO> items;
+
+        @ApiModelProperty(value = "情景对话列表")
+        private List<ComparisonChatVO> chats;
     }
 
     @Getter
@@ -195,5 +198,27 @@ public class AppGrammarPointDetailVO implements Serializable {
 
         @ApiModelProperty(value = "用法例句")
         private ExampleVO usageSentence;
+    }
+
+    @Getter
+    @Setter
+    public static class ComparisonChatVO implements Serializable {
+        @ApiModelProperty(value = "角色: teacher=老师, student=学生")
+        private String role;
+
+        @ApiModelProperty(value = "中文对话内容")
+        private String content;
+
+        @ApiModelProperty(value = "拼音")
+        private String pinyin;
+
+        @ApiModelProperty(value = "外文翻译（按语言筛选后的单条）")
+        private TextTranslationVO translation;
+
+        @ApiModelProperty(value = "音频")
+        private AudioVO audio;
+
+        @ApiModelProperty(value = "排序")
+        private Integer order;
     }
 }

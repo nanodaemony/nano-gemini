@@ -19,4 +19,7 @@ public class ExerciseQuestionQueryRequest implements Serializable {
 
     @ApiModelProperty(value = "编辑状态: draft / reviewed / published")
     private String editStatus;
+
+    @ApiModelProperty(value = "业务标签过滤，参考枚举：QuestionBizTagEnum")
+    private String tags;
 }

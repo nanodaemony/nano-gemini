@@ -19,4 +19,7 @@ public class ExerciseQuestionQueryCriteria implements Serializable {
 
     @Query
     private String editStatus;
+
+    @Query(type = Query.Type.FIND_IN_SET)
+    private String tags;
 }

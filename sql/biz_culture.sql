@@ -18,6 +18,8 @@ CREATE TABLE `culture` (
     `audio_id` BIGINT DEFAULT NULL COMMENT '文化点名称音频资源ID（关联 audio_resource.id）',
     `translations` TEXT COMMENT '文化点名称多语言翻译（JSON，List<TextTranslation>）',
 
+    `cover_image_id` BIGINT DEFAULT NULL COMMENT '封面图片资源ID（关联 oss_resource_meta.id）',
+
     `level` VARCHAR(20) DEFAULT NULL COMMENT '等级：初等/中等/高等',
     `project` VARCHAR(50) DEFAULT NULL COMMENT '一级项目（如：社会交往）',
     `category` VARCHAR(50) DEFAULT NULL COMMENT '二级项目（如：饮食、居住、节日）',

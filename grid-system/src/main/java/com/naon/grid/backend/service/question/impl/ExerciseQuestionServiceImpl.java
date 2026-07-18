@@ -107,6 +107,7 @@ public class ExerciseQuestionServiceImpl implements ExerciseQuestionService {
         if (draft.getAudioId() != null) dto.setAudioId(draft.getAudioId());
         if (draft.getAudioText() != null) dto.setAudioText(draft.getAudioText());
         if (draft.getSort() != null) dto.setSort(draft.getSort());
+        if (draft.getTags() != null) dto.setTags(draft.getTags());
 
         // childCount from draft children size
         if (draft.getChildren() != null) {
@@ -311,6 +312,9 @@ public class ExerciseQuestionServiceImpl implements ExerciseQuestionService {
         entity.setAudioId(draftDto.getAudioId());
         entity.setAudioText(draftDto.getAudioText());
         entity.setSort(draftDto.getSort());
+        // tags: List<String> → comma-separated DB string
+        entity.setTags(draftDto.getTags() == null || draftDto.getTags().isEmpty() ? null
+                : String.join(",", draftDto.getTags()));
 
         // Sync children
         syncChildren(id, draftDto.getChildren());
@@ -371,6 +375,8 @@ public class ExerciseQuestionServiceImpl implements ExerciseQuestionService {
             childEntity.setAudioId(dto.getAudioId());
             childEntity.setAudioText(dto.getAudioText());
             childEntity.setSort(dto.getSort());
+            childEntity.setTags(dto.getTags() == null || dto.getTags().isEmpty() ? null
+                    : String.join(",", dto.getTags()));
             toSave.add(childEntity);
         }
 
@@ -439,6 +445,9 @@ public class ExerciseQuestionServiceImpl implements ExerciseQuestionService {
         dto.setAudioId(entity.getAudioId());
         dto.setAudioText(entity.getAudioText());
         dto.setSort(entity.getSort());
+        // tags: comma-separated DB string → List<String>
+        dto.setTags(entity.getTags() == null ? null
+                : java.util.Arrays.asList(entity.getTags().split(",")));
         dto.setEditStatus(entity.getEditStatus());
         dto.setPublishStatus(entity.getPublishStatus());
         dto.setStatus(entity.getStatus());

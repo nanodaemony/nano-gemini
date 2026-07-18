@@ -20,14 +20,14 @@ public class AppExampleSentenceVO implements Serializable {
     @ApiModelProperty(value = "例句拼音")
     private String pinyin;
 
-    @ApiModelProperty(value = "例句音频资源ID")
-    private Long audioId;
+    @ApiModelProperty(value = "例句音频资源")
+    private AppCultureDetailVO.AudioVO audio;
 
     @ApiModelProperty(value = "例句外文翻译")
     private TextTranslationVO translation;
 
-    @ApiModelProperty(value = "例句图片ID")
-    private AppCharCharacterDetailVO.ImageVO image;
+    @ApiModelProperty(value = "例句图片")
+    private AppCultureDetailVO.ImageVO image;
 
     @ApiModelProperty(value = "排序权重")
     private Integer order;

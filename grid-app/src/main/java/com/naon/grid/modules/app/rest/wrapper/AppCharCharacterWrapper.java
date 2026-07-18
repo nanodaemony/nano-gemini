@@ -9,6 +9,7 @@ import com.naon.grid.backend.service.resource.dto.AudioResourceDto;
 import com.naon.grid.domain.common.TextTranslation;
 import com.naon.grid.modules.app.rest.vo.AppCharCharacterBaseVO;
 import com.naon.grid.modules.app.rest.vo.AppCharCharacterDetailVO;
+import com.naon.grid.modules.app.rest.vo.AppCultureDetailVO;
 import com.naon.grid.modules.app.rest.vo.AppExampleSentenceVO;
 import com.naon.grid.service.dto.AliOssStorageDto;
 
@@ -105,7 +106,7 @@ public class AppCharCharacterWrapper {
             if (sentenceDto.getImageId() != null && imageMap != null) {
                 AliOssStorageDto ossDto = imageMap.get(sentenceDto.getImageId());
                 if (ossDto != null) {
-                    AppCharCharacterDetailVO.ImageVO imageVO = new AppCharCharacterDetailVO.ImageVO();
+                    AppCultureDetailVO.ImageVO imageVO = new AppCultureDetailVO.ImageVO();
                     imageVO.setImageUrl(ossDto.getFileUrl());
                     exampleSentence.setImage(imageVO);
                 }

@@ -72,6 +72,9 @@ public class ExerciseQuestionVO implements Serializable {
     @ApiModelProperty(value = "已人工审核的AI字段名列表（是 aiGeneratedFields 的子集）")
     private List<String> aiReviewedFields;
 
+    @ApiModelProperty(value = "业务标签列表")
+    private List<String> tags;
+
     @Getter
     @Setter
     public static class QuestionContentVO implements Serializable {

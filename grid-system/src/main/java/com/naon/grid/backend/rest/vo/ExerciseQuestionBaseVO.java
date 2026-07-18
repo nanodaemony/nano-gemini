@@ -39,6 +39,9 @@ public class ExerciseQuestionBaseVO implements Serializable {
     @ApiModelProperty(value = "编辑状态: draft=草稿, reviewed=已审核")
     private String editStatus;
 
+    @ApiModelProperty(value = "业务标签列表")
+    private List<String> tags;
+
     @ApiModelProperty(value = "创建人")
     private String createBy;
 

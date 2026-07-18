@@ -57,7 +57,5 @@ public class CultureVO implements Serializable {
         private Integer order;
         private Timestamp createTime;
         private Timestamp updateTime;
-        private List<String> aiGeneratedFields;
-        private List<String> aiReviewedFields;
     }
 }

@@ -5,7 +5,6 @@ import lombok.Setter;
 
 import java.io.Serializable;
 import java.sql.Timestamp;
-import java.util.List;
 
 @Getter
 @Setter
@@ -22,5 +21,4 @@ public class CultureKeywordDto implements Serializable {
     private Integer order;
     private Timestamp createTime;
     private Timestamp updateTime;
-    private List<String> aiGeneratedFields;
 }

@@ -11,14 +11,9 @@ import com.naon.grid.backend.rest.vo.CultureBaseVO;
 import com.naon.grid.backend.rest.vo.CultureCreateVO;
 import com.naon.grid.backend.rest.vo.CultureVO;
 import com.naon.grid.backend.rest.wrapper.CultureWrapper;
-import com.naon.grid.backend.service.common.dto.ExampleSentenceDto;
 import com.naon.grid.backend.service.culture.CultureService;
 import com.naon.grid.backend.service.culture.dto.CultureDto;
-import com.naon.grid.backend.service.culture.dto.CultureKeywordDto;
 import com.naon.grid.backend.service.culture.dto.CultureQueryCriteria;
-import com.naon.grid.modules.system.service.AiContentMarkerHelper;
-import com.naon.grid.modules.system.service.AiContentMarkerService;
-import com.naon.grid.modules.system.service.AiContentMarkerService.MarkerFields;
 import com.naon.grid.utils.PageResult;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -32,9 +27,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
@@ -43,7 +35,6 @@ import java.util.Map;
 public class CultureController {
 
     private final CultureService cultureService;
-    private final AiContentMarkerService aiContentMarkerService;
 
     @Log("新增文化点")
     @ApiOperation("新增文化点")
@@ -99,24 +90,7 @@ public class CultureController {
     @AnonymousGetMapping("/{id}")
     public ResponseEntity<CultureVO> findById(@PathVariable Long id) {
         CultureDto dto = cultureService.findById(id);
-        List<String> entityKeys = collectCultureEntityKeys(dto);
-        Map<String, MarkerFields> aiMarkers = aiContentMarkerService.batchQuery(entityKeys);
-        return new ResponseEntity<>(CultureWrapper.toVO(dto, aiMarkers), HttpStatus.OK);
-    }
-
-    private List<String> collectCultureEntityKeys(CultureDto dto) {
-        List<String> keys = new ArrayList<>();
-        if (dto.getKeywords() != null) {
-            for (CultureKeywordDto kw : dto.getKeywords()) {
-                keys.addAll(AiContentMarkerHelper.collectOne("culture_keyword", kw.getId()));
-            }
-        }
-        if (dto.getSentences() != null) {
-            for (ExampleSentenceDto s : dto.getSentences()) {
-                keys.addAll(AiContentMarkerHelper.collectOne("example_sentence", s.getId()));
-            }
-        }
-        return keys;
+        return new ResponseEntity<>(CultureWrapper.toVO(dto), HttpStatus.OK);
     }
 
     @Log("查询文化点列表")

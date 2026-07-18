@@ -16,7 +16,6 @@ import com.naon.grid.enums.PublishStatusEnum;
 import com.naon.grid.enums.StatusEnum;
 import com.naon.grid.exception.BadRequestException;
 import com.naon.grid.exception.EntityNotFoundException;
-import com.naon.grid.modules.system.service.AiContentMarkerService;
 import com.naon.grid.utils.JsonUtils;
 import com.naon.grid.utils.PageResult;
 import com.naon.grid.utils.PageUtil;
@@ -44,7 +43,6 @@ public class CultureServiceImpl implements CultureService {
     private final CultureKeywordRepository cultureKeywordRepository;
     private final CultureMapper cultureMapper;
     private final ExampleSentenceService exampleSentenceService;
-    private final AiContentMarkerService aiContentMarkerService;
 
     @Override
     public PageResult<CultureDto> queryAll(CultureQueryCriteria criteria, Pageable pageable) {
@@ -309,9 +307,6 @@ public class CultureServiceImpl implements CultureService {
 
         // 同步子表 culture_keyword
         syncKeywords(id, draft.getKeywords());
-
-        // 材料化 AI content markers
-        aiContentMarkerService.replaceFields("culture", id, Collections.emptyList());
 
         culture.setEditStatus(EditStatusEnum.PUBLISHED.getCode());
         culture.setPublishStatus(PublishStatusEnum.PUBLISHED.getCode());

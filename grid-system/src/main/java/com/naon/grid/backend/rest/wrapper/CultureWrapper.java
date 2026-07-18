@@ -17,7 +17,6 @@ import com.alibaba.fastjson2.JSON;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 public class CultureWrapper {
@@ -81,7 +80,6 @@ public class CultureWrapper {
             dto.setAudioId(r.getAudioId());
             dto.setImageId(r.getImageId());
             dto.setOrder(r.getOrder() != null ? r.getOrder() : 0);
-            dto.setAiGeneratedFields(r.getAiGeneratedFields());
             return dto;
         }).collect(Collectors.toList());
     }
@@ -114,8 +112,7 @@ public class CultureWrapper {
         return vo;
     }
 
-    public static CultureVO toVO(CultureDto dto,
-            Map<String, com.naon.grid.modules.system.service.AiContentMarkerService.MarkerFields> aiMarkers) {
+    public static CultureVO toVO(CultureDto dto) {
         CultureVO vo = new CultureVO();
         vo.setId(dto.getId());
         vo.setName(dto.getName());
@@ -164,8 +161,6 @@ public class CultureWrapper {
         vo.setOrder(dto.getOrder());
         vo.setCreateTime(dto.getCreateTime());
         vo.setUpdateTime(dto.getUpdateTime());
-        vo.setAiGeneratedFields(dto.getAiGeneratedFields() != null ? dto.getAiGeneratedFields() : Collections.emptyList());
-        vo.setAiReviewedFields(Collections.emptyList());
         return vo;
     }
 

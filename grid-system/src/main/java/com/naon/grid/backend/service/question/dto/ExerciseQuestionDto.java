@@ -36,4 +36,6 @@ public class ExerciseQuestionDto extends BaseDTO {
 
     // AI生成的字段名列表
     private List<String> aiGeneratedFields;
+
+    private List<String> tags;
 }

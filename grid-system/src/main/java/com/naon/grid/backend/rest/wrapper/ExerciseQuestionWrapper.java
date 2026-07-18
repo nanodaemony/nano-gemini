@@ -25,6 +25,7 @@ public class ExerciseQuestionWrapper {
         criteria.setQuestionType(request.getQuestionType());
         criteria.setPublishStatus(request.getPublishStatus());
         criteria.setEditStatus(request.getEditStatus());
+        criteria.setTags(request.getTags());
         return criteria;
     }
 
@@ -41,6 +42,7 @@ public class ExerciseQuestionWrapper {
         dto.setAudioText(request.getAudioText());
         dto.setSort(request.getSort());
         dto.setAiGeneratedFields(request.getAiGeneratedFields());
+        dto.setTags(request.getTags());
         dto.setChildren(toDtoList(request.getChildren()));
         return dto;
     }
@@ -89,6 +91,7 @@ public class ExerciseQuestionWrapper {
         vo.setChildCount(dto.getChildCount());
         vo.setPublishStatus(dto.getPublishStatus());
         vo.setEditStatus(dto.getEditStatus());
+        vo.setTags(dto.getTags());
         vo.setCreateBy(dto.getCreateBy());
         vo.setUpdateBy(dto.getUpdateBy());
         vo.setCreateTime(dto.getCreateTime());
@@ -111,6 +114,7 @@ public class ExerciseQuestionWrapper {
         vo.setSort(dto.getSort());
         vo.setPublishStatus(dto.getPublishStatus());
         vo.setEditStatus(dto.getEditStatus());
+        vo.setTags(dto.getTags());
         vo.setCreateBy(dto.getCreateBy());
         vo.setUpdateBy(dto.getUpdateBy());
         vo.setCreateTime(dto.getCreateTime());

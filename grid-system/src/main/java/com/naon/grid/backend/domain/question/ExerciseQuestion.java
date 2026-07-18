@@ -51,6 +51,9 @@ public class ExerciseQuestion extends BaseEntity implements Serializable {
     @Column(name = "sort")
     private Integer sort = 0;
 
+    @Column(name = "tags", length = 512)
+    private String tags;
+
     @Column(name = "draft_content", columnDefinition = "text")
     private String draftContent;
 

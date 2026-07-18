@@ -34,6 +34,8 @@ CREATE TABLE `exercise_question` (
   `audio_text` varchar(4096) DEFAULT NULL COMMENT '听力音频对应的文本内容',
   `sort` int DEFAULT '0' COMMENT '排序号（值越大越靠前）',
 
+  `tags` varchar(512) DEFAULT NULL COMMENT '业务标签，逗号分隔多个值（如 GRAMMAR,CULTURE），参考枚举：QuestionBizTagEnum',
+
   `draft_content` text COMMENT '草稿内容（JSON结构）',
     `edit_status` VARCHAR(20) NOT NULL DEFAULT 'draft' COMMENT '编辑状态：draft-草稿 reviewing-审核中',
     `publish_status` VARCHAR(20) NOT NULL DEFAULT 'unpublished' COMMENT '发布状态：unpublished-未发布 published-已发布',

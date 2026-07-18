@@ -2,6 +2,7 @@ package com.naon.grid.modules.app.service.impl;
 
 import com.naon.grid.backend.service.character.CharCharacterService;
 import com.naon.grid.backend.service.charradical.CharRadicalService;
+import com.naon.grid.backend.service.culture.CultureService;
 import com.naon.grid.backend.service.grammar.GrammarPointService;
 import com.naon.grid.backend.service.grammarcomparison.GrammarComparisonGroupService;
 import com.naon.grid.backend.service.vocabcomparison.VocabComparisonGroupService;
@@ -39,6 +40,7 @@ public class CollectionServiceImpl implements CollectionService {
     private final GrammarComparisonGroupService grammarComparisonGroupService;
     private final VocabComparisonGroupService vocabComparisonGroupService;
     private final TopicService topicService;
+    private final CultureService cultureService;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -243,6 +245,9 @@ public class CollectionServiceImpl implements CollectionService {
                     break;
                 case TOPIC:
                     topicService.findPublishedById(contentId);
+                    break;
+                case CULTURE:
+                    cultureService.findPublishedById(contentId);
                     break;
                 default:
                     return;

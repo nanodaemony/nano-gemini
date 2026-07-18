@@ -3,6 +3,7 @@ package com.naon.grid.modules.app.rest;
 import com.naon.grid.annotation.Log;
 import com.naon.grid.backend.service.character.CharCharacterService;
 import com.naon.grid.backend.service.charradical.CharRadicalService;
+import com.naon.grid.backend.service.culture.CultureService;
 import com.naon.grid.backend.service.grammar.GrammarPointService;
 import com.naon.grid.backend.service.grammarcomparison.GrammarComparisonGroupService;
 import com.naon.grid.backend.service.topic.TopicService;
@@ -40,6 +41,7 @@ public class AppCollectionController {
     private final GrammarComparisonGroupService grammarComparisonGroupService;
     private final VocabComparisonGroupService vocabComparisonGroupService;
     private final TopicService topicService;
+    private final CultureService cultureService;
 
     @Log("新建收藏夹")
     @ApiOperation("新建收藏夹")
@@ -77,7 +79,7 @@ public class AppCollectionController {
                 folder, groupedItems,
                 charCharacterService, vocabWordService, charRadicalService,
                 grammarPointService, grammarComparisonGroupService, vocabComparisonGroupService,
-                topicService));
+                topicService, cultureService));
     }
 
     @Log("修改收藏夹名称")

@@ -10,6 +10,8 @@ import com.naon.grid.backend.service.grammarcomparison.GrammarComparisonGroupSer
 import com.naon.grid.backend.service.grammarcomparison.dto.GrammarComparisonGroupDto;
 import com.naon.grid.backend.service.vocabcomparison.VocabComparisonGroupService;
 import com.naon.grid.backend.service.vocabcomparison.dto.VocabComparisonGroupDto;
+import com.naon.grid.backend.service.culture.CultureService;
+import com.naon.grid.backend.service.culture.dto.CultureDto;
 import com.naon.grid.backend.service.topic.TopicService;
 import com.naon.grid.backend.service.topic.dto.TopicDto;
 import com.naon.grid.backend.service.vocabulary.VocabWordService;
@@ -55,7 +57,8 @@ public class CollectionWrapper {
             GrammarPointService grammarPointService,
             GrammarComparisonGroupService grammarComparisonGroupService,
             VocabComparisonGroupService vocabComparisonGroupService,
-            TopicService topicService) {
+            TopicService topicService,
+            CultureService cultureService) {
 
         CollectionFolderDetailVO vo = new CollectionFolderDetailVO();
         vo.setId(folder.getId());
@@ -73,7 +76,7 @@ public class CollectionWrapper {
                 group.setItems(toItemVOList(entry.getValue(),
                         charCharacterService, vocabWordService, charRadicalService,
                         grammarPointService, grammarComparisonGroupService, vocabComparisonGroupService,
-                        topicService));
+                        topicService, cultureService));
                 groups.add(group);
             }
         }
@@ -89,14 +92,15 @@ public class CollectionWrapper {
             GrammarPointService grammarPointService,
             GrammarComparisonGroupService grammarComparisonGroupService,
             VocabComparisonGroupService vocabComparisonGroupService,
-            TopicService topicService) {
+            TopicService topicService,
+            CultureService cultureService) {
 
         if (items == null) return Collections.emptyList();
         return items.stream()
                 .map(item -> toItemVO(item,
                         charCharacterService, vocabWordService, charRadicalService,
                         grammarPointService, grammarComparisonGroupService, vocabComparisonGroupService,
-                        topicService))
+                        topicService, cultureService))
                 .collect(Collectors.toList());
     }
 
@@ -108,7 +112,8 @@ public class CollectionWrapper {
             GrammarPointService grammarPointService,
             GrammarComparisonGroupService grammarComparisonGroupService,
             VocabComparisonGroupService vocabComparisonGroupService,
-            TopicService topicService) {
+            TopicService topicService,
+            CultureService cultureService) {
 
         CollectionItemVO vo = new CollectionItemVO();
         vo.setId(item.getId());
@@ -117,7 +122,7 @@ public class CollectionWrapper {
         vo.setContentName(resolveContentName(item,
                 charCharacterService, vocabWordService, charRadicalService,
                 grammarPointService, grammarComparisonGroupService, vocabComparisonGroupService,
-                topicService));
+                topicService, cultureService));
         vo.setCreateTime(item.getCreateTime());
         return vo;
     }
@@ -147,7 +152,8 @@ public class CollectionWrapper {
             GrammarPointService grammarPointService,
             GrammarComparisonGroupService grammarComparisonGroupService,
             VocabComparisonGroupService vocabComparisonGroupService,
-            TopicService topicService) {
+            TopicService topicService,
+            CultureService cultureService) {
 
         // 纯文本类内容直接返回 contentText
         if (item.getContentId() == null && item.getContentText() != null) {
@@ -192,6 +198,10 @@ public class CollectionWrapper {
                 case "TOPIC": {
                     TopicDto topicDto = topicService.findById(item.getContentId());
                     return topicDto.getName();
+                }
+                case "CULTURE": {
+                    CultureDto dto = cultureService.findById(item.getContentId());
+                    return dto != null ? dto.getName() : null;
                 }
                 default:
                     return null;
